@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="delivery_customer_rule" model="ir.rule">
+            <field name="name">Delivery Order for customer</field>
+            <field ref="model_stock_picking" name="model_id"/>
+            <field name="domain_force">[('state','!=','draft'),('partner_id','child_of',user.partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('kingswood.kw_customer_service'))]"/>
+        </record>
+        
+        <record id="delivery_supplier_rule" model="ir.rule">
+            <field name="name">Delivery Order for Supplier</field>
+            <field ref="model_stock_picking" name="model_id"/>
+            <field name="domain_force">['|',('create_uid','=',user.id),('paying_agent_id','=',user.partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('kingswood.kw_supplier_service'))]"/>
+        </record>
+        
+        <!-- <record id="delivery_representative_rule" model="ir.rule">
+            <field name="name">Delivery Order for representative</field>
+            <field ref="model_stock_picking" name="model_id"/>
+            <field name="domain_force">[('state','=','done')]</field>
+            <field name="groups" eval="[(4, ref('kingswood.kw_freight_service'))]"/>
+        </record>  -->       
+        
+        
+        <record id="delivery_supplier_invoice_rule" model="ir.rule">
+            <field name="name">Invoice for Supplier</field>
+            <field ref="model_account_invoice" name="model_id"/>
+            <field name="domain_force">['|',('create_uid','=',user.id),('partner_id','=',user.partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('kingswood.kw_supplier_service'))]"/>
+        </record>
+        
+        <!-- <record id="delivery_supplier__rule" model="ir.rule">
+            <field name="name"> Supplier Delivery Order </field>
+            <field ref="model_stock_picking" name="model_id"/>
+            <field name="domain_force">[('partner_id','=',user.partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('kingswood.kw_supplier_service'))]"/>
+        </record> -->
+        
+       <record id="delivery_depot_rule" model="ir.rule">
+            <field name="name">Delivery Order for depot</field>
+            <field ref="model_stock_picking" name="model_id"/>
+            <field name="domain_force">[('create_uid','=',user.id),('type','=','out')]</field>
+            <field name="groups" eval="[(4, ref('kingswood.kw_depot_service'))]"/>
+        </record>
+        
+         <record id="incoming_shipment_depot_rule" model="ir.rule">
+            <field name="name">Incoming shipment for depot</field>
+            <field ref="model_stock_picking" name="model_id"/>
+            <field name="domain_force">[('location_id','=',user.location_id.id),('type','=','in')]</field>
+            <field name="groups" eval="[(4, ref('kingswood.kw_depot_service'))]"/>
+        </record>
+        
+        
+         <!-- <record id="billing_cycle_supplier_rule" model="ir.rule">
+            <field name="name">Billing Cycle Rule</field>
+            <field ref="model_billing_cycle" name="model_id"/>
+            <field name="domain_force">[('partner_id','=',user.partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('kingswood.kw_supplier_service'))]"/>
+        </record> -->
+  
+  <!-- ******************************For KW_Freight ********************************* -->
+          <record id="delivery_kw_freight_rule" model="ir.rule">
+            <field name="name">Delivery Order for Freight</field>
+            <field ref="model_stock_picking" name="model_id"/>
+            <field name="domain_force">[('partner_id','=',user.customer_id.id),('state','!=',('draft','in_transit','cancel'))]</field>
+            <field name="groups" eval="[(4, ref('kingswood.kw_freight_service'))]"/>
+        </record>
+        
+        
+  <!-- ******************************For KW_Supplier Partner Form ********************************* -->
+          <record id="KW_Supplier_partner_form_rule" model="ir.rule">
+            <field name="name">KW_Supplier Partner Form1</field>
+            <field ref="model_res_partner" name="model_id"/>
+              <field name="domain_force">['|',('state_id','=',user.partner_id.state_id.id),('customer','=',True)]</field>
+            <field name="groups" eval="[(4, ref('kingswood.kw_supplier_billing_service'))]"/>
+        </record>        
+	  
+         
+    </data>
+</openerp>

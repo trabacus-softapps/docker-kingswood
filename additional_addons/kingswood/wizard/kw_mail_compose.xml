@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+
+
+	<!-- Email template for Sending Kingwood Rate Mails Incoming Shipments-->
+        <record id="kw_send_mail_prod_rate_ship" model="email.template">
+            <field name="name">Kingwood Rate Mail Shipments</field>
+            <field name="model_id" ref="model_stock_picking"/>
+            <field name="email_from"><![CDATA[${object.company_id.name} <${object.company_id.email}>]]></field>
+            <field name="email_to"></field>
+            <field name="subject">Kingswood - Update Product Rate (<![CDATA[${object.product_id.name}]]>)</field>
+            <field name="body_html">
+                <![CDATA[
+                   
+                    <p>
+                        Dear Kingswood Administrator,<br/><br/>
+                        Please Update the Product Rate For the Facilitator- ${object.partner_id.name} 
+                        , and Product- ${object.product_id.name}, Code - ${object.product_id.default_code},
+                        Date - ${object.date} for DC - ${object.name}
+                        <br/>
+                        <br/>
+                        <br/>
+
+                        <b>${object.company_id.name},</b>
+                          
+                        <h6>(Scheduled Email Generated from OpenERP)</h6>
+                     </p>
+                     
+                   
+                ]]>
+            </field>
+        </record>
+        	
+	<!-- Email template for Sending Kingwood Rate Mails DC-->
+        <record id="kw_send_mail_prod_rate" model="email.template">
+            <field name="name">Kingwood Rate Mail</field>
+            <field name="model_id" ref="model_stock_picking"/>
+            <field name="email_from"><![CDATA[${object.company_id.name} <${object.company_id.email}>]]></field>
+            <field name="email_to"></field>
+            <field name="subject">Kingswood - Update Product Rate (<![CDATA[${object.product_id.name}]]>)</field>
+            <field name="body_html">
+                <![CDATA[
+                   
+                    <p>
+                        Dear Kingswood Administrator,<br/><br/>
+                        Please Update the Product Rate For the Facilitator- ${object.paying_agent_id.name} 
+                        , Customer - ${object.partner_id.name} and Product- ${object.product_id.name}, Code - ${object.product_id.default_code},
+                        Date - ${object.day} for DC - ${object.name}
+                        <br/>
+                        <br/>
+                        <br/>
+
+                        <b>${object.company_id.name},</b>
+                          
+                        <h6>(Scheduled Email Generated from OpenERP)</h6>
+                     </p>
+                     
+                   
+                ]]>
+            </field>
+        </record>
+        	
+	<!-- Email template for Sending Dispatched goods detail Mail with attachment-->
+        <record id="kw_send_mail" model="email.template">
+            <field name="name">Kingwood Send Mails</field>
+            <field name="model_id" ref="model_stock_picking"/>
+            <field name="email_from"><![CDATA[${object.company_id.name} <${object.company_id.email}>]]></field>
+            <field name="email_to"></field>
+            <field name="subject">Kingswood - Daily Dispatch Report (<![CDATA[${object.day}]]>)</field>
+            <field name="body_html">
+                <![CDATA[
+                   
+                    <p>
+                        Dear Kingswood Administrator,<br/><br/>
+                        Please Find The Attached Document. Kingswood - Daily Dispatch Report for the Date:${object.day}
+                        <br/>
+                        <br/>
+                        <br/>
+
+                        <b>${object.company_id.name},</b>
+                          
+                        <h6>(Scheduled Email Generated from OpenERP)</h6>
+                     </p>
+                     
+                   
+                ]]>
+            </field>
+        </record>
+        
+	<!-- Email template for Sending Dispatched goods detail Mail with attachment-->
+        <record id="kw_send_monthly_mail" model="email.template">
+            <field name="name">Kingwood Send Monthly Mails</field>
+            <field name="model_id" ref="model_stock_picking"/>
+            <field name="email_from"><![CDATA[${object.company_id.name} <${object.company_id.email}>]]></field>
+            <field name="email_to"></field>
+            <field name="subject">Kingswood - Monthly Dispatch Report For The Month<![CDATA[
+            			% if object.month == '12':
+							DECEMBER 
+                        % endif
+                        % if object.month == '11':
+							NOVEMBER 
+                        % endif
+                        % if object.month == '10':
+							OCTOBER
+                        % endif
+                        % if object.month == '09':
+							SEPTEMBER
+                        % endif
+                        % if object.month == '08':
+							AUGUST
+                        % endif
+                        % if object.month == '07':
+							JULY
+                        % endif
+                        % if object.month == '06':
+							JUNE
+                        % endif
+                        % if object.month == '05':
+							MAY
+                        % endif
+                        % if object.month == '04':
+							APRIL
+                        % endif
+                        % if object.month == '03':
+							MARCH
+                        % endif
+                        % if object.month == '02':
+							FEBRUARY
+                        % endif
+                        % if object.month == '01':
+							JANUARY
+                        % endif
+                        
+                        '${object.year}
+            			]]>
+           			 </field>
+            <field name="body_html">
+                <![CDATA[
+                   
+                    <p>
+                        Dear Kingswood Administrator,<br/><br/>
+                        Please Find The Attached Document. Kingswood - Monthly Dispatch Report for the Month:
+                        % if object.month == '12':
+							<b>DECEMBER </b>
+                        % endif
+                        % if object.month == '11':
+							<b>NOVEMBER </b>
+                        % endif
+                        % if object.month == '10':
+							<b>OCTOBER</b>
+                        % endif
+                        % if object.month == '09':
+							<b>SEPTEMBER</b>
+                        % endif
+                        % if object.month == '08':
+							<b>AUGUST</b>
+                        % endif
+                        % if object.month == '07':
+							<b>JULY</b>
+                        % endif
+                        % if object.month == '06':
+							<b>JUNE</b>
+                        % endif
+                        % if object.month == '05':
+							<b>MAY</b>
+                        % endif
+                        % if object.month == '04':
+							<b>APRIL</b>
+                        % endif
+                        % if object.month == '03':
+							<b>MARCH</b>
+                        % endif
+                        % if object.month == '02':
+							<b>FEBRUARY</b>
+                        % endif
+                        % if object.month == '01':
+							<b>JANUARY</b>
+                        % endif
+                        
+                         '${object.year}
+                        <br/>
+                        <br/>
+                        <br/>
+
+                        <b>${object.company_id.name},</b>        
+                        <h6>(Scheduled Email Generated from OpenERP)</h6>               
+                     </p>
+                     
+                   
+                ]]>
+            </field>
+        </record>
+	    
+	    <!-- Email template for admin which contains list of customers -->
+	    <record id="billing_cycle_send_mail" model="email.template">
+	        <field name="name">Billing Cycle Mail</field>
+	        <field name="model_id" ref="model_res_partner"/>
+	        <field name="email_from"><![CDATA[${object.company_id.name} <${object.company_id.email}>]]></field>
+	        <field name="email_to"></field>
+	        <field name="subject"><![CDATA[Billing Cycle Scheduler Processed from  ${object.billing_partners[0].billing_ids[0].st_date |format_date("%d-%m-%Y")} TO  ${object.billing_partners[0].billing_ids[0].end_date |format_date("%d-%m-%Y")}]]></field>
+	        <field name="body_html">
+	            <![CDATA[
+    			
+	    				    			<p>
+	                        Dear All,
+	                </p>
+	                <p>
+	                		The List of Facilitator's Billing Cycle generated during the period from ${object.billing_partners[0].billing_ids[0].st_date |format_date("%d-%m-%Y")} TO  ${object.billing_partners[0].billing_ids[0].end_date |format_date("%d-%m-%Y")}
+	                </p>
+	                <table cellspacing="1" border="1" cellpadding="4">
+	                    <tr> 
+	                    	<th>     Facilitators   </th>
+	                    	<th>   Start Date   </th> 
+	                    	<th>    End Date    </th>
+	                    	<th> Opening Balance </th>
+	                    </tr>
+	                     % for p in object.billing_partners:
+		               
+		                  % for bc in p.current_bill:
+		                     
+	                             <tr>            
+            						<td><strong>${p.name or ''}</strong></td>
+            					    <td><strong>${bc.st_date |format_date("%d-%m-%Y")or ''}</strong></td>
+            					     <td><strong>${bc.end_date |format_date("%d-%m-%Y")or 0 }</strong></td>
+            					     <td><strong>${bc.open_bal or 0 }</strong></td>
+            					</tr>
+            					
+						 
+        					  
+        					  % endfor
+        					 %endfor
+		             
+				     </table>
+	             
+                      <p>
+	               <b>${object.company_id.name or ''}</b>
+	               </p>
+	                
+    			
+    			]]>
+	        </field>
+	    </record>
+                
+	<!-- Email template for Sending Password Change-->
+        <record id="kw_password_change_mail" model="email.template">
+            <field name="name">Kingswood Password Change Mails</field>
+            <field name="model_id" ref="model_res_users"/>
+            <field name="email_from"><![CDATA[${object.company_id.name} <${object.company_id.email}>]]></field>
+            <field name="email_to"></field>
+            <field name="subject">Change OpenErp Account Password</field>
+            <field name="body_html">
+                <![CDATA[
+                   
+                    
+                        <p>Dear ${object.partner_id.name},</p>
+                        
+                        <p>
+                        It is important to secure your authentication process to protect your system against various types of security threats, 
+                        such as password-cracking tools, brute-force or dictionary attacks, abuse of system access rights,
+                        impersonation of authenticated users, and replay attacks.</p>
+                        <p>
+						To accomplish this users are required to set complex passwords and to change them periodically.</p>
+						<p>As a part of mandatory process to secure mail boxes , password change policy is enforced every 60 days.</p>
+						<H3>Complex Password</H3>
+						
+						  	<t/>  		<p>*	 Passwords must be at least eight characters in length.</p>
+						  	<t/>		<p>*	Strong passwords must include at least one uppercase letter.</p>
+						   	<t/>		<p>*	Strong passwords must include at least one number.</p>
+						   	<t/>		<p>*	Strong passwords must include one or more lowercase letters.</p>
+						  	<t/>		<p>*	Strong passwords must include at least one special characters ! @ # % ^ * = - + ; . | : [ ] </p>
+						
+						<p> Please change your password before expiry.</p>
+						<p>Please click </p>
+							<p>http://localhost:8069/?db=kingswood_new&debug=#view_type=form&model=kw.change.password&action=549</p>
+							<p>here to change Password or Contact your Administrator.</p>
+						<p>Regards,</p>
+						<p>OpenERP Support</p>
+                          
+                        <h6>(Scheduled Email Generated from OpenERP)</h6>
+                     </p>
+                     
+                   
+                ]]>
+            </field>
+        </record>
+	<!-- Email template for Sending Dispatched goods detail Mail with attachment-->
+        <record id="kw_facilitator_daily_mail" model="email.template">
+            <field name="name">Kingwood Facilitator Daily Mail</field>
+            <field name="model_id" ref="model_stock_picking"/>
+            <field name="email_from"><![CDATA[${object.company_id.name} <${object.company_id.email}>]]></field>
+            <field name="email_to"></field>
+            <field name="subject">Kingswood - Non Dispatch Facilitator List (<![CDATA[${object.report_date}]]>)</field>
+            <field name="body_html">
+                <![CDATA[
+                   
+                    <p>
+                        Dear Kingswood Administrator,<br/><br/>
+                        Please Find The Attached Document. List of Facilitator who did not Supply Goods to the Customer for the Date :${object.report_date}
+                        <br/>
+                        <br/>
+                        <br/>
+
+                        <b>${object.company_id.name},</b>
+                          
+                        <h6>(Scheduled Email Generated from OpenERP)</h6>
+                     </p>
+                     
+                   
+                ]]>
+            </field>
+        </record>
+        
+	</data>
+</openerp>
+
+<!--
+<![CDATA[
+                   
+                    <p>
+                        Hello Kingswood Administrator,<br/>
+                        <br/>
+                        Please Find The attached Daily Dispatch Report for the 
+                        <br/>
+                        <br/>
+                        <br/>
+                        <br/>
+                        <br/>
+                        <br/>
+                        ${object.company_id.name},<br/>
+                        ${object.company_id.partner_id.street,<br/>
+                        ${object.company_id.partner_id.street2,<br/>
+                        ${object.company_id.partner_id.city,<br/>
+                        ${object.company_id.partner_id.state_id.name,<br/>                        
+                    </p>
+                   
+                ]]>	
+-->
+
+
+

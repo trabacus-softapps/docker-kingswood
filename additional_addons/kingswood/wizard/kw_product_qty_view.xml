@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="kw_view_product_quantity_form" model="ir.ui.view">
+            <field name="name">Change Product Quantity</field>
+            <field name="model">change.product.qty</field>
+            <field name="arch" type="xml">
+                <form string="Update Product Quantity" version="7.0">
+                	<group attrs="{'invisible':[('dc_state', 'not in',('in_transit'))]}">
+                		<field name="loaded_qty"/>
+ 						<p>Enter the Quantity in Metric Tons Eg. if the loaded quantity is 16800 kgs enter 16.800</p>        		
+                	</group>
+                	<group attrs="{'invisible':[('dc_state', 'in',('in_transit'))]}">
+	                	<group>
+	                		<field name="product_id" options='{"no_open":True}' required='1'
+	                			attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('dc_state',  'not in', ('done','freight_paid'))]}"/>
+
+	                		<field name="partner_id" options='{"no_open":True}' required='1'
+	                			attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('dc_state', '!=', 'done')]}"/>
+	                		
+	                		<field name="supplier_id" domain="[('supplier','=',True)]" options='{"no_open":True}' 
+	                			attrs="{'readonly': ['|',('sup', '=', True),'|','&amp;',('cust', '=', True),('sup', '=', True),'|',('dc_state', 'not in', ('done','freight_paid'))],'required':[('type','=','out')],'invisible':[('type', '!=', 'out')]}"/>
+	                		
+	                	</group>
+	                	
+	                	<group attrs="{'invisible':[('sup', '!=', True),('cust', '!=', True)]}">
+		                	 <field name="cust" attrs="{'readonly': [('cust', '=', True)],'invisible':[('cust', '!=', True)]}"/> 
+		                      <field name="sup" attrs="{'readonly': [('sup', '=', True)],'invisible':[('sup', '!=', True)]}"/>  
+						</group>  
+						
+						  
+                    </group>  
+                    
+                    <group attrs="{'invisible':[('dc_state', 'in',('in_transit'))]}">
+                    	<group>
+                    	<field name="date" attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('dc_state', 'not in', ('cancel','done','freight_paid'))]}"
+                    		required='1'/>
+                    	<field name="new_quantity" 
+                    		attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('dc_state', 'not in', ('done','freight_paid'))],'required':[('type','=','out')],'invisible':[('type', '!=', 'out')]}"/>
+                    	<field name="product_qty" invisible='1'/>	
+	                     <field name="state"
+	                     	attrs="{'readonly': ['|',('cust', '=', True),('sup', '=', True)],'invisible':[('dc_state', '!=', 'cancel')]}"/>  
+	                     </group>
+	                     
+	                     <group>  
+	                       
+	                       <field name="rej_qty"  attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('dc_state', 'not in', ('done','freight_paid'))],'required':[('type','=','out')],'invisible':[('type', '!=', 'out')]}"/>
+                       		<field name="deduction_amt" attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('dc_state','not in', ('done','freight_paid'))],'required':[('type','=','out')],'invisible':[('type', '!=', 'out')]}"/>
+                       		<field name="freight_balance" attrs="{'readonly': ['|',('sup', '=', True),('dc_state','not in', ('done','freight_paid'))],'required':[('type','=','out')],'invisible':[('type', '!=', 'out')]}"/>
+                       		<field name="show_freight" invisible='1'/>
+                       		<field name="gen_freight" attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('cust', '=', True)],'invisible':[('show_freight','!=',True)]}"/>
+                       	</group>
+					</group>
+					 <field name="dc_state" invisible='1'/>
+					  <field name="type" on_change="onchange_type(type)" invisible='1'/>
+					  <field name="esugam_no" invisible='1'/>
+                    <field name="stock_move_id" invisible='1'/>  
+	                 <field name="name" invisible='1'/> 
+	                 
+                    <footer>
+                        <button name="change" type="object" string="Update" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link"
+                            special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        
+	   <act_window name="Update" 
+	   	res_model="change.product.qty"
+        src_model="stock.picking.out" 
+        view_mode="form" 
+        target="new" 
+        id="action_change_product_qty_wzd"/>
+     
+     
+         <record model="ir.actions.act_window.view" id="change_product_qty_out">
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="kw_view_product_quantity_form"/>
+            <field name="act_window_id" ref="action_change_product_qty_wzd"/>
+        </record>
+        
+        
+        
+     
+        <record id="kw_view_product_quantity_form_in" model="ir.ui.view">
+            <field name="name">Change Product Quantity in</field>
+            <field name="model">change.product.qty</field>
+            <field name="arch" type="xml">
+                <form string="Update Product Quantity" version="7.0">
+                	<group>
+	                	<group>
+	                		<field name="product_id" options='{"no_open":True}' required='1'
+	                			attrs="{'readonly': ['|',('sup', '=', True),'|',('dc_state', '=', 'cancel')]}"/>
+
+	                		<field name="partner_id" options='{"no_open":True}' required='1' string="Facilitator"
+	                			attrs="{'readonly': ['|',('sup', '=', True),'|',('dc_state', 'in', ('cancel'))]}"/>
+
+	                	</group>
+	                	
+	                	<group attrs="{'invisible':[('sup', '!=', True)]}">
+ 
+		                      <field name="sup" readonly='1'/>
+		                      	<!-- attrs="{'readonly': [('sup', '=', True)],'invisible':[('sup', '!=', True)]}"/>   -->
+						</group>  
+						
+						  
+                    </group>  
+                    
+                    <group>
+                    	<group>
+                    	
+                    	<field name="product_qty" required='1' attrs="{'readonly': [('sup', '=', True)]}"/>	
+                    	<field name="freight_balance" attrs="{'readonly': ['|',('sup', '=', True),'|',('dc_state','not in', ('done','freight_paid'))],'required':[('type','!=','out')],'invisible':[('type', '!=', 'in')]}"/>
+                    	<field name="date" string='Creation Date' attrs="{'readonly': ['|',('sup', '=', True),'|',('dc_state', '!=', 'done')]}"
+                    		 required='0'/>
+	                     <field name="state" attrs="{'readonly': [('sup', '=', True)],'invisible':[('dc_state', '!=', 'cancel')]}"
+	                     	invisible='1'/>  
+	                     </group>
+	                     
+
+					</group>
+					 <field name="dc_state" invisible='1'/>
+					  <field name="type" on_change="onchange_type(type)" invisible='1'/>
+					  
+                    <field name="stock_move_id" invisible='1'/>  
+	                 <field name="name" invisible='1'/> 
+	                 
+                    <footer>
+                        <button name="change_in" type="object" string="Update" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link"
+                            special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        
+	   <act_window name="Update" 
+	   	res_model="change.product.qty"
+        src_model="stock.picking.in"
+        view_mode="form" 
+        target="new" 
+        id="action_change_product_qty_in"/>     
+     
+       <record model="ir.actions.act_window.view" id="change_product_qty_in">
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="kw_view_product_quantity_form_in"/>
+            <field name="act_window_id" ref="action_change_product_qty_in"/>
+        </record>
+     
+     
+     
+     
+     
+     
+        
+    </data>
+</openerp>
+

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<openerp>
+    <data>
+        <!--####################################################### Wizard for Confirm button############################################################# -->
+        
+        <record id="kw_confirm_action_form" model="ir.ui.view">
+            <field name="name">kw.confirm.action.form</field>
+            <field name="model">stock.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Confirm Draft Delivery Orders" version="7.0">
+                    <p class="oe_grey">
+                        Once draft Delivery Orders are confirmed, you will not be able
+                        to modify them. The Delivery Orders will receive a unique
+                        number and E-sugam entries will be created based on customers
+                    </p>
+                    <footer>
+                        <button name="confirm" type="object" string="Ok" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link"
+                            special="cancel" />
+                    </footer>
+                    
+                </form>
+            </field>
+        </record>
+        
+        
+        <record model="ir.actions.act_window" id="kw_action_confirm_id">
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">stock.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+       
+       
+       
+        
+        
+    </data>
+</openerp>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+	
+     <!-- <record id="view_delivery_challan" model="ir.ui.view">
+         <field name="name">delivery_challan</field>
+         <field name="model">del.challan</field>
+         <field name="arch" type="xml">
+			<form string="Delivery Challan" version="7.0">
+				<button name="print_report" type="object" string="Delivery Challan"/>  
+			</form>
+		</field>
+	</record> 
+	 <act_window name="Delivery Challan"
+            res_model="kw.freight"
+            src_model="stock.picking.out"
+            view_mode="form"
+            target="new"        
+            key2="client_action_multi"    
+            id="action_choose_freight"/> -->
+
+     
+        
+   
+<!--    For Admin    -->
+    <menuitem parent="account.menu_finance_reports" name="Report" id ="del_sum_id" sequence="14"
+        groups="base.group_no_one,kingswood.kw_admin_service"/>
+        
+        <record id="del_summary_form" model="ir.ui.view">
+            <field name="name">del.sumwiz</field>
+            <field name="model">del.sumwiz</field>
+            <field name="arch" type="xml">
+                <form string="City" version="7.0">
+                    <group col="4" colspan="2">
+                        <field name="st_date" required="1"/>
+                        <field name="partner_id" domain="[('supplier','=',True)]" required="1" on_change="onchange_partner_id(partner_id)"/>
+                        <field name="end_date" required="1"/>
+                    </group>
+                    <footer>
+                        <button name="print_report" type="object" string="Print" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link"
+                            special="cancel" />
+                    </footer>
+                   
+                </form>
+            </field>
+        </record>
+        
+        
+        <record model="ir.actions.act_window" id="del_summary_action">
+            <field name="name">Paying Agent Statement</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">del.sumwiz</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+        
+        <record id="del_summary_action_form" model="ir.actions.act_window.view">
+            <field eval="1" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="del_summary_form"/>
+            <field name="act_window_id" ref="del_summary_action"/>
+        </record>
+        
+        <menuitem id="wiz_action_id" action="del_summary_action" groups="base.group_no_one,kingswood.kw_admin_service"
+            parent ="del_sum_id"/>
+        
+<!--       FOr Suppliers-->
+
+        <menuitem parent="stock.menu_stock_warehouse_mgmt" name="Report" id ="supp_del_sum_id" sequence="14"
+            groups="base.group_no_one"/>
+       
+        <record id="del_summary_form_supplier" model="ir.ui.view">
+            <field name="name">del.sumwiz</field>
+            <field name="model">del.sumwiz</field>
+            <field name="arch" type="xml">
+                <form string="City" version="7.0">
+                  
+                    <group col="4" colspan="2">
+                        <field name="st_date" required="1"/>
+                        <field name="partner_id" domain="[('supplier','=',True)]" required="1" readonly="1"/>
+                        <field name="end_date" required="1"/>
+                    </group>
+                    <footer>
+                        <button name="print_report" type="object" string="Print" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link"
+                            special="cancel" />
+                    </footer>
+                    
+                </form>
+            </field>
+        </record>
+        
+        
+        <record model="ir.actions.act_window" id="del_summary_action_supplier">
+            <field name="name">Paying Agent Statement</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">del.sumwiz</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+        
+        <record id="del_summary_action_supplier_form" model="ir.actions.act_window.view">
+            <field eval="1" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="del_summary_form_supplier"/>
+            <field name="act_window_id" ref="del_summary_action_supplier"/>
+        </record>
+       
+        <!-- <menuitem action="del_summary_action_supplier" id="del_summary_supplier_id" parent="supp_del_sum_id" sequence="4"
+            groups="base.group_no_one"/>
+         -->
+	
+	
+    
+    </data>  
+</openerp>
+    

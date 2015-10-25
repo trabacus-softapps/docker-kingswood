@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+    <record id="del_refund_form" model="ir.ui.view">
+        <field name="name">kw.refund</field>
+        <field name="model">kw.refund</field>
+        <field name="arch" type="xml">
+            <form string="Refund">
+                <group col="4" colspan="2">
+                    <field name="pdb_rejection_qty"/>
+                    <field name="normal_rejection_qty" domain="[('supplier','=',True)]"/>
+                    <field name="amount" required="1"/>
+                    <button name="refund_save" type="object" string="Create Refund"/>
+                </group>
+                
+                
+            </form>
+        </field>
+    </record>
+    
+    
+        <record model="ir.actions.act_window" id="del_refund_action">
+        <field name="name">Paying Agent Refund</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">kw.refund</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    
+     <record model="ir.actions.act_window.view" id="inv_refund_wzr">
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="del_refund_form"/>
+            <field name="act_window_id" ref="del_refund_action"/>
+        </record> 
+        
+        
+        
+	<record id="del_invoice_form" model="ir.ui.view">
+        <field name="name">kw.invoice1</field>
+        <field name="model">kw.invoice</field>
+        <field name="arch" type="xml">
+            <form string="Invoice">
+                <group col="4" colspan="2">
+                	 <field name="product_rate" string="Transport Charges" readonly='0'/>
+                	 <field name="unit_price" readonly='1'/>
+                	<field name="qty_txt" invisible='1'/>
+                	<field name="freight_rate" string="Loading Charges"/>
+                   
+                   <field name="amt_txt" invisible='1'/>
+                    
+                    <button name="print_Handling" type="object" string="Print Invoice"/>
+                </group>
+                
+                
+            </form>
+        </field>
+    </record>
+    
+    
+        <record model="ir.actions.act_window" id="del_invoice_action">
+        <field name="name">Customer Invoice</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">kw.invoice</field>																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																						
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>    
+    
+         <record model="ir.actions.act_window.view" id="inv_refund_wzr">
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="del_invoice_form"/>
+            <field name="act_window_id" ref="del_invoice_action"/>
+        </record> 
+    
+	<record id="del_invoice_form1" model="ir.ui.view">
+        <field name="name">kw.invoice_handling_charge1</field>
+        <field name="model">kw.invoice</field>
+        <field name="arch" type="xml">
+            <form string="Invoice">
+                <group col="4" colspan="2">
+                <group>
+                	<field name="freight_rate" string="Loading Charges"/>
+                	 <field name="product_rate" string="Transport Charges" readonly='0'/>
+                	 <field name="unit_price" readonly='1'/>
+                	<field name="qty_txt" invisible='1'/>
+                	<button name="print_Handling" type="object" string="Print Invoice" class="oe_kanban_footer_left"/>
+               </group> 	
+               <group>    
+                   <field name="amt_txt" invisible='1'/>
+                    <field name="product_order" invisible='0'/>
+                    <field name="handling_order" invisible='0'/>
+                    
+                </group>
+			</group>
+            </form>
+        </field>
+    </record>
+    
+    
+        <record model="ir.actions.act_window" id="del_invoice_action1">
+        <field name="name">Customer Invoice</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">kw.invoice</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>    
+    
+         <record model="ir.actions.act_window.view" id="inv_refund_wzr1">
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="del_invoice_form1"/>
+            <field name="act_window_id" ref="del_invoice_action1"/>
+        </record>     
+    
+        
+
+    </data>
+</openerp>

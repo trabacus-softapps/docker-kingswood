@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<openerp>
+    <data>
+        <!--####################################################### Wizard for Confirm button############################################################# -->
+        
+        <record id="kw_confirm_action_form" model="ir.ui.view">
+            <field name="name">kw.confirm.action.form</field>
+            <field name="model">stock.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Confirm Draft Delivery Orders" version="7.0">
+                    <p class="oe_grey">
+                        Once draft Delivery Orders are confirmed, you will not be able
+                        to modify them. The Delivery Orders will receive a unique
+                        number and E-sugam entries will be created based on customers
+                    </p>
+                    <footer>
+                        <button name="confirm" type="object" string="Ok" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link"
+                            special="cancel" />
+                    </footer>
+                    
+                </form>
+            </field>
+        </record>
+        
+        
+        <record model="ir.actions.act_window" id="kw_action_confirm_id">
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">stock.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+       
+
+	        <record model="ir.actions.act_window.view" id="kw_stock_confirm_action_form">
+	        	<field name="view_mode">form</field>
+	        	<field eval="2" name="sequence"/>
+	        	<field name="view_id" ref="kw_confirm_action_form"/>
+	        	<field name="act_window_id" ref="kw_action_confirm_id"/>
+	        </record>       
+       
+        <!-- Weightment Slip Wizzard       -->
+        
+        <record id="kw_weighment_slip" model="ir.ui.view">
+            <field name ="name">kw_weighment_slip</field>
+            <field name ="model">stock.wizard</field>
+            <field name ="arch" type ="xml">
+                <form string="Weightment Slip" version="7.0">
+                    <group>
+                        <field name="gross_weight" required="1"/>
+                        <field name="tare_weight"  required="1"/>
+                        <field name="net_weight"  required="1"/>
+                    </group>
+                    <footer>
+                        <button name="weightment_slip" string="Print" type="object"
+                            class="oe_highlight"/>
+                        <button string="Cancel" special="cancel" type="object" class="oe_highlight"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <act_window name="Weightment Slip" res_model="stock.wizard"
+            src_model="stock.picking.out" view_mode="form" target="new" 
+            key2="client_print_multi"   id="action_weighment_slip"/>
+
+         <record model="ir.actions.act_window.view" id="kw_weighment_slip_action">
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="kw_weighment_slip"/>
+            <field name="act_window_id" ref="action_weighment_slip"/>
+        </record>       
+        
+
+       
+        <!-- Invoice Group Wizzard       -->
+        
+        <record id="view_group_invoice_report" model="ir.ui.view">
+            <field name="name">Group Invoice Report</field>
+            <field name="model">invoice.group.report</field>
+            <field name="arch" type="xml">
+               <form string="Merge Invoice Report" version="7.0">
+                    <group col="4" colspan="2">
+                    <group>
+                        <field name="from_date" required="1"/>
+                       
+                        <field name="partner_id" domain="[('customer','=',True)]" string='Customer' required="1"/>
+                        
+                         <field name="type" invisible="1"/>
+                         <field name="report_type" required="1"/>
+                         
+                    </group>
+                    <group>
+                    	 <field name="to_date" required="1"/>
+                    	 
+                    	<field name="product_id" string='Product' invisible='1'/>
+                    	<field name="product_ids" 
+                    		widget="many2many_tags" options='{"no_open":True,"create": false, "create_edit": false}'/>
+                    	<field name="state_report" string='With State' invisible='1'/>
+                    	<field name="state_id" required="0" />
+                    </group>
+					</group>
+                    
+                    <footer>
+                        <button name="print_inv_report" string="Invoice Report" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- <act_window name="Merge Invoice Report"
+            context="{'search_default_draft': 1, 'search_default_approved': False}"
+            res_model="invoice.group.report"
+            src_model="account.invoice"
+            view_mode="form"
+            target="new"
+            multi="True" 
+            key2="client_action_multi"   
+            id="action_group_invoice_report"/>  
+            
+         <record model="ir.actions.act_window.view" id="kw_weighment_slip_action">
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_group_invoice_report"/>
+            <field name="act_window_id" ref="action_group_invoice_report"/>
+        </record>  --> 
+
+        <record model="ir.actions.act_window" id="action_group_invoice_report">
+            <field name="name">Invoice Report</field>
+            <field name="res_model">invoice.group.report</field>
+           
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,graph</field>
+            <field name="target">new</field>
+        </record>
+        
+        <record model="ir.actions.act_window.view" id="action_group_invoice_report_form">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_group_invoice_report"/>
+            <field name="act_window_id" ref="action_group_invoice_report"/>
+        </record>
+             
+<menuitem icon="terp-project" id="cust_inv_report" name="Invoice Reports"  parent="account.menu_finance_reports" sequence="101"/>
+<menuitem action="action_group_invoice_report" id="action_group_invoice_report_menu" name="Customer MIS" parent="cust_inv_report" sequence="1"/>   
+ 
+ 
+ 
+        <!-- Invoice Group Wizzard       -->
+        
+        <record id="Facilitator_view_group_invoice_report" model="ir.ui.view">
+            <field name="name">Facilitator Group Invoice Report</field>
+            <field name="model">invoice.group.report</field>
+            <field name="arch" type="xml">
+               <form string="Facilitator Invoice Report" version="7.0">
+                    <group>
+                    <group col="4" colspan="2">
+                        <field name="from_date" required="1"/>
+                        <field name="to_date" required="1"/>
+                        <field name="partner_id" domain="[('supplier','=',True)]" string='Facilitator' required="1"/>
+                        <field name="product_id" string='Product'/>
+                         <field name="type" invisible="1"/>
+                         <field name="report_type" required="1"/>
+                    </group>
+                        
+                    </group>
+                    
+                    <footer>
+                        <button name="print_facilitator_inv_report" string="Invoice Report" type="object" class="oe_highlight"/>
+                        <button name="print_cust_facilitator_inv_report" string="Facilitator Report" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- <act_window name="Merge Invoice Report"
+            context="{'search_default_draft': 1, 'search_default_approved': False}"
+            res_model="invoice.group.report"
+            src_model="account.invoice"
+            view_mode="form"
+            target="new"
+            multi="True" 
+            key2="client_action_multi"   
+            id="action_group_invoice_report"/>  
+            
+         <record model="ir.actions.act_window.view" id="kw_weighment_slip_action">
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_group_invoice_report"/>
+            <field name="act_window_id" ref="action_group_invoice_report"/>
+        </record>  --> 
+
+        <record model="ir.actions.act_window" id="Facilitator_action_group_invoice_report">
+            <field name="name">Invoice Report</field>
+            <field name="res_model">invoice.group.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,graph</field>
+            <field name="target">new</field>
+        </record>
+        
+        <record model="ir.actions.act_window.view" id="Facilitator_action_group_invoice_report_form">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="Facilitator_view_group_invoice_report"/>
+            <field name="act_window_id" ref="Facilitator_action_group_invoice_report"/>
+        </record>
+             
+
+<menuitem action="Facilitator_action_group_invoice_report" id="Facilitator_action_group_invoice_report_menu" name="Facilitator MIS" parent="cust_inv_report" sequence="1"/> 
+      
+               <!--     Facilitator Balance / Estimate Report   -->
+        
+        <record id="Facilitator_report" model="ir.ui.view">
+            <field name="name">Facilitator.report</field>
+            <field name="model">facilitator.report</field>
+            <field name="arch" type="xml">
+                <form string="Facilitator Balance / Estimate Report" version="7.0">
+                    <group>
+                        <group col="4" colspan="2">
+                            
+                            <field name="state_id" widget="selection" attrs="{'invisible':[('partner_id','=',True)]}"/>
+                            <field name="partner_id" attrs="{'invisible':[('partner_id','=',True)]}"
+                                domain="[('name','not ilike','Kingswood'),('supplier','=',True),('handling_charges','!=',True),('state_id','=',state_id)]"/>
+                            <field name="report_type" required="1"/>
+                        </group>
+                        
+                    </group>
+                    
+                    <footer>
+                        <button name="print_report" string="Print" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <record model="ir.actions.act_window" id="Facilitator_balance_report">
+            <field name="name">Facilitator Balance / Estimate Report</field>
+            <field name="res_model">facilitator.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+        
+        <menuitem icon="terp-project" id="facilitator_balance_id" name="Outstanding Reports"  parent="account.menu_finance_reports" sequence="102"/>
+        <menuitem action="Facilitator_balance_report" id="Facilitator_balance_report_id" name="Facilitator Balance" parent="facilitator_balance_id" sequence="1"/> 
+        
+ 
+ 
+        
+        <!-- Monthly Dispatch Wizzard       -->
+        
+        <record id="monthly_dispatches_view_group_invoice_report" model="ir.ui.view">
+            <field name="name">Daily/Monthly Dispatches</field>
+            <field name="model">invoice.group.report</field>
+            <field name="arch" type="xml">
+               <form string="Daily/Monthly Dispatches" version="7.0">
+                     <group> 
+                     	<group col="4" colspan="2"> 
+	                     <label for="from_date" string="Date " class="oe_edit_only" attrs="{'invisible': [('summary','=',True)]}"/> 
+	                     <label for="from_date" string="Month " class="oe_edit_only" attrs="{'invisible': [('summary','!=',True)]}"/> 
+	                     <field name="from_date" required="1" nolabel="1"/> 
+	                     </group> 
+	                    <group col="4" colspan="2"> 
+	                    	 
+	                    	<field name="partner_id" options='{"no_open":True}'
+	                    		domain="[('customer','=',True)]" string="Customer" attrs="{'invisible': [('summary','=',True)]}"/>
+	                    	<field name="summary" invisible="0" attrs="{'readonly': [('partner_id','!=',False)]}"/>
+	                     </group> 
+	                  </group>
+                    
+                    <footer>
+                        <button name="print_monthly_dispatch_report" string="Daily Dispatch Report" type="object" 
+                        	attrs="{'invisible': [('summary','=',True)]}" class="oe_highlight"/>
+                        	
+                        <button name="print_monthly_dispatch_report" string="Monthly Dispatches Report" type="object" 
+                        	attrs="{'invisible': [('summary','=',False)]}" class="oe_highlight"/>                        	
+                        
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- <act_window name="Merge Invoice Report"
+            context="{'search_default_draft': 1, 'search_default_approved': False}"
+            res_model="invoice.group.report"
+            src_model="account.invoice"
+            view_mode="form"
+            target="new"
+            multi="True" 
+            key2="client_action_multi"   
+            id="action_group_invoice_report"/>  
+            
+         <record model="ir.actions.act_window.view" id="kw_weighment_slip_action">
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_group_invoice_report"/>
+            <field name="act_window_id" ref="action_group_invoice_report"/>
+        </record>  --> 
+
+        <record model="ir.actions.act_window" id="monthly_dispatches_action_group_invoice_report">
+            <field name="name">Daily/Monthly Dispatches</field>
+            <field name="res_model">invoice.group.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,graph</field>
+            <field name="target">new</field>
+        </record>
+        
+        <record model="ir.actions.act_window.view" id="monthly_dispatches_action_group_invoice_report_form">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="monthly_dispatches_view_group_invoice_report"/>
+            <field name="act_window_id" ref="monthly_dispatches_action_group_invoice_report"/>
+        </record>
+
+<menuitem name="Reports" id="kw_dispatch_report" 
+		parent="stock.menu_stock_warehouse_mgmt" groups="base.group_no_one,kingswood.kw_admin_service" sequence="4"/>
+             
+	<menuitem action="monthly_dispatches_action_group_invoice_report" name="Daily/Monthly Dispatches" id="kw_monthly_dispatches_action_group_invoice_report" 
+		parent="kw_dispatch_report" groups="base.group_no_one,kingswood.kw_admin_service" sequence="3"/>
+
+
+ <!-- For Loaded Quantity while generating Cash Voucher -->
+ 
+ 
+         <record id="kw_view_cash_voucher" model="ir.ui.view">
+            <field name="name">KW Cash Voucher</field>
+            <field name="model">stock.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Update Product Quantity For Cash Voucher" version="7.0">
+                	<group>
+                		<field name="loaded_qty"/>
+ 						<p>Enter the Quantity in Metric Tons Eg. if the loaded quantity is 16800 kgs enter 16.800</p>        		
+                	</group>
+	                
+                    <footer>
+                        <button name="cash_voucher" type="object" string="Cash Voucher" class="oe_highlight"/>
+                        
+                        <button string="Cancel" class="oe_link"
+                            special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        
+	   <act_window name="Cash Voucher" 
+	   	res_model="stock.wizard"
+        src_model="stock.picking.out" 
+        view_mode="form" 
+        target="new" 
+        id="action_kw_cash_voucher_wzd"/>
+     
+     
+         <record model="ir.actions.act_window.view" id="kw_cash_voucher_wzd">
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="kw_view_cash_voucher"/>
+            <field name="act_window_id" ref="action_kw_cash_voucher_wzd"/>
+        </record> 
+		  
+    </data>
+</openerp>

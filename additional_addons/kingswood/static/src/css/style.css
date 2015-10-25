@@ -1,0 +1,24 @@
+/*.my_height{
+  min-height: 40px;
+  padding-top: 2px;
+  font-size: 40px;
+}
+
+
+	
+
+h1 {
+  font-weight: bold;
+  color: black;
+  font-size: 40px;
+  height: 40px;
+}*/
+
+.my_class {
+	display: none;
+}
+
+.password{
+        font:small-caption;
+        font-size:16px;
+}

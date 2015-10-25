@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+	<data>
+
+		<!--	    Category	-->
+
+		<record model="ir.module.category" id="kw_module_category">
+			<field name="name">Kingswood</field>
+			<field name="sequence">1</field>
+		</record>
+
+		<!--		 Groups		-->
+		<record id="kw_admin_service" model="res.groups">
+			<field name="name">KW_Admin</field>
+			<field name="category_id" ref="kw_module_category"/>
+		</record>
+		<record id="kw_supplier_service" model="res.groups">
+			<field name="name">KW_Supplier</field>
+			<field name="category_id" ref="kw_module_category"/>
+		</record>
+		<record id="kw_depot_service" model="res.groups">
+			<field name="name">KW_Depot</field>
+			<field name="category_id" ref="kw_module_category"/>
+		</record>
+		<record id="kw_customer_service" model="res.groups">
+			<field name="name">KW_Customer</field>
+			<field name="category_id" ref="kw_module_category"/>
+		</record>
+		<record id="kw_freight_service" model=	"res.groups">
+			<field name="name">KW_Freight</field>
+			<field name="category_id" ref="kw_module_category"/>
+		</record>
+		<record id="kw_supplier_billing_service" model=	"res.groups">
+			<field name="name">KW_facilitor_billing_cycle_tab</field>
+			<field name="category_id" ref="kw_module_category"/>
+		</record> 		
+
+		<record id="kw_facilitor_billing_service_tab" model="res.groups">
+			<field name="name">KW_billing_cycle</field>
+			<field name="category_id" ref="kw_module_category"/>
+		</record>
+		<!--
+		<<record id="stock.menu_action_picking_tree6" model="ir.ui.menu">
+							<field name="groups_id" eval="[()]"/>
+						</record>></<record>-->
+		
+
+		<!--============================== Menuitems=================================================  -->
+
+		<!-- Top menu item for Account Invoices -->
+		<!-- Top menu item -->
+		<menuitem name="Accounting"
+		id="account.menu_finance" groups="base.group_no_one,kingswood.kw_admin_service"/>
+		<menuitem id="account.menu_account_config" name="Accounting" parent="base.menu_config"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+
+		<!-- Suppliers -->
+		<menuitem id="account.menu_finance_payables" name="Paying Agents" parent="account.menu_finance" sequence="3"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+		<menuitem id="account.menu_account_supplier" name="Paying Agents" parent="account.menu_finance_payables" action="base.action_partner_supplier_form"
+		groups="base.group_no_one,kingswood.kw_admin_service" sequence="100"/>
+
+		<!-- Supplier Refunds-->
+		<menuitem action="account.action_invoice_tree4" id="account.menu_action_invoice_tree4" parent="account.menu_finance_payables" name="Paying Agents Refunds"
+		groups="base.group_no_one,kingswood.kw_admin_service" />
+
+		<!-- "Paying Agents Payments"   -->
+		<menuitem action="account_voucher.action_vendor_payment" icon="STOCK_JUSTIFY_FILL" sequence="12" id="account_voucher.menu_action_vendor_payment" name="Paying Agents Payments"
+		parent="account.menu_finance_payables" groups="base.group_no_one"/>
+
+		<!-- Supplier Invoices -->
+		<menuitem action="account.action_invoice_tree2" id="account.menu_action_invoice_tree2" parent="account.menu_finance_payables" name="Paying Agents Invoices"
+		groups="base.group_no_one,kingswood.kw_admin_service" />
+		
+		
+
+		<!-- Sales Receipt-->
+		
+		<menuitem id="account.menu_finance_receivables" name="Customers" parent="account.menu_finance" sequence="2"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+		<menuitem id="account.menu_finance_bank_and_cash" name="Bank and Cash" parent="account.menu_finance" sequence="4"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+		<menuitem id="account_voucher.menu_action_sale_receipt" icon="STOCK_JUSTIFY_FILL" parent="account.menu_finance_receivables" sequence="10"
+		groups="base.group_no_one,kingswood.kw_admin_service" name="Sales Receipts"/>
+
+		<!-- Periodic Processing -->
+		
+		<menuitem id="account.menu_finance_periodical_processing" name="Periodic Processing" parent="account.menu_finance" sequence="13"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+
+		<!-- Charts -->
+		
+		<menuitem id="account.menu_finance_charts" name="Charts" parent="account.menu_finance" sequence="6"
+		groups="base.group_no_one,kingswood.kw_admin_service" />
+
+		<!-- Reporting -->
+		
+		<menuitem id="account.menu_finance_reports" name="Reporting" parent="account.menu_finance" sequence="14"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+
+		<!-- "Configuration" -->
+		
+		<menuitem id="account.menu_finance_configuration" name="Configuration" parent="account.menu_finance" sequence="15"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+		
+		 <menuitem action="account_voucher.action_voucher_list" id="menu_encode_entries_by_voucher" parent="account.menu_finance_entries"
+		 	 sequence="6" groups="base.group_no_one,kingswood.kw_admin_service"/>
+		 	 
+		<menuitem action="account.action_account_journal_form" id="account.menu_action_account_journal_form" parent="account.menu_journals"
+			groups="base.group_no_one,kingswood.kw_admin_service"/>
+			
+		<menuitem id="account.menu_journals" sequence="15" name="Journals" parent="account.menu_finance_configuration" 
+			groups="base.group_no_one,kingswood.kw_admin_service"/>
+
+		<!-- Journal Entries -->
+
+		<menuitem id="account.menu_finance_entries" name="Journal Entries" parent="account.menu_finance" 
+			sequence="5" groups="base.group_no_one,kingswood.kw_admin_service"/>
+			
+		 <!-- <menuitem action="action_voucher.action_voucher_list" id="action_voucher.menu_encode_entries_by_voucher" parent="account.menu_finance_entries" 
+			sequence="6" groups="base.group_no_one,kingswood.kw_admin_service"/> -->
+		
+		<menuitem
+            icon="STOCK_JUSTIFY_FILL"
+            action="account.action_move_journal_line"
+            id="account.menu_action_move_journal_line_form"
+            parent="account.menu_finance_entries"
+            groups="base.group_no_one,kingswood.kw_admin_service"
+            sequence="5"/>
+         
+          <menuitem
+            action="account.action_account_moves_all_a"
+            icon="STOCK_JUSTIFY_FILL"
+            id="account.menu_action_account_moves_all"
+            parent="account.menu_finance_entries"
+            sequence="1"
+            groups="base.group_no_one,kingswood.kw_admin_service"
+        />
+		
+		<!-- Top menu item for Warehouse -->
+		
+		<menuitem name="Warehouse"
+		id="stock.menu_stock_root"
+		groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_supplier_billing_service,kingswood.kw_depot_service,kingswood.kw_supplier_service,kingswood.kw_customer_service"
+		sequence="70"/>
+		
+		<menuitem id="stock.menu_stock_warehouse_mgmt" name="Receive/Deliver By challan" parent="stock.menu_stock_root" sequence="1"
+		groups="base.group_no_one,kingswood.kw_supplier_billing_service,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service,kingswood.kw_customer_service"/>
+		
+		<!-- Delivery Orders -->
+		
+		<!-- <menuitem action="kw_stock_action" name="Delivery Challan" id="kw_menu_action_picking_tree" parent="stock.menu_stock_warehouse_mgmt" sequence="3" 
+		groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service"/> -->
+		
+	
+		
+		<!-- Supplier Invoices for supplier supplier user group -->
+		<menuitem action="account.action_invoice_tree2" id="kw_menu_action_invoice_tree2" parent="stock.menu_stock_warehouse_mgmt" name="Facilitator Invoices"
+			groups="base.group_no_one"/>
+		
+		<!--<menuitem action="kingswood.billing_cycle_action" id="kw_menu_billing_cycle_action" parent="stock.menu_stock_warehouse_mgmt" name="Billing Cycle"
+		groups="kingswood.kw_supplier_service" />-->
+
+		<!-- Delivery order for customer -->
+		<!-- <menuitem action="kw_customer_action" name="Delivery Challan" id="kw_menu_action_customer_tree" parent="stock.menu_stock_warehouse_mgmt"
+		sequence="3" groups="kingswood.kw_customer_service"/> -->
+
+		<!--  <menuitem action="kw_supplier_action" id="kw_menu_action_supplier_tree" parent="stock.menu_stock_warehouse_mgmt"
+		sequence="3" groups="kingswood.kw_supplier_service"/> -->
+		
+		
+		<!-- Traceability -->
+		
+		<menuitem id="stock.menu_traceability" name="Traceability" parent="stock.menu_stock_root"
+		sequence="3" groups="base.group_no_one,kingswood.kw_admin_service"/>
+		
+		
+		<!--stock Moves-->
+		
+		<menuitem action="stock.action_move_form2" id="stock.menu_action_move_form2" parent="stock.menu_traceability" sequence="3"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+		<menuitem action="stock.action_picking_tree" id="stock.menu_action_picking_tree" parent="stock.menu_stock_warehouse_mgmt" sequence="3"
+		groups="base.group_no_one"/>
+
+		<!-- Internal Moves-->
+		
+		<menuitem action="stock.action_picking_tree6" id="stock.menu_action_picking_tree6" parent="stock.menu_stock_warehouse_mgmt" sequence="2"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+		
+
+		<!--Receive/Deliver Products -->
+		<menuitem id="stock.menu_stock_products_moves" name="Receive/Deliver Goods" parent="stock.menu_stock_root" sequence="2"
+		groups="base.group_no_one"/>
+
+		<!-- "Deliver Goods" -->
+		<menuitem action="stock.action_out_picking_move" id="stock.menu_action_pdct_out" parent="stock.menu_stock_products_moves" sequence="2"
+		name="Deliver Goods" groups="base.group_no_one,kingswood.kw_admin_service"/>
+
+		<!-- Incoming Goods -->
+		<menuitem action="stock.action_reception_picking_move" id="stock.menu_action_pdct_in" parent="stock.menu_stock_products_moves" sequence="1"
+		name="Incoming Goods" groups="base.group_no_one,kingswood.kw_admin_service"/>
+
+		<!-- GOODS -->
+		<menuitem id="stock.menu_stock_product" name="Goods" parent="stock.menu_stock_root" sequence="6"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+
+		<!-- "Goods by Category" -->
+		<menuitem name="Goods by Category" id="stock.menu_product_by_category_stock_form" action="product.product_category_action"
+		parent="stock.menu_stock_product" sequence="0" groups="base.group_no_one,kingswood.kw_admin_service"/>
+
+		<!-- Goods in GOODS -->
+		<menuitem action="product.product_normal_action" id="stock.menu_stock_products_menu" parent="stock.menu_stock_product" sequence="1"
+		name="Goods" groups="base.group_no_one,kingswood.kw_admin_service" />
+
+		<!--Incoming Shipments-->
+		<menuitem action="stock.action_picking_tree4" id="stock.menu_action_picking_tree4" parent="stock.menu_stock_warehouse_mgmt" sequence="1"
+		groups="base.group_no_one,kingswood.kw_admin_service,kw_depot_service"/>
+
+		<!-- Configuration -->
+		<menuitem id="stock.menu_stock_configuration" name="Configuration" parent="stock.menu_stock_root" sequence="15"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+		<menuitem id="stock.menu_product_in_config_stock" name="Goods" parent="stock.menu_stock_configuration" sequence="45"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+		<menuitem action="product.product_category_action_form" id="stock.menu_product_category_config_stock" parent="stock.menu_product_in_config_stock" sequence="0"
+		name ="Goods Categories" groups="base.group_no_one,kingswood.kw_admin_service"/>
+		<menuitem action="product.product_ul_form_action" id="stock.menu_product_packaging_stock_action" parent="stock.menu_product_in_config_stock" sequence="1"
+		groups="base.group_no_one,kingswood.kw_admin_service" />
+		<menuitem id="stock.menu_stock_unit_measure_stock" name="Units of Measure" parent="stock.menu_product_in_config_stock"  sequence="35"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+		<menuitem id="stock.menu_warehouse_config" name="Warehouse Management" parent="stock.menu_stock_configuration" sequence="40"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+
+		<!--Inventry Control -->
+		<menuitem id="stock.menu_stock_inventory_control" name="Inventory Control" parent="stock.menu_stock_root" sequence="4"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+		<menuitem action="stock.action_inventory_form" id="stock.menu_action_inventory_form" parent="stock.menu_stock_inventory_control" sequence="30"
+		groups="base.group_no_one,kingswood.kw_admin_service"/>
+
+		<!-- Removing Top Menuitem for KW_Admin		-->
+		<menuitem id="base.menu_management" name="Modules" parent="base.menu_administration" sequence="0" groups="base.group_no_one" />
+		<menuitem id="base.menu_config" name="Configuration" parent="base.menu_administration" sequence="1" groups="base.group_no_one"/>
+		<menuitem id="base.menu_administration_shortcut" parent="base.menu_administration" name="Custom Shortcuts" sequence="50" groups="base.group_no_one"/>
+		<menuitem id="base.menu_translation" name="Translations" parent="base.menu_administration" sequence="7" groups="base.group_no_one"/>
+		<menuitem id="base.menu_res_company_global" parent="base.menu_administration" name="Companies" sequence="2"
+		groups="base.group_no_one"/>
+		
+		<!--******** Weigh Scale*********** -->
+		<menuitem name="Weighing Scale" id="weigh_root_menu_id" sequence="20" 
+			groups="base.group_no_one,kingswood.kw_admin_service"/>
+		
+		<menuitem name="Weighment" id="weighment_menu_id" parent="weigh_root_menu_id" sequence = "11" 
+			groups="base.group_no_one,kingswood.kw_admin_service"/>
+			
+        <menuitem name="Configuration" id="weighment_configure_id" parent="weigh_root_menu_id" sequence = "12"
+        	groups="base.group_no_one,kingswood.kw_admin_service"/>
+		
+		<!-- ************************Purchase****************************************  -->
+		
+		<menuitem name="Purchases"
+            id="base.menu_purchase_root" sequence="60" groups="base.group_no_one"/>
+            <!-- groups="group_purchase_manager,group_purchase_user" -->
+         <menuitem id="purchase.menu_procurement_management" name="Purchase"
+            parent="base.menu_purchase_root" sequence="1" groups="base.group_no_one" />  
+            
+             <menuitem id="menu_purchase_config_purchase" name="Configuration"
+            groups="base.group_no_one"
+            parent="base.menu_purchase_root" sequence="100"/> 
+		 <menuitem
+            id="purchase.menu_product_in_config_purchase" name="Products"
+            parent="purchase.menu_purchase_config_purchase" sequence="30" groups="base.group_no_one"/>
+            
+        <menuitem id="purchase.menu_procurement_management_invoice" name="Invoice Control"
+        parent="base.menu_purchase_root" sequence="6" groups="base.group_no_one"/>
+        
+        <menuitem id="purchase.menu_procurement_management_product" name="Products"
+          parent="base.menu_purchase_root" sequence="8" groups="base.group_no_one"/>
+          
+        <menuitem id="purchase.menu_procurement_management_inventory" name="Incoming Products"
+            parent="base.menu_purchase_root" sequence="4" groups="base.group_no_one"/>
+            
+            <!-- "Reporting" -->
+            
+         <menuitem name="Reporting"
+            id="base.menu_reporting"
+            groups="base.group_no_one"
+            sequence="170"/>
+           <menuitem id="base.menu_reporting_dashboard" name="Dashboards" parent="base.menu_reporting" sequence="0" 
+           	groups="base.group_no_one"/>
+         
+         <menuitem id="account.menu_finance_reporting" name="Accounting" parent="base.menu_reporting" sequence="35"
+         	groups="base.group_no_one"/>  	
+           	
+         <menuitem id="base.next_id_73" name="Purchase" parent="base.menu_reporting" sequence="10"
+        	groups="base.group_no_one"/>
+        	
+        	<menuitem action="purchase.action_purchase_order_report_all"
+        		 id="purchase.menu_action_purchase_order_report_all" parent="base.next_id_73" sequence="3"
+        	groups="base.group_no_one"/>
+        	
+           <!-- Top Messaging menu item -->
+        <menuitem name="Messaging"
+          id="mail.mail_feeds_main"
+          groups="base.group_no_one"
+          sequence="10"/>
+
+        <!-- Left-side menu: Feeds -->
+        <menuitem id="mail.mail_feeds" name="Messaging" parent="mail.mail_feeds_main" sequence="10"
+        	 groups="base.group_no_one"/>
+       
+       <!-- Inbox --> 
+       <menuitem action="mail.action_mail_inbox_feeds" id="mail.mail_inboxfeeds" parent="mail.mail_feeds" 
+       	groups="base.group_no_one"/>
+       	
+       	<!-- To Me -->
+       	<menuitem action="mail.action_mail_to_me_feeds" id="mail.mail_tomefeeds" parent="mail.mail_feeds" 
+       	groups="base.group_no_one"/>
+       	
+       	<!-- To Do -->
+       	
+       	<menuitem action="mail.action_mail_star_feeds" id="mail.mail_starfeeds" parent="mail.mail_feeds" 
+       	groups="base.group_no_one"/>
+       	
+       	<!-- archives -->
+       	
+       	<menuitem action="mail.action_mail_archives_feeds" id="mail.mail_archivesfeeds" parent="mail.mail_feeds" 
+       	groups="base.group_no_one"/>
+       	
+       <menuitem id="mail.mail_my_stuff" name="Organizer" parent="mail.mail_feeds_main" 
+       	groups="base.group_no_one" />
+        
+        <menuitem id="mail.mail_group_root" parent="mail.mail_feeds_main" sequence="12" name="My Groups" groups="base.group_no_one"/>
+        <menuitem id="mail.mail_allgroups" parent="mail.mail_group_root" sequence="100" action="mail.action_view_groups" groups="base.group_no_one"/>
+        
+        <!-- companies  -->
+         <menuitem id="base.menu_res_company_global" parent="base.menu_administration" name="Companies" sequence="2"
+            groups="base.group_no_one,kingswood.kw_admin_service"/>
+            
+            
+        <act_window name="Create Draft Invoices"
+            res_model="stock.invoice.onshipping"
+            src_model="stock.picking.in"
+            key2="client_action_multi"
+            multi="True"
+            view_mode="form"
+            view_type="form"
+            target="new"
+            id="stock.action_stock_invoice_onshipping" groups="base.group_system"/>
+            
+    <report id="stock.report_picking_list_out" model="stock.picking.out" name="stock.picking.list.out" string="Delivery Slip" rml="stock/report/picking.rml" groups="base.group_no_one"/>
+    
+	</data>
+</openerp>

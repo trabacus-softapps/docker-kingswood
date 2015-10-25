@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+	
+		<record id="kw_product_search_form_view" model="ir.ui.view">
+            <field name="name">kw.product.view.search</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_search_form_view"/>
+            <field name="arch" type="xml">
+
+                  <xpath expr="//field[@name='name']" position="after">
+                  	<field name="default_code"/>
+                  
+                    <field name="categ_id"/>
+                    <field name="type"/>
+                    <field name="variants"/>
+                    <field name="uom_id"/>
+                    <field name="qty_available"/>
+                    <field name="virtual_available"/>
+                    <field name="lst_price"/>
+                    <field name="price"/>
+                    <field name="standard_price" invisible="1"/>
+                    <field name="state"/>
+                    <field name="company_id" groups="base.group_multi_company" invisible="1"/>
+                  	
+                   </xpath>
+                  <xpath expr="//group[@string='Group by...']/filter[@string='Company']" position="after">
+                   		<filter string='Goods' icon="terp-stock_symbol-selection" domain="[]" context="{'group_by' : 'name'}"/>
+                       <filter string='Reference' icon="terp-stock_symbol-selection" domain="[]" context="{'group_by' : 'default_code'}"/>
+                  </xpath>
+            </field>
+        </record>
+        
+		<record id="kw_product_view" model="ir.ui.view">
+            <field name="name">kw.product.view</field>
+            <field name="model">product.supplierinfo</field>
+          
+            <field name="inherit_id" ref="product.product_supplierinfo_form_view"/>
+            <field name="arch" type="xml" >
+           	 	<field name="min_qty" position="after">
+           	 		<field name="rate" invisible='1'/>
+           	 	</field>
+
+				<field name="name" position="attributes">
+					<attribute name="on_change">onchange_facilitator(name)</attribute>
+					
+				</field>  
+				         	 	
+           	 	<field name="name" position="after">
+           	 		
+           	 		<field name="customer_id" domain="[('customer','!=',False)]" attrs="{'required': [('depot','=',False)]}"
+           	 			on_change ="onchange_customer(customer_id,depot)"
+           	 			 />
+           	 		
+           	 		<field name="depot" domain="[('usage','=','internal')]" attrs="{'required': [('customer_id','=',False)]}" 
+           	 			on_change ="onchange_depot(depot,customer_id)"/>
+           	 		<field name="city_id" readonly='1'/>
+           	 		
+           	 		<field name="dc_count" invisible="0"/>
+           	 		<field name="location_id" attrs="{'required': [('comp_location','=',True)],'invisible': [('comp_location','=',False)]}" />
+           	 		<field name="comp_location" invisible='1'/>	
+           	 	</field>
+            	<field name="pricelist_ids" position="after">
+            		<field name="supp_price_ids">
+            			<tree string="Customer Goods Price" editable="top">
+            				<field name="ef_date" required="1"/>
+            				<field name="product_price" string="Goods Price"/>
+            				<field name="transport_price" string="Freight Price"/>
+            				<field name="sub_total"/>
+            				 <field name="partner_id" domain="[('handling_charges','=',True)]" widget="selection"/>
+            				<field name="handling_charge"/>
+            				<field name="total"/>
+            				<field name="create_date" readonly='1' groups="base.group_no_one"/>
+							<field name="write_date" readonly='1' groups="base.group_no_one"/>
+            			</tree>
+            		</field>
+             	</field>
+             	
+             	<xpath expr="//field[@name='product_name']" position="attributes">
+                    <attribute name="string">Paying Agents Goods Name</attribute>
+ 				</xpath>
+ 				
+ 				<xpath expr="//field[@name='product_code']" position="attributes">
+                    <attribute name="string">Paying Agents Goods Code</attribute>
+ 				</xpath>
+ 				
+ 				   	
+ 				  
+ 			
+ 				  
+ 				<xpath expr="//field[@name='sequence']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath> 
+ 				<xpath expr="//field[@name='product_uom']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath>
+ 				
+ 				  
+            	
+            	<xpath expr="//field[@name='product_name']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath>
+ 				
+ 				<xpath expr="//field[@name='product_code']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath>
+ 				
+ 				<xpath expr="//field[@name='min_qty']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath> 
+ 				<xpath expr="//field[@name='delay']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath>
+ 				<xpath expr="//field[@name='company_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath>
+ 				
+            	  
+            	
+            		
+            		
+			</field>
+		</record>
+		
+		
+	
+		
+		<record id="kw_product_customer_form1" model="ir.ui.view">
+			<field name="name">kw_product_customer_form1</field>
+			<field name = "model">product.product</field>
+			<field name ="inherit_id" ref="product.product_normal_form_view"/>
+			<field name="arch" type="xml">
+            	<xpath expr="//form/sheet" position="before">
+            		<header>
+            		<button name="%(kingswood.action_change_product_rate_wzd)d" string="Update Goods Rate" 
+			                	type="action" class="oe_highlight" groups="base.group_no_one,kingswood.kw_admin_service"/>
+				<button name="create_inv" string="Re-start Invoice Schedular" attrs="{'invisible': [('product_rate','=',False)]}" 
+			                	type="object" class="oe_highlight"/>			                	
+            	</header>
+            	</xpath>	
+				<xpath expr="//field[@name='default_code']" position='after'>
+					<field name="cft" string="CFT"/>
+					<field name="product_rate" invisible='1'/>
+				</xpath>            	
+            				
+				<xpath expr="//notebook/page[@string='Information']/field[@name='description']" position='before'>
+					<separator string="Customers Goods Rate"/>
+					<field name="customer_ids" widget="one2many_list" version="7.0" context="{'default_type':'customer','default_list_price':list_price}" options="{'limit':2}">
+						<tree string="Customer Information">
+							<field name="sequence" invisible="1" widget="handle" />
+							<field name="name" string="Customer"/>
+							<field name='proforma_price'/>
+							<field name="delay" invisible="1"/>
+							
+							<field name="min_qty" invisible="1"/>
+							<field name="rate" string="Goods Rate" />
+							<field name="transport_rate"/>
+							<field name="total"/>
+							
+							<field name="company_id" groups="base.group_multi_company" widget="selection" invisible="1"/>
+						</tree>
+						<form string="Customer Information" version="7.0">
+							<group col="6" colspan="2">
+								<field name="name" context="{'default_customer': 1, 'search_default_supplier': 0, 'default_customer': 1,'default_type':'customer'}" string="Customer"
+									domain="[('customer','=',True)]"/>
+								<field name="min_qty" invisible="1"/>
+								<field name="sequence" invisible="1"/>
+								<field name="company_id" groups="base.group_multi_company" widget="selection" invisible="1"/>
+								
+								<field name="product_uom" string="Customer Goods Unit of Measure" invisible="1"/>
+								<field name="rate" invisible="1"/>
+								
+								<field name="delay" invisible="1"/>
+								
+								<field name="product_name" string="Customer goods Name" invisible="1"/>
+								<field name="product_code" string="Customer goods Code" invisible="1"/>
+								
+							</group>
+							<p groups="product.group_purchase_pricelist" class="oe_grey">The prices below will only be taken into account when your pricelist is set as based on supplier prices.</p>
+							<field groups="product.group_purchase_pricelist" name="pricelist_ids">
+								<tree editable="bottom" string="Pricelist">
+									<field name="min_quantity"/>
+									<field name="price"/>
+								</tree>
+								<form version="7.0">
+									<group>
+										<field name="min_quantity"/>
+										<field name="price"/>
+									</group>
+								</form>
+							
+							</field>
+							
+							<field name="cust_price_ids">
+								<tree string="Customer Goods Price" editable="top">
+									<field name="ef_date" required="1"/>
+									<field name='proforma_price'/>
+									<field name="product_price" string="Goods Price"/>
+									<field name="transport_price" string="Freight Price" />
+									<field name="total"/>
+									<field name="create_date" readonly='1' groups="base.group_no_one"/>
+									<field name="write_date" readonly='1' groups="base.group_no_one"/>
+								</tree>
+							</field>
+						</form>
+					</field>
+				</xpath>
+				
+				<xpath expr="//notebook/page[@string='Accounting']//field[@name='taxes_id']" position = 'after'>
+					<field name="cst_taxes_id" colspan="2" widget="many2many_tags"/>
+				</xpath>	
+				
+				<xpath expr="//notebook/page[@string='Accounting']" position = 'after'>
+					<page string="Work Orders">
+						<field name="work_order_ids">
+							<tree version="7.0" editable="top">
+								<field name="work_order_date"/>
+								<field name="partner_id"/>
+								<field name="state_id"/>
+								<field name="work_order_no"/>
+							</tree>
+						</field>
+						
+					</page>
+				</xpath>
+				
+            	<!-- <xpath expr="//notebook/page[@string='Information']" position='attributes'>
+            		 <attribute name="string">Customers</attribute>
+				</xpath> -->
+				
+				<xpath expr="//notebook/page[@string='Sales']" position='attributes'>
+					 <attribute name="invisible">1</attribute>
+				</xpath>
+				
+				<!-- <xpath expr="//notebook/page[@string='Procurements']" position='attributes'>
+					 <attribute name="string">Facilitators</attribute>
+				</xpath> -->
+				
+				
+						
+			</field>
+		</record>
+		
+		<!-- <record id="kw_product_customer_form_inherit" model="ir.ui.view">
+			<field name="name">kw_product_customer_form1</field>
+			<field name = "model">product.product</field>
+			<field name ="inherit_id" ref="kingswood.kw_product_customer_form1"/>
+			<field name="arch" type="xml">
+				<xpath expr="//notebook/page[@string='Information']" position='attributes'>
+            		 <attribute name="string">Customers</attribute>
+				</xpath>
+ 			</field>
+ 		</record> -->
+ 		
+		<record id="kw_product_name1" model="ir.ui.view">
+            <field name="name">kw.product</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            
+            <field name="arch" type="xml" >
+            	<xpath expr="//div[@class='oe_title']/div[@class='oe_edit_only']/label[@string='Product Name']" position="attributes">
+                    <attribute name="string">Goods Details</attribute>
+  				</xpath>
+  				
+  				<xpath expr="//field[@name='name']">
+                    <attribute name="string">Goods Details</attribute>
+  				</xpath>
+            	<xpath expr="//field[@name='type']" position="attributes">
+                    <attribute name="string">Goods Type</attribute>
+ 				</xpath>
+ 				
+ 				
+ 				
+ 				<xpath expr="//page[@string='Inventory']/group[@name='inventory']/group[@name='status']/field[@name='product_manager']" position="attributes">
+                    <attribute name="string">Goods Manager</attribute>
+                    
+ 				</xpath>
+ 				
+ 				<xpath expr="//notebook/page[@string='Procurements']" position='attributes'>
+					 <attribute name="string">Facilitators</attribute>
+				</xpath>
+ 				
+ 				
+ 			</field>	
+ 			
+ 		</record> 
+ 		
+ 		<record id="kw_product_tree_name" model="ir.ui.view">
+            <field name="name">kw.product</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_product_tree_view"/>
+            
+            <field name="arch" type="xml" >
+            	
+            	  <xpath expr="//tree[@string='Products']" position="attributes">
+                    <attribute name="string">Goods</attribute>
+ 				 </xpath>  
+ 			</field>
+ 	</record>
+ 			
+ 		<record id="kw_product_template" model="ir.ui.view">
+            <field name="name">kw.product</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+ 			<field name="arch" type="xml" >
+ 				<xpath expr="//page[@string='Suppliers']/field[@name='seller_ids']" position="attributes">
+ 					<attribute name="options">{'limit': 10}</attribute>
+ 					<attribute name="string">Facilitators</attribute>
+ 				</xpath>
+ 				
+ 				
+ 				
+ 				
+ 				
+ 			</field>
+		</record>
+		 
+			<!-- Paying Agents Tree view  -->
+		
+		<record id="kw_product_tree" model="ir.ui.view">
+            <field name="name">kw.product.tree</field>
+            <field name="model">product.supplierinfo</field>
+            
+            <field name="inherit_id" ref="product.product_supplierinfo_tree_view"/>
+            <field name="arch" type="xml" >
+           	 	<field name="min_qty" position="after">
+           	 		<field name="rate" string="Goods Rate"/>
+           	 	</field>
+           	 	<field name="name" position="after">
+           	 		<field name="depot" domain="[('usage','=','internal')]"
+           	 			/>
+           	 			<field name="city_id" readonly='1'/>
+           	 		<field name="customer_id" domain="[('customer','!=',False)]"
+           	 			/>
+           	 	</field>
+           	 	
+           	 	<field name="name" position="after">
+           	 		<field name="name_function"/>
+           	 	</field>
+           	 	
+           	 	<xpath expr="//field[@name='name']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath>
+           	 	
+           	 	<xpath expr="//field[@name='sequence']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath>
+ 				<xpath expr="//field[@name='sequence']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath>
+ 				<xpath expr="//field[@name='delay']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath>
+ 				<xpath expr="//field[@name='company_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath>
+ 				<xpath expr="//field[@name='min_qty']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+ 				</xpath>
+            	
+            	<xpath expr="//field[@name='rate']" position="after">
+            		<field name='transport_rate'/>
+            		<field name="sub_total"/>
+            		<field name='partner_id'/>
+            		<field name="handling_charge"/>
+            		<field name='total'/>
+            		
+            	</xpath>
+			</field>
+		</record> 
+		
+		
+		
+		
+		<record id="kw_product_category" model="ir.ui.view">
+            <field name="name">kw.product</field>
+            <field name="model">product.category</field>
+            <field name="inherit_id" ref="product.product_category_all"/>
+ 			<field name="arch" type="xml" >
+ 				<xpath expr="//field[@name='name']" position="attributes">
+                    <attribute name="string">All Goods</attribute>
+ 				</xpath>
+ 				
+ 				
+ 			</field>
+		</record>
+		<record id="kw_product_purchase_name" model="ir.ui.view">
+            <field name="name">kw.product</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="purchase.view_product_supplier_inherit"/>
+            
+            <field name="arch" type="xml" >
+		
+				<separator string="Suppliers" position="attributes">
+                    <attribute name="string">Facilitators Goods Rate</attribute>
+				</separator>
+				
+				<field name="seller_ids" position='attributes'>
+                    <attribute name="string">Facilitators</attribute>
+                    <attribute name="domain">[('supplier','=',True)]</attribute>
+ 				</field>
+            	
+    
+ 				
+		</field>
+		</record>
+		
+		
+		<record id="product.product_normal_action" model="ir.actions.act_window">
+            <field name="name">Goods Details</field>
+		</record>	
+
+
+</data>	
+</openerp>
+

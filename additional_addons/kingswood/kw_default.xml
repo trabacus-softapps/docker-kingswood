@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+	<data>
+
+
+
+			<!--	*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.
+							Scheduler to create Request for Phone call 	
+			*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. 
+			
+		  <record forcecreate="True" id="scheduler_create_invoice" model="ir.cron">
+				<field name="name">Scheduler Create Invoice</field>
+				<field eval="True" name="active" />
+				<field name="user_id" ref="base.user_root" />
+				<field name="interval_number">1</field>
+				<field name="interval_type">days</field>
+				<field name="numbercall">-1</field>
+				<field eval="True" name="doall" />
+				<field eval="'stock.picking.out'" name="model" />
+				<field eval="'get_invoice'" name="function" />
+				<field eval="'()'" name="args" />
+			</record>
+			-->
+			<!--	*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.
+							Scheduler to Merge INvoice(Handling Charges)
+			*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. -->
+			
+		  <record forcecreate="True" id="scheduler_merge_invoice" model="ir.cron">
+				<field name="name">Scheduler Merge Suppliers Invoice</field>
+				<field eval="False" name="active" />
+				<field name="user_id" ref="base.user_root" />
+				<field name="interval_number">1</field>
+				<field name="interval_type">months</field>
+				<field name="numbercall">-1</field>
+				<field eval="True" name="doall" />
+				<field eval="'account.invoice'" name="model" />
+				<field eval="'do_merge_facilitator'" name="function" />
+				<field eval='(False,False,{"inv":"sup"})' name="args"/>
+			</record>
+
+		  <record forcecreate="True" id="scheduler_merge_logistic_invoice" model="ir.cron">
+				<field name="name">Scheduler Merge Logistic Invoice</field>
+				<field eval="False" name="active" />
+				<field name="user_id" ref="base.user_root" />
+				<field name="interval_number">1</field>
+				<field name="interval_type">months</field>
+				<field name="numbercall">-1</field>
+				<field eval="True" name="doall" />
+				<field eval="'account.invoice'" name="model" />
+				<field eval="'do_merge_facilitator'" name="function" />
+				<field eval='(False,False,{"inv":"logistic"})' name="args"/>
+			</record>
+						
+		  <record forcecreate="True" id="scheduler_merge_old_sup_invoice" model="ir.cron">
+				<field name="name">Scheduler Merge Old Invoice</field>
+				<field eval="False" name="active" />
+				<field name="user_id" ref="base.user_root" />
+				<field name="interval_number">1</field>
+				<field name="interval_type">months</field>
+				<field name="numbercall">-1</field>
+				<field eval="True" name="doall" />
+				<field eval="'account.invoice'" name="model" />
+				<field eval="'do_merge_old_invoice'" name="function" />
+				<field eval='(False,False,{"inv":"sup"})' name="args"/>
+			</record>			
+			
+		  <record forcecreate="True" id="scheduler_merge_old_logistic_invoice" model="ir.cron">
+				<field name="name">Scheduler Merge Old Invoice</field>
+				<field eval="False" name="active" />
+				<field name="user_id" ref="base.user_root" />
+				<field name="interval_number">1</field>
+				<field name="interval_type">months</field>
+				<field name="numbercall">-1</field>
+				<field eval="True" name="doall" />
+				<field eval="'account.invoice'" name="model" />
+				<field eval="'do_merge_old_invoice'" name="function" />
+				<field eval='(False,False,{"inv":"logistic"})' name="args"/>
+			</record>				
+			<!--	*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.
+							Scheduler to Create Facilitator Invoice 
+			*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. -->
+			
+		  <record forcecreate="True" id="scheduler_sup_inv_invoice_ka_out" model="ir.cron">
+				<field name="name">Scheduler Create Facilitator Invoice OUT KA</field>
+				<field eval="False" name="active" />
+				<field name="user_id" ref="base.user_root" />
+				<field name="interval_number">1</field>
+				<field name="interval_type">weeks</field>
+				<field name="numbercall">-1</field>
+				<field eval="False" name="doall" />
+				<field eval="'account.invoice'" name="model" />
+				<field eval="'create_facilitator_invoice'" name="function" />
+		  	<field eval='(False,False,{"state":"Karnataka"})' name="args"/>
+		  		<!--<field eval="'(False,False,{'state':'Karnataka'})'" name="args"/>-->
+			</record>
+					
+		
+	<!-- 	  <record forcecreate="True" id="scheduler_sup_inv_invoice_ka_in" model="ir.cron">
+				<field name="name">Scheduler Create Facilitator Invoice IN KA</field>
+				<field eval="True" name="active" />
+				<field name="user_id" ref="base.user_root" />
+				<field name="interval_number">1</field>
+				<field name="interval_type">weeks</field>
+				<field name="numbercall">-1</field>
+				<field eval="False" name="doall" />
+				<field eval="'account.invoice'" name="model" />
+				<field eval="'create_facilitator_invoice_in'" name="function" />
+				<field eval="'()'" name="args"/>
+			</record>	 -->			
+				
+		  <record forcecreate="True" id="scheduler_sup_inv_invoice_tn" model="ir.cron">
+				<field name="name">Scheduler Create Facilitator Invoice TN</field>
+				<field eval="False" name="active" />
+				<field name="user_id" ref="base.user_root" />
+				<field name="interval_number">15</field>
+				<field name="interval_type">days</field>
+				<field name="numbercall">-1</field>
+				<field eval="False" name="doall" />
+				<field eval="'account.invoice'" name="model" />
+				<field eval="'create_facilitator_invoice'" name="function" />
+		  	<field eval='(False,False,{"state":"Tamil Nadu"})' name="args"/>
+			</record>	
+		
+		
+			<!--	*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.
+							Scheduler to Send Daily Dispatch Mail 
+			*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. -->
+			
+		  <record forcecreate="True" id="daily_dispatch_mail" model="ir.cron">
+				<field name="name">Send Daily Dispatch Mail</field>
+				<field eval="True" name="active" />
+				<field name="user_id" ref="base.user_root" />
+				<field name="interval_number">1</field>
+				<field name="interval_type">days</field>
+				<field name="numbercall">-1</field>
+				<field eval="True" name="doall" />
+				<field eval="'stock.picking.out'" name="model" />
+				<field eval="'send_daily_dispatch_mail'" name="function" />
+				<field eval="'()'" name="args" />
+			</record>			
+
+			<!--	*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.
+							Scheduler to Send Monthly Dispatch Mail 
+			*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. -->
+			
+		  <record forcecreate="True" id="monthly_dispatch_mail" model="ir.cron">
+				<field name="name">Send Monthly Dispatch Mail</field>
+				<field eval="True" name="active" />
+				<field name="user_id" ref="base.user_root" />
+				<field name="interval_number">1</field>
+				<field name="interval_type">days</field>
+				<field name="numbercall">-1</field>
+				<field eval="True" name="doall" />
+				<field eval="'stock.picking.out'" name="model" />
+				<field eval="'send_monthly_dispatch_mail'" name="function" />
+				<field eval="'()'" name="args" />
+			</record>	
+			
+			<!--	*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.
+							Scheduler to Send Daily Facilitator Check 
+			*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. -->
+			
+		  <record forcecreate="True" id="daily_facilitator_mail" model="ir.cron">
+				<field name="name">Send Daily Facilitator Mail</field>
+				<field eval="False" name="active" />
+				<field name="user_id" ref="base.user_root" />
+				<field name="interval_number">1</field>
+				<field name="interval_type">days</field>
+				<field name="numbercall">-1</field>
+				<field eval="True" name="doall" />
+				<field eval="'stock.picking.out'" name="model" />
+				<field eval="'send_daily_facilitator_mail'" name="function" />
+				<field eval="'()'" name="args" />
+			</record>			
+							
+			
+		
+	</data>
+</openerp>

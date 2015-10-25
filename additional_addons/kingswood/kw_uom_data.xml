@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="1">
+        <!--
+    Resource: product.uom.categ
+    -->
+        
+       
+        <record id="product_uom_categ_mt" model="product.uom.categ">
+            <field name="name">MetricTones</field>
+        </record>
+    
+     <!--
+            Resource: product.uom
+        -->
+        
+
+	<record id="product_uom_mt" model="product.uom">
+            <field name="category_id" ref="product_uom_categ_mt"/>
+            <field name="name">MT(s)</field>
+            <field name="factor" eval="1.0"/>
+            <field name="rounding" eval="1.0"/>
+    </record>
+    
+
+</data>
+</openerp>
+	

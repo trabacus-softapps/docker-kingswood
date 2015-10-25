@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+    <record id="del_refund_form" model="ir.ui.view">
+        <field name="name">kw.refund</field>
+        <field name="model">kw.refund</field>
+        <field name="arch" type="xml">
+            <form string="Refund">
+                <group col="4" colspan="2">
+                    <field name="pdb_rejection_qty"/>
+                    <field name="normal_rejection_qty" domain="[('supplier','=',True)]"/>
+                    <field name="amount" required="1"/>
+                    <button name="refund_save" type="object" string="Create Refund"/>
+                </group>
+                
+                
+            </form>
+        </field>
+    </record>
+    
+    
+        <record model="ir.actions.act_window" id="del_refund_action">
+        <field name="name">Paying Agent Refund</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">kw.refund</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+        
+
+    </data>
+</openerp>

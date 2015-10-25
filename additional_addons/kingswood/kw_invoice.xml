@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+    	
+        <record id="action_kw_server1" model="ir.actions.server">
+            <field name="name">Create Customer Invoice</field>
+            <field name="model_id" ref="model_stock_picking_out"/>
+            <field name="state">code</field>
+            <field name="code">self.get_invoice(cr, uid, context.get('active_ids', []),True, context=context)</field>
+            <field name="groups_id" eval="[(4,ref('kingswood.kw_admin_service'))]"/> 
+        </record>
+        
+        <record id="ir_open_kw_wizard" model="ir.values">
+            <field eval="'client_action_multi'" name="key2"/>
+			<field eval="'stock.picking.out'" name="model"/>
+            <field name="name">Create Customer Invoice</field>
+            <field eval="'ir.actions.server,%d'%action_kw_server1" name="value"/>
+            <field name="groups_id" eval="[(4,ref('kingswood.kw_admin_service'))]"/> 
+        </record> 
+        
+        
+         <record id="supplier_action_kw_server" model="ir.actions.server">
+            <field name="name">Create Supplier Invoice</field>
+            <field name="model_id" ref="model_stock_picking_out"/>
+            <field name="state">code</field>
+            <field name="code">self.get_supplier_invoice(cr, uid, context.get('active_ids', []),True, context=context)</field>
+            <field name="groups_id" eval="[(4,ref('kingswood.kw_admin_service'))]"/> 
+        </record>
+        
+        <record id="ir_open_kw_supp_wizard" model="ir.values">
+            <field eval="'client_action_multi'" name="key2"/>
+			<field eval="'stock.picking.out'" name="model"/>
+            <field name="name">Create Supplier Invoice</field>
+            <field name="domain_force">[('type','=','in_invoice')]</field>
+            <field eval="'ir.actions.server,%d'%supplier_action_kw_server" name="value"/>
+            <field name="groups_id" eval="[(4,ref('kingswood.kw_admin_service'))]"/> 
+        </record> 
+        
+        
+        
+<!--        <delete model="ir.values" search="[('name','=','Duplicate'),('model','=','stock.picking.out')]" />
+-->        
+        <record id="action_kw_incoming_server" model="ir.actions.server">
+            <field name="name">Create Incoming Shipment Invoice</field>
+            <field name="model_id" ref="model_stock_picking_in"/>
+            <field name="state">code</field>
+            <field name="code">self.get_invoice(cr, uid, context.get('active_ids', []),True, context=context)</field>
+        </record>
+        
+        <record id="ir_open_kw_in_wizard" model="ir.values">
+            <field eval="'client_action_multi'" name="key2"/>
+			<field eval="'stock.picking.in'" name="model"/>
+            <field name="name">Create Incoming Shipment Invoice</field>
+            <field eval="'ir.actions.server,%d'%action_kw_incoming_server" name="value"/>
+        </record>
+        
+<!--        For cancelling and validating the invoices again  -->
+        <record id="action_kw_cancel_invoice_server" model="ir.actions.server">
+            <field name="name">Re Validate the Invoice</field>
+            <field name="model_id" ref="model_account_invoice"/>
+            <field name="state">code</field>
+            <field name="code">self.server_action_validate(cr, uid, context.get('active_ids', []),context=context)</field>
+        </record>
+        
+        <record id="ir_open_cancel_invoice_wizard" model="ir.values">
+            <field eval="'client_action_multi'" name="key2"/>
+            <field eval="'account.invoice'" name="model"/>
+            <field name="name">Re Validate the Invoice</field>
+            <field eval="'ir.actions.server,%d'%action_kw_cancel_invoice_server" name="value"/>
+        </record>
+ 	
+ 	
+       
+        
+    </data>
+</openerp>

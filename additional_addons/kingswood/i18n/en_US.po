@@ -1,0 +1,1337 @@
+# Translation of OpenERP Server.
+# This file contains the translation of the following modules:
+#	* kingswood
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: OpenERP Server 7.0-20130709-231045\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-12-04 09:19+0000\n"
+"PO-Revision-Date: 2013-12-04 09:19+0000\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: kingswood
+#: model:res.groups,name:kingswood.kw_freight_service
+msgid "KW_Freight"
+msgstr "KW_Freight"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "DELIVERY CHALLAN - CUM - FREIGHT ADVICE"
+msgstr "DELIVERY CHALLAN - CUM - FREIGHT ADVICE"
+
+#. module: kingswood
+#: field:account.invoice,destination:0
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "Destination"
+msgstr "Destination"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Do you really   want  to confirm as it cannot be   cancelled. U need to contact Kingswood Administrator"
+msgstr "Do you really   want  to confirm as it cannot be   cancelled. U need to contact Kingswood Administrator"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "In transit"
+msgstr "In transit"
+
+#. module: kingswood
+#: model:ir.actions.act_window,help:kingswood.weighment_form_action
+#: model:ir.actions.act_window,help:kingswood.weighment_form_action1
+msgid "<p class=\"oe_view_nocontent_create\">\n"
+"                    Click to create new weighment\n"
+"                </p>\n"
+"            "
+msgstr "<p class=\"oe_view_nocontent_create\">\n"
+"                    Click to create new weighment\n"
+"                </p>\n"
+"            "
+
+#. module: kingswood
+#: view:kw.weighment:0
+#: view:stock.picking.out:0
+msgid "Group By..."
+msgstr "Group By..."
+
+#. module: kingswood
+#: field:res.users,role:0
+msgid "Role"
+msgstr "Role"
+
+#. module: kingswood
+#: constraint:product.supplierinfo:0
+msgid "Please avoid spam in Date !"
+msgstr "Please avoid spam in Date !"
+
+#. module: kingswood
+#: field:res.company,tin:0
+#: field:res.partner,tin_no:0
+msgid "Tin Number"
+msgstr "Tin Number"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:520
+#, python-format
+msgid "Add one product"
+msgstr "Add one product"
+
+#. module: kingswood
+#: field:del.sumwiz,partner_id:0
+#: selection:res.users,role:0
+msgid "Supplier"
+msgstr "Supplier"
+
+#. module: kingswood
+#: field:res.partner,pan_no:0
+msgid "Pan Number"
+msgstr "Pan Number"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "To Invoice"
+msgstr "To Invoice"
+
+#. module: kingswood
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "Loaded Quantity"
+msgstr "Loaded Quantity(MT)"
+
+#. module: kingswood
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "Unit of Measure"
+msgstr "Unit of Measure"
+
+#. module: kingswood
+#: view:account.invoice:0
+msgid "{'readonly': [('state','=','done')]}"
+msgstr "{'readonly': [('state','=','done')]}"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Work Order Number "
+msgstr "Work Order Number "
+
+#. module: kingswood
+#: field:product.supplierinfo,cust_price_ids:0
+msgid "Customer Price"
+msgstr "Customer Price"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_partner.py:31
+#, python-format
+msgid "warning"
+msgstr "warning"
+
+#. module: kingswood
+#: field:res.company,commodity:0
+msgid "Commodity Code"
+msgstr "Commodity Code"
+
+#. module: kingswood
+#: field:stock.picking,work_order:0
+msgid "Work Order No"
+msgstr "Work Order No"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:1397
+#, python-format
+msgid "Check  Quantity"
+msgstr "Check  Quantity"
+
+#. module: kingswood
+#: field:stock.picking.out,truck_no:0
+msgid "Vehicle Number"
+msgstr "Vehicle Number"
+
+#. module: kingswood
+#: view:kw.weighment:0
+msgid "Search Weighment"
+msgstr "Search Weighment"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Picking list"
+msgstr "Picking list"
+
+#. module: kingswood
+#: view:product.product:0
+msgid "[('supplier','=',True)]"
+msgstr "[('supplier','=',True)]"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_product.py:96
+#, python-format
+msgid " Product Rate For The customer \"%s\" The Date Entered \"%s\" Already Exist"
+msgstr " Product Rate For The customer \"%s\" The Date Entered \"%s\" Already Exist"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_kw_city
+msgid "kw.city"
+msgstr "kw.city"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:629
+#, python-format
+msgid "Invoice Already Created for the Selected Delivery Order"
+msgstr "Invoice Already Created for the Selected Delivery Order"
+
+#. module: kingswood
+#: view:kw.weighment:0
+#: field:kw.weighment,second_weight:0
+msgid "Second Weight"
+msgstr "Second Weight"
+
+#. module: kingswood
+#: field:kw.weighment,account_id:0
+msgid "Account"
+msgstr "Account"
+
+#. module: kingswood
+#: view:stock.move:0
+msgid "Goods UOS"
+msgstr "Goods UOS"
+
+#. module: kingswood
+#: view:kw.weighment:0
+#: field:kw.weighment,first_weight:0
+msgid "First Weight"
+msgstr "First Weight"
+
+#. module: kingswood
+#: view:kw.weighment:0
+msgid "Weighment Date"
+msgstr "Weighment Date"
+
+#. module: kingswood
+#: field:kw.refund,pdb_rejection_qty:0
+msgid "Pdb Rejection Quantity"
+msgstr "Pdb Rejection Quantity"
+
+#. module: kingswood
+#: field:kw.weighment,name:0
+msgid "Ticket No."
+msgstr "Ticket No."
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Delivery orders to invoice"
+msgstr "Delivery orders to invoice"
+
+#. module: kingswood
+#: field:kw.refund,amount:0
+msgid "Amount"
+msgstr "Amount"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Assigned Delivery Orders"
+msgstr "Assigned Delivery Orders"
+
+#. module: kingswood
+#: model:res.groups,name:kingswood.kw_depot_service
+msgid "KW_Depot"
+msgstr "KW_Depot"
+
+#. module: kingswood
+#: view:res.company:0
+msgid "E-sugam Information"
+msgstr "E-sugam Information"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Confirmed Delivery Orders"
+msgstr "Confirmed Delivery Orders"
+
+#. module: kingswood
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "Put in a new pack"
+msgstr "Put in a new pack"
+
+#. module: kingswood
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "Put in current pack"
+msgstr "Put in current pack"
+
+#. module: kingswood
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "Origin"
+msgstr "Origin"
+
+#. module: kingswood
+#: field:account.invoice.line,rejected_qty:0
+#: field:stock.move,rejected_qty:0
+msgid "Rejected Quantity"
+msgstr "Rejected Quantity"
+
+#. module: kingswood
+#: view:res.partner:0
+msgid "Reference"
+msgstr "Reference"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_stock_move
+msgid "Stock Move"
+msgstr "Stock Move"
+
+#. module: kingswood
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "New Pack"
+msgstr "New Pack"
+
+#. module: kingswood
+#: field:stock.picking,freight_advance:0
+#: field:stock.picking.out,freight_advance:0
+msgid "Freight Advance"
+msgstr "Freight Advance"
+
+#. module: kingswood
+#: field:kw.weighment,net_weight:0
+msgid "Net Weight"
+msgstr "Net Weight"
+
+#. module: kingswood
+#: field:kw.product.price,ef_date:0
+msgid "Effective Date"
+msgstr "Effective Date"
+
+#. module: kingswood
+#: model:ir.ui.menu,name:kingswood.weighment_menu_id
+#: view:kw.weigh.bridge:0
+#: view:kw.weighment:0
+msgid "Weighment"
+msgstr "Weighment"
+
+#. module: kingswood
+#: view:kw.weighment:0
+msgid "Ticket Number"
+msgstr "Ticket Number"
+
+#. module: kingswood
+#: field:stock.move,supplier_id:0
+msgid "Suppliers"
+msgstr "Suppliers"
+
+#. module: kingswood
+#: field:account.invoice,pa_no:0
+msgid "PA Number"
+msgstr "PA Number"
+
+#. module: kingswood
+#: view:product.category:0
+msgid "All Goods"
+msgstr "All Goods"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_res_partner
+msgid "Partner"
+msgstr "Partner"
+
+#. module: kingswood
+#: model:ir.module.category,name:kingswood.kw_module_category
+msgid "Kingswood"
+msgstr "Kingswood"
+
+#. module: kingswood
+#: view:account.invoice:0
+#: field:account.invoice,delivery_orders_ids:0
+#: field:account.invoice,supp_delivery_orders_ids:0
+#: model:ir.actions.act_window,name:kingswood.kw_customer_action
+#: model:ir.actions.act_window,name:kingswood.kw_stock_action
+#: model:ir.model,name:kingswood.model_stock_picking_out
+#: model:ir.ui.menu,name:kingswood.kw_menu_action_customer_tree
+#: model:ir.ui.menu,name:kingswood.kw_menu_action_picking_tree
+#: view:stock.picking.out:0
+msgid "Delivery Orders"
+msgstr "Delivery Challan"
+
+#. module: kingswood
+#: view:res.partner:0
+msgid "(In kgs)"
+msgstr "(In kgs)"
+
+#. module: kingswood
+#: view:product.product:0
+msgid "Description for Paying Agents"
+msgstr "Description for Facilitators"
+
+#. module: kingswood
+#: field:stock.picking,driver_name:0
+msgid "Driver Name"
+msgstr "Driver Name"
+
+#. module: kingswood
+#: field:stock.picking,city_id:0
+#: field:stock.picking.out,city_id:0
+msgid "From"
+msgstr "From"
+
+#. module: kingswood
+#: view:product.product:0
+#: view:product.supplierinfo:0
+msgid "Goods Price"
+msgstr "Goods Price"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Confirm"
+msgstr "Confirm"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Invoice Control"
+msgstr "Invoice Control"
+
+#. module: kingswood
+#: field:res.partner,sup_num:0
+msgid "Supplier Reference"
+msgstr "Supplier Reference"
+
+#. module: kingswood
+#: field:stock.picking.out,driver_name:0
+msgid "Transporter/Owner Name"
+msgstr "Transporter/Owner Name"
+
+#. module: kingswood
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "Split in Serial Number"
+msgstr "Split in Serial Number"
+
+#. module: kingswood
+#: model:ir.actions.act_window,name:kingswood.weighment_form_action1
+#: model:ir.ui.menu,name:kingswood.weighment_form_action_id1
+msgid "General Weighment"
+msgstr "General Weighment"
+
+#. module: kingswood
+#: field:kw.weighment,state:0
+msgid "State"
+msgstr "State"
+
+#. module: kingswood
+#: view:product.product:0
+#: field:product.supplierinfo,cust_product_id:0
+msgid "Goods"
+msgstr "Goods"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_stock_inventory
+msgid "Inventory"
+msgstr "Inventory"
+
+#. module: kingswood
+#: field:stock.picking,freight_total:0
+#: field:stock.picking.out,freight_total:0
+msgid "Frieght Total"
+msgstr "Frieght Total"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_stock_picking
+#: view:stock.picking.out:0
+msgid "Picking List"
+msgstr "Picking List"
+
+#. module: kingswood
+#: view:del.sumwiz:0
+#: view:kw.weighment:0
+msgid "Print"
+msgstr "Print"
+
+#. module: kingswood
+#: view:res.partner:0
+msgid "Abbreviated Form"
+msgstr "Abbreviated Form"
+
+#. module: kingswood
+#: view:kw.refund:0
+msgid "Create Refund"
+msgstr "Create Refund"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:504
+#: code:addons/kingswood/kw_stock.py:552
+#, python-format
+msgid "Add only one product"
+msgstr "Add only one product"
+
+#. module: kingswood
+#: field:kw.refund,normal_rejection_qty:0
+msgid "Normal Rejection Quantity"
+msgstr "Normal Rejection Quantity"
+
+#. module: kingswood
+#: field:stock.picking,truck_no:0
+msgid "Vehicle No"
+msgstr "Vehicle No"
+
+#. module: kingswood
+#: field:stock.picking,freight_balance:0
+#: field:stock.picking.out,freight_balance:0
+msgid "Frieght Balance"
+msgstr "Frieght Balance"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Goods Accepted"
+msgstr "Goods Accepted"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:751
+#, python-format
+msgid "Check Goods Price, Selected Supplier \"%s\" Do Not Have Rate for \"%s\" In The Goods Master"
+msgstr "Check Goods Price, Selected Supplier \"%s\" Do Not Have Rate for \"%s\" In The Goods Master"
+
+#. module: kingswood
+#: field:stock.move,hide_fields:0
+#: field:stock.picking,hide_fields:0
+#: field:stock.picking,user_log:0
+#: field:stock.picking.out,hide_fields:0
+#: field:stock.picking.out,user_log:0
+msgid "Permission"
+msgstr "Permission"
+
+#. module: kingswood
+#: view:product.supplierinfo:0
+msgid "Paying Agents Unit of Measure"
+msgstr "Facilitators Unit of Measure"
+
+#. module: kingswood
+#: field:stock.picking,freight_deduction:0
+#: field:stock.picking.out,freight_deduction:0
+msgid "Frieght Deduction"
+msgstr "Frieght Deduction"
+
+#. module: kingswood
+#: field:kw.weighment,material_id:0
+msgid "Material"
+msgstr "Material"
+
+#. module: kingswood
+#: field:res.company,url:0
+msgid "Url"
+msgstr "Url"
+
+#. module: kingswood
+#: view:product.product:0
+msgid "Customer goods Code"
+msgstr "Customer goods Code"
+
+#. module: kingswood
+#: field:account.voucher,freight:0
+msgid "Is Freight"
+msgstr "Is Freight"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_kw_freight
+msgid "kw.freight"
+msgstr "kw.freight"
+
+#. module: kingswood
+#: selection:res.users,role:0
+msgid "Representative"
+msgstr "Representative"
+
+#. module: kingswood
+#: model:ir.ui.menu,name:kingswood.del_sum_id
+#: model:ir.ui.menu,name:kingswood.supp_del_sum_id
+msgid "Report"
+msgstr "Report"
+
+#. module: kingswood
+#: view:product.product:0
+msgid "Pricelist"
+msgstr "Pricelist"
+
+#. module: kingswood
+#: model:ir.ui.menu,name:kingswood.menu_purchase_config_purchase
+#: model:ir.ui.menu,name:kingswood.weighment_configure_id
+msgid "Configuration"
+msgstr "Configuration"
+
+#. module: kingswood
+#: view:product.product:0
+#: selection:product.supplierinfo,type:0
+#: view:product.template:0
+msgid "Paying Agents"
+msgstr "Facilitators"
+
+#. module: kingswood
+#: field:stock.move,deduction_amt:0
+msgid "Deduction Amount"
+msgstr "Deduction Amount"
+
+#. module: kingswood
+#: code:addons/kingswood/amount_to_text_softapps.py:121
+#, python-format
+msgid "Number too large '%d', can not translate it"
+msgstr "Number too large '%d', can not translate it"
+
+#. module: kingswood
+#: code:addons/kingswood/amount_to_text_softapps.py:125
+#, python-format
+msgid "no translation function found for lang: '%s'"
+msgstr "no translation function found for lang: '%s'"
+
+#. module: kingswood
+#: view:product.product:0
+msgid "Goods Type"
+msgstr "Goods Type"
+
+#. module: kingswood
+#: view:account.invoice:0
+msgid "Paying Agent Invoice Number"
+msgstr "Facilitator Invoice Number"
+
+#. module: kingswood
+#: model:product.uom.categ,name:kingswood.product_uom_categ_mt
+msgid "MetricTones"
+msgstr "MetricTones"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Order Date"
+msgstr "Order Date"
+
+#. module: kingswood
+#: field:stock.picking.out,work_order:0
+msgid "Work Order Number"
+msgstr "Work Order Number"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_procurement_order
+msgid "Procurement"
+msgstr "Procurement"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_partner.py:31
+#, python-format
+msgid "Name and mobile number already exist"
+msgstr "Name and mobile number already exist"
+
+#. module: kingswood
+#: field:res.company,toll_free:0
+msgid "Toll Free No."
+msgstr "Toll Free No."
+
+#. module: kingswood
+#: field:stock.picking,esugam_no:0
+msgid "eSugam No"
+msgstr "eSugam No"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:908
+#, python-format
+msgid "Check Goods Price, Selected Customer Do Not Have Rate In The Goods Master "
+msgstr "Check Goods Price, Selected Customer Do Not Have Rate In The Goods Master "
+
+#. module: kingswood
+#: field:kw.weighment,weight_dummy1:0
+msgid "Weight"
+msgstr "Weight"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_product_template
+msgid "Product Template"
+msgstr "Product Template"
+
+#. module: kingswood
+#: view:account.invoice:0
+#: view:procurement.order:0
+#: view:product.product:0
+#: view:stock.inventory:0
+#: view:stock.move:0
+#: view:stock.picking.in:0
+#: view:stock.picking.out:0
+msgid "Goods Details"
+msgstr "Goods Details"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:1380
+#, python-format
+msgid "Check Unloaded and Rejected Quantity"
+msgstr "Check Unloaded and Rejected Quantity"
+
+#. module: kingswood
+#: field:stock.move,unloaded_qty:0
+msgid "Delivered Quantity"
+msgstr "Delivered Quantity(MT)"
+
+#. module: kingswood
+#: view:kw.weighment:0
+msgid "WeighBridge"
+msgstr "WeighBridge"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_kw_weighment
+msgid "kw.weighment"
+msgstr "kw.weighment"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Delivery orders already processed"
+msgstr "Delivery orders already processed"
+
+#. module: kingswood
+#: field:res.partner,freight:0
+msgid "Freight"
+msgstr "Freight"
+
+#. module: kingswood
+#: field:stock.picking,freight_charge:0
+msgid "Freight Charge"
+msgstr "Freight Rate/MT"
+
+#. module: kingswood
+#: field:del.sumwiz,st_date:0
+msgid "Start Date"
+msgstr "Start Date"
+
+#. module: kingswood
+#: model:ir.ui.menu,name:kingswood.weigh_root_menu_id
+#: field:kw.weighment,weight_dummy:0
+msgid "Weighing Scale"
+msgstr "Weighing Scale"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:475
+#, python-format
+msgid "Please Enter the Valid Qty in Unloaded and Rejected"
+msgstr "Please Enter the Valid Qty in Unloaded and Rejected"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_kw_weigh_bridge
+msgid "kw.weigh.bridge"
+msgstr "kw.weigh.bridge"
+
+#. module: kingswood
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "Stock Moves"
+msgstr "Stock Moves"
+
+#. module: kingswood
+#: field:res.company,username:0
+msgid "UserName"
+msgstr "UserName"
+
+#. module: kingswood
+#: constraint:product.template:0
+msgid "Product Rate For The Paying Agent Already Exist"
+msgstr "Product Rate For The Facilitator Already Exist"
+
+#. module: kingswood
+#: selection:account.invoice.line,state:0
+msgid "Delivered"
+msgstr "Delivered"
+
+#. module: kingswood
+#: code:addons/kingswood/wizard/kw_refund.py:30
+#, python-format
+msgid "Enter the Amount"
+msgstr "Enter the Amount"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:722
+#, python-format
+msgid "Delivery Order \"%s\" Should Be In Delivered State"
+msgstr "Delivery Order \"%s\" Should Be In Delivered State"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:948
+#: code:addons/kingswood/kw_stock.py:1350
+#, python-format
+msgid "Check Goods Price, Selected Customer Do Not Have Rate In The Goods Master"
+msgstr "Check Goods Price, Selected Customer Do Not Have Rate In The Goods Master"
+
+#. module: kingswood
+#: selection:account.invoice.line,state:0
+#: selection:kw.weighment,state:0
+#: view:stock.picking.out:0
+msgid "Draft"
+msgstr "Draft"
+
+#. module: kingswood
+#: model:res.groups,name:kingswood.kw_customer_service
+msgid "KW_Customer"
+msgstr "KW_Customer"
+
+#. module: kingswood
+#: selection:kw.weighment,state:0
+msgid "Pending"
+msgstr "Pending"
+
+#. module: kingswood
+#: field:account.invoice.line,state:0
+#: view:stock.picking.out:0
+msgid "Status"
+msgstr "Status"
+
+#. module: kingswood
+#: view:product.product:0
+#: view:res.partner:0
+#: field:res.partner,customer_ids:0
+msgid "Customers"
+msgstr "Customers"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:307
+#, python-format
+msgid "Please Enter the Valid Loaded Qty"
+msgstr "Please Enter the Valid Loaded Qty"
+
+#. module: kingswood
+#: field:res.partner,tol_rate:0
+msgid "Rate/Kg"
+msgstr "Rate/Kg"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_product.py:96
+#: code:addons/kingswood/kw_product.py:102
+#: code:addons/kingswood/kw_product.py:348
+#: code:addons/kingswood/kw_product.py:354
+#: code:addons/kingswood/kw_stock.py:307
+#: code:addons/kingswood/kw_stock.py:475
+#: code:addons/kingswood/kw_stock.py:504
+#: code:addons/kingswood/kw_stock.py:520
+#: code:addons/kingswood/kw_stock.py:552
+#: code:addons/kingswood/kw_stock.py:629
+#: code:addons/kingswood/kw_stock.py:660
+#: code:addons/kingswood/kw_stock.py:722
+#: code:addons/kingswood/kw_stock.py:751
+#: code:addons/kingswood/kw_stock.py:908
+#: code:addons/kingswood/kw_stock.py:948
+#: code:addons/kingswood/kw_stock.py:1350
+#: code:addons/kingswood/kw_stock.py:1380
+#: code:addons/kingswood/kw_stock.py:1397
+#: code:addons/kingswood/wizard/kw_refund.py:28
+#: code:addons/kingswood/wizard/kw_refund.py:30
+#, python-format
+msgid "Warning"
+msgstr "Warning"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_kw_product_price
+msgid "kw.product.price"
+msgstr "kw.product.price"
+
+#. module: kingswood
+#: field:kw.product.price,cust_info_id:0
+#: field:kw.product.price,supp_info_id:0
+msgid "unknown"
+msgstr "unknown"
+
+#. module: kingswood
+#: model:ir.actions.act_window,name:kingswood.del_refund_action
+msgid "Paying Agent Refund"
+msgstr "Facilitator Refund"
+
+#. module: kingswood
+#: model:ir.actions.act_window,name:kingswood.weighment_form_action
+#: model:ir.ui.menu,name:kingswood.weighment_form_action_id
+msgid "Incoming Shipment"
+msgstr "Incoming Shipment"
+
+#. module: kingswood
+#: view:kw.weighment:0
+#: field:kw.weighment,user_id:0
+msgid "User"
+msgstr "User"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_product_supplierinfo
+msgid "Information about a product supplier"
+msgstr "Information about a product supplier"
+
+#. module: kingswood
+#: field:account.invoice,transporter:0
+#: view:stock.picking.out:0
+msgid "Transporter Name"
+msgstr "Transporter Name"
+
+#. module: kingswood
+#: model:ir.actions.act_window,name:kingswood.kw_city_action
+#: model:ir.ui.menu,name:kingswood.kw_city_action_id
+msgid "Cities"
+msgstr "Cities"
+
+#. module: kingswood
+#: field:product.template,cst_taxes_id:0
+msgid "Customer Taxes(CST)"
+msgstr "Customer Taxes(CST)"
+
+#. module: kingswood
+#: view:res.company:0
+#: view:res.partner:0
+msgid "[('country_id', '=',country_id)]"
+msgstr "[('country_id', '=',country_id)]"
+
+#. module: kingswood
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "Traceability"
+msgstr "Traceability"
+
+#. module: kingswood
+#: field:stock.picking.out,esugam_no:0
+msgid "E-SUGAM /M-SUGAM Number"
+msgstr "E-SUGAM /M-SUGAM Number"
+
+#. module: kingswood
+#: field:kw.weighment,service_charge:0
+msgid "Service Charge"
+msgstr "Service Charge"
+
+#. module: kingswood
+#: field:kw.weighment,vehicle_reg_no:0
+msgid "Vechile Register Number"
+msgstr "Vechile Register Number"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_res_company
+msgid "Companies"
+msgstr "Companies"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "e.g. PO0032"
+msgstr "e.g. PO0032"
+
+#. module: kingswood
+#: model:res.groups,name:kingswood.kw_admin_service
+msgid "KW_Admin"
+msgstr "KW_Admin"
+
+#. module: kingswood
+#: field:kw.weighment,weighbridge_id:0
+msgid "Weigh Bridge"
+msgstr "Weigh Bridge"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Pay Freight"
+msgstr "Pay Freight"
+
+#. module: kingswood
+#: view:kw.refund:0
+#: view:stock.picking.out:0
+msgid "Refund"
+msgstr "Refund"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_account_invoice_tax
+msgid "Invoice Tax"
+msgstr "Invoice Tax"
+
+#. module: kingswood
+#: field:kw.weigh.bridge,name:0
+msgid "Code"
+msgstr "Code"
+
+#. module: kingswood
+#: field:product.supplierinfo,supp_price_ids:0
+msgid "Supplier Price"
+msgstr "Supplier Price"
+
+#. module: kingswood
+#: view:product.product:0
+msgid "Goods Manager"
+msgstr "Goods Manager"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_account_voucher
+msgid "Accounting Voucher"
+msgstr "Accounting Voucher"
+
+#. module: kingswood
+#: field:res.partner,tol_qty:0
+msgid "Tolerance Qty/MT in Kgs"
+msgstr "Tolerance Qty/MT in Kgs"
+
+#. module: kingswood
+#: selection:kw.weighment,type:0
+msgid "General"
+msgstr "General"
+
+#. module: kingswood
+#: view:product.supplierinfo:0
+msgid "Paying Agents Goods Code"
+msgstr "Facilitators Goods Code"
+
+#. module: kingswood
+#: view:product.product:0
+msgid "The prices below will only be taken into account when your pricelist is set as based on supplier prices."
+msgstr "The prices below will only be taken into account when your pricelist is set as based on supplier prices."
+
+#. module: kingswood
+#: selection:kw.weighment,state:0
+#: view:stock.picking.out:0
+msgid "Done"
+msgstr "Done"
+
+#. module: kingswood
+#: field:account.invoice,amt_txt:0
+#: field:account.invoice.line,qty_txt:0
+msgid "Total text"
+msgstr "Total text"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_account_invoice
+msgid "Invoice"
+msgstr "Invoice"
+
+#. module: kingswood
+#: field:stock.picking,date_function:0
+#: view:stock.picking.out:0
+#: field:stock.picking.out,date_function:0
+msgid "Delivery Date"
+msgstr "Creation Date"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Cancel"
+msgstr "Cancel"
+
+#. module: kingswood
+#: view:kw.weighment:0
+msgid "Vehicle Register Number"
+msgstr "Vehicle Register Number"
+
+#. module: kingswood
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "Split"
+msgstr "Split"
+
+#. module: kingswood
+#: view:del.sumwiz:0
+#: view:kw.city:0
+#: field:kw.city,name:0
+msgid "City"
+msgstr "City"
+
+#. module: kingswood
+#: field:kw.freight,no_freight:0
+msgid "With Freight"
+msgstr "With Freight"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_stock_picking_in
+msgid "Incoming Shipments"
+msgstr "Incoming Shipments"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Add an internal note..."
+msgstr "Add an internal note..."
+
+#. module: kingswood
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "Scrap"
+msgstr "Scrap"
+
+#. module: kingswood
+#: view:stock.inventory:0
+msgid "Goods Unit of Measures"
+msgstr "Goods Unit of Measures"
+
+#. module: kingswood
+#: view:account.invoice:0
+#: view:account.voucher:0
+#: field:stock.picking,paying_agent_id:0
+#: view:stock.picking.in:0
+#: field:stock.picking.out,paying_agent_id:0
+msgid "Paying Agent"
+msgstr "Facilitator"
+
+#. module: kingswood
+#: model:ir.actions.act_window,name:account.action_invoice_tree4
+msgid "Paying Agents Refunds"
+msgstr "Facilitator Debit Note"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_account_invoice_line
+msgid "Invoice Line"
+msgstr "Invoice Line"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "E-SUGAM Number"
+msgstr "E-SUGAM Number"
+
+#. module: kingswood
+#: model:ir.actions.server,name:kingswood.action_kw_server
+msgid "Create Invoice"
+msgstr "Create Invoice"
+
+#. module: kingswood
+#: code:addons/kingswood/wizard/kw_refund.py:28
+#, python-format
+msgid "You Should Either Enter PDB or Normal Quantity"
+msgstr "You Should Either Enter PDB or Normal Quantity"
+
+#. module: kingswood
+#: view:stock.move:0
+#: view:stock.picking.out:0
+msgid "Details"
+msgstr "Details"
+
+#. module: kingswood
+#: view:product.product:0
+msgid "Customer Information"
+msgstr "Customer Information"
+
+#. module: kingswood
+#: view:kw.weighment:0
+#: field:kw.weighment,party_name:0
+msgid "Party Name"
+msgstr "Party Name"
+
+#. module: kingswood
+#: model:ir.actions.act_window,name:kingswood.del_summary_action
+#: model:ir.actions.act_window,name:kingswood.del_summary_action_supplier
+#: model:ir.ui.menu,name:kingswood.del_summary_supplier_id
+#: model:ir.ui.menu,name:kingswood.wiz_action_id
+msgid "Paying Agent Statement"
+msgstr "Facilitator Statement"
+
+#. module: kingswood
+#: view:kw.weighment:0
+#: field:kw.weighment,partner_id:0
+msgid "Party"
+msgstr "Party"
+
+#. module: kingswood
+#: selection:res.users,role:0
+msgid "Depot"
+msgstr "Depot"
+
+#. module: kingswood
+#: selection:kw.weighment,type:0
+msgid "Stock"
+msgstr "Stock"
+
+#. module: kingswood
+#: model:ir.actions.act_window,name:kingswood.weighbridge_form_action
+#: model:ir.ui.menu,name:kingswood.weighbridge_form_action_id1
+msgid "Weigh Bridges"
+msgstr "Weigh Bridges"
+
+#. module: kingswood
+#: view:res.partner:0
+msgid "Transit Allowance Qty/MT"
+msgstr "Transit Allowance Qty/MT"
+
+#. module: kingswood
+#: model:ir.actions.act_window,help:kingswood.weighbridge_form_action
+msgid "<p class=\"oe_view_nocontent_create\">\n"
+"                    Click to create new weigh bridge\n"
+"                </p>\n"
+"            "
+msgstr "<p class=\"oe_view_nocontent_create\">\n"
+"                    Click to create new weigh bridge\n"
+"                </p>\n"
+"            "
+
+#. module: kingswood
+#: field:account.invoice,agreement_date:0
+msgid "P.A Date"
+msgstr "P.A Date"
+
+#. module: kingswood
+#: field:kw.weighment,type:0
+#: field:product.supplierinfo,type:0
+msgid "Type"
+msgstr "Type"
+
+#. module: kingswood
+#: view:res.partner:0
+msgid "{'required': [('customer','!=',False)]}"
+msgstr "{'required': [('customer','!=',False)]}"
+
+#. module: kingswood
+#: view:product.supplierinfo:0
+msgid "Paying Agents Goods Name"
+msgstr "Facilitators Goods Name"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Transporter Contact"
+msgstr "Transporter Contact"
+
+#. module: kingswood
+#: view:product.product:0
+#: view:product.supplierinfo:0
+msgid "Customer Goods Price"
+msgstr "Customer Goods Price"
+
+#. module: kingswood
+#: view:product.product:0
+msgid "Customer Goods Unit of Measure"
+msgstr "Customer Goods Unit of Measure"
+
+#. module: kingswood
+#: field:kw.weigh.bridge,partner_id:0
+msgid "Address"
+msgstr "Address"
+
+#. module: kingswood
+#: field:stock.picking,transporter_id:0
+#: field:stock.picking.out,transporter_id:0
+msgid "Transporter"
+msgstr "Transporter"
+
+#. module: kingswood
+#: field:res.company,password:0
+msgid "Password"
+msgstr "Password"
+
+#. module: kingswood
+#: field:account.invoice,payment:0
+msgid "Payment"
+msgstr "Payment"
+
+#. module: kingswood
+#: view:product.product:0
+#: selection:product.supplierinfo,type:0
+#: field:product.template,customer_ids:0
+#: selection:res.users,role:0
+#: view:stock.picking.out:0
+msgid "Customer"
+msgstr "Customer"
+
+#. module: kingswood
+#: field:del.sumwiz,end_date:0
+msgid "End Date"
+msgstr "End Date"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_product.py:354
+#, python-format
+msgid " Product Rate For The Paying Agent \"%s\" Already Exist "
+msgstr " Product Rate For The Facilitator \"%s\" Already Exist "
+
+#. module: kingswood
+#: field:res.partner,gen_esugam:0
+msgid "Generate ESugam No."
+msgstr "Generate ESugam No."
+
+#. module: kingswood
+#: selection:res.users,role:0
+msgid "Admin"
+msgstr "Admin"
+
+#. module: kingswood
+#: model:product.uom,name:kingswood.product_uom_mt
+msgid "MT(s)"
+msgstr "MT(s)"
+
+#. module: kingswood
+#: view:product.product:0
+msgid "Customer goods Name"
+msgstr "Customer goods Name"
+
+#. module: kingswood
+#: field:kw.weighment,material_desc:0
+msgid "Material Description"
+msgstr "Material Description"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:283
+#, python-format
+msgid "Warning!"
+msgstr "Warning!"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:660
+#, python-format
+msgid "Check Goods Price, Selected Customer \"%s\" Do Not Have Rate for \"%s\" In The Goods Master"
+msgstr "Check Goods Price, Selected Customer \"%s\" Do Not Have Rate for \"%s\" In The Goods Master"
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Is a Back Order"
+msgstr "Is a Back Order"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_del_sumwiz
+msgid "del.sumwiz"
+msgstr "del.sumwiz"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_product.py:102
+#, python-format
+msgid " Product Rate For The Paying Agent \"%s\" The Date Entered \"%s\" Already Exist\""
+msgstr " Product Rate For The Facilitator \"%s\" The Date Entered \"%s\" Already Exist\""
+
+#. module: kingswood
+#: view:stock.picking.out:0
+msgid "Back Orders"
+msgstr "Back Orders"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_res_users
+msgid "Users"
+msgstr "Users"
+
+#. module: kingswood
+#: model:res.groups,name:kingswood.kw_supplier_service
+msgid "KW_Supplier"
+msgstr "KW_Supplier"
+
+#. module: kingswood
+#: field:kw.product.price,product_price:0
+msgid "Goods price"
+msgstr "Goods price"
+
+#. module: kingswood
+#: field:stock.picking,diver_contact:0
+#: field:stock.picking.out,diver_contact:0
+msgid "Driver Contact"
+msgstr "Driver Contact"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_product.py:348
+#, python-format
+msgid " Product Rate For The customer \"%s\" Already Exist "
+msgstr " Product Rate For The customer \"%s\" Already Exist "
+
+#. module: kingswood
+#: field:product.supplierinfo,rate:0
+msgid "Rate"
+msgstr "Rate"
+
+#. module: kingswood
+#: model:ir.model,name:kingswood.model_kw_refund
+msgid "kw.refund"
+msgstr "kw.refund"
+
+#. module: kingswood
+#: field:kw.weighment,weigh_date:0
+msgid "Weigh DateTime"
+msgstr "Weigh DateTime"
+
+#. module: kingswood
+#: field:stock.picking.out,freight_charge:0
+msgid "Freight Charge/MT"
+msgstr "Freight Charge/MT"
+
+#. module: kingswood
+#: code:addons/kingswood/kw_stock.py:284
+#, python-format
+msgid "You Are Not Authorised To Select \"KINGSWOOD\" As Paying Agent"
+msgstr "You Are Not Authorised To Select \"KINGSWOOD\" As Facilitator"
+

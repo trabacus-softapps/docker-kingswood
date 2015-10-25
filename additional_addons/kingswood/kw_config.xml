@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+    	
+    <record id="kw_city_search_view" model="ir.ui.view">
+        <field name="name">kw.city.search</field>
+        <field name="model">kw.city</field>
+        <field name="arch" type="xml">
+            <search string="City">
+                <field name="name"/>
+                <field name='state_id'/>
+                
+            </search>
+        </field>
+    </record>	
+    <record id="kw_city_tree_view" model="ir.ui.view">
+        <field name="name">kw.city.tree</field>
+        <field name="model">kw.city</field>
+        <field name="arch" type="xml">
+            <tree string="City">
+                <field name="name"/>
+                <field name='state_id'/>
+                
+            </tree>
+        </field>
+    </record>
+        
+        <record id="kw_city_form_form" model="ir.ui.view">
+            <field name="name">kw.city.form</field>
+            <field name="model">kw.city</field>
+            <field name="arch" type="xml">
+                <form string="City">
+                    <group col="2">
+                    <field name="name" required='1'/>
+                    <field name='state_id' required='1'/>
+                    <newline/>
+                    
+                    </group>
+                </form>
+            </field>
+        </record>
+        
+       
+        <record model="ir.actions.act_window" id="kw_city_action">
+            <field name="name">Cities</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">kw.city</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="kw_city_search_view"/>
+        </record>
+        
+        <menuitem action="kw_city_action" id="kw_city_action_id" parent="stock.menu_stock_configuration" groups="base.group_no_one,kingswood.kw_admin_service" sequence="3"/>
+       
+    </data>
+</openerp>

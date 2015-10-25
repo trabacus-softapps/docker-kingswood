@@ -1,0 +1,1118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+
+<!--		For Tolerance value for customers and suppliers-->
+		<record id="kw_partner_form" model="ir.ui.view">
+			<field name="name">kw_partner_form1</field>
+			<field name="inherit_id" ref="base.view_partner_form"/>
+			<field name="model">res.partner</field>
+			<field name="arch" type="xml">
+				
+            	<xpath expr="//form/sheet" position="before">
+            		<header>
+            		<button name="update_city" string="Update Partner City" 
+			                	type="object" class="oe_highlight" groups="base.group_no_one"/>
+            	</header>				
+				</xpath>
+				<xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']//field[@name='date']" position="attributes">
+				 	 <attribute name="invisible">1</attribute>
+				</xpath>
+				
+   				<xpath expr="//field[@name = 'city']" position="replace">
+                 <field name="city" invisible="1"/>
+                 
+				 	 <field name="city_id" placeholder="City" style="width: 40%%" attrs="{'readonly': [('use_parent_address','=',True)],'required': [('customer','!=',False)]}"/>
+				</xpath> 	
+							
+				<xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']//field[@name='lang']" position="attributes">
+				 	 <attribute name="invisible">1</attribute>
+				</xpath>
+				
+				<xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']//field[@name='active']" position="attributes">
+				 	 <attribute name="invisible">1</attribute>
+				</xpath>
+				
+				<!--<xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']//field[@name='opt_out']" position="attributes">
+				 	 <attribute name="invisible">1</attribute>
+				</xpath>-->
+				
+				<!--<xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']//field[@name='notification_email_send']" position="attributes">
+				 	 <attribute name="invisible">1</attribute>
+				</xpath>-->
+				
+				 <!-- <xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']//field[@name='property_stock_customer']" position="attributes">
+				 	 <attribute name="invisible">1</attribute>
+				</xpath>
+				<xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']//field[@name='property_stock_supplier']" position="attributes">
+				 	 <attribute name="invisible">1</attribute>
+				</xpath>
+				
+				  <group col="2" colspan="4">
+				  		<group>
+				  			<field name="tol_qty" string="Transit Allowance Qty/MT"/>
+				  			<field name="tol_rate"/>
+				  		</group>
+				  		<group>
+				  			<label string="(In kgs)"/>
+				  		</group>
+				  		
+				 </group>	-->
+			 
+				
+				<xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']/group" position="after">
+					
+						<group string="Transit Allowance"/>
+						<field name='dealers_ids' nolable='1'>
+							<tree editable='top'>
+								<field name="date" required='1'/>
+				  			    <field name="name" required='1'/>
+								<field name="tol_qty" required='1'/>
+								<field name="tol_rate" required='1'/>
+						</tree>
+						<form string="Truck Details" version="7.0">
+									<group col="4" colspan="2">			
+											<field name="name"/>
+											<field name="tol_rate"/>
+											<field name="tol_qty"/>
+											<field name="date"/>
+									</group>
+										
+								
+						</form>	
+						</field>
+				  		<!--<group col="2" colspan="4">
+				  		 <group>
+				  			<field name="tol_qty" string="Transit Allowance Qty/MT"/>
+				  			<field name="tol_rate"/>
+				  		</group>
+				  		<group>
+				  			<label string="(In kgs)"/>
+				  		</group>
+				  		
+				 		</group>	 -->
+					
+				</xpath>
+				
+				<xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']/group/group/field[@name='user_id']" position="attributes">
+					<attribute name="string">Representative</attribute>
+				</xpath>
+			    <xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']//field[@name='supplier']" position="attributes">
+					<attribute name="readonly">1</attribute>
+				</xpath>
+				<xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']//field[@name='customer']" position="attributes">
+					<attribute name="readonly">1</attribute>
+				</xpath>
+				
+				<xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']//field[@name='ref']" position="attributes">
+					<attribute name="string">Abbreviated Form</attribute>
+				</xpath>
+				
+				<xpath expr='//page[@string="Accounting"]' position="after">
+ 					<page string="Customers" attrs="{'invisible': [('supplier','=', False)]}">
+ 						<field name="customer_ids" domain="[('customer','=',True)]" />
+ 					</page>
+ 				</xpath>
+ 				<xpath expr='//page[@string="Customers"]' position="after">
+ 					<page string="Farmers List" attrs="{'invisible': [('supplier','=', False)]}">
+ 						<field name="farmers_ids" />
+ 					</page>
+ 				</xpath>
+				
+                  <!--				For Adding the Billing Cycle-->
+				<xpath expr='//page[@string="History"]' position="after">
+					<page string="Billing Cycle" attrs="{'invisible': [('supplier','=', False)]}">
+						<field name="billing_ids" context="{'billing_ids':billing_ids}" attrs="{'invisible': [('supplier','=', False)]}" groups="kingswood.kw_admin_service,base.group_no_one">
+							<tree version="7.0" editable="top">
+								<field name="show_field" invisible="1"/>
+								<field name="st_date"/>
+								<field name="end_date"/>
+								<field name="open_bal" readonly="1"/>
+								<field name="uid" invisible="1"/> 
+								 <field name="user_partner" invisible="1"/>	
+								<button name="generate_report" icon="gtk-print" type="object" string="Print"/>
+								 
+							</tree>
+						</field>
+					</page>
+					
+					
+					<page string="Facilitators" attrs="{'invisible': [('customer','=', False)]}">
+						<field name="facilitator_ids" attrs="{'invisible': [('customer','=', False)]}" groups="kingswood.kw_admin_service,base.group_no_one">
+							<tree version="7.0" editable="top">
+								<field name="date"/>
+								<field name="facilitator_id" domain="[('supplier','=',True),('handling_charges','=',False)]" required = '1'/>
+								<field name="active_sup"/>
+
+
+							</tree>
+						</field>
+					</page>
+										
+				</xpath>
+				
+ 				
+ 			<!--	<xpath expr='//field[@name="title"]' position="after">
+ 					
+ 						<field name="handling_charges" attrs="{'invisible': [('supplier','=', False)]}" />
+ 						
+ 				</xpath>
+ 				
+ 				<xpath expr='//field[@name="title"]' position="after">
+ 					
+ 						<field name="product_change" string="" attrs="{'invisible': [('customer','=', False)]}" />
+ 						<field name="pay_freight" 	attrs="{'invisible': [('customer','=', False)]}" />
+ 				</xpath>
+ 				
+ 				 <xpath expr='//field[@name="email"]' position="after">
+ 					
+
+ 				</xpath> -->
+ 				
+ 			   <xpath expr='//field[@name="title"]' position="attributes">
+ 					
+ 						<attribute name="invisible">1</attribute>
+ 						
+ 				</xpath>
+				
+ 				<xpath expr='//field[@name="state_id"]' position="attributes">
+	 					<attribute name="attrs"> {'required': ['|',('customer','!=',False),('supplier','!=',False)]} </attribute> 
+ 				</xpath>
+ 				
+ 				<!-- <xpath expr='//field[@name="city"]' position="attributes">
+	 					<attribute name="attrs"> {'required': [('customer','!=',False)]} </attribute> 
+ 				</xpath> -->
+ 				
+ 				<xpath expr='//field[@name="state_id"]' position="attributes">
+                    <attribute name="domain">[('country_id', '=',country_id)]</attribute>
+ 				</xpath>
+ 				
+ 				<xpath expr='//group' position="after">
+                    <hr attrs="{'invisible': [('customer','=', False)]}"/>
+					                  
+	                    <group col='6' colspan='2' attrs="{'invisible': [('customer','=', False)]}">
+	                    	
+								<!-- <group>
+									<separator name="Esugam" string="Esugam" attrs="{'invisible':[('customer','!=',True)]}"/>  
+								</group>
+									
+								<group>
+									<separator name="Freight" string="Freight" attrs="{'invisible':[('customer','!=',True)]}"/>
+								</group> -->
+								
+								<group name="Esugam" string="Esugam">
+				 					<field name='gen_esugam'  
+				 						attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
+				 					
+				 					<field name='show_esugam' string="Show Esugam"
+				 						attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
+			
+				 					<field name="amc_attachment"/>	
+				 				</group>                    	
+                    	
+			                    <group name="Freight" string="Freight">
+
+			 						<field name='freight' domain="[('domain', '=', 'contact')]" options="{&quot;no_open&quot;: True}" 
+			 						string="Generate Freight Invoice" attrs="{'invisible': [('customer','=', False)]}"/>
+			 						<field name='show_freight'  attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
+			 						<field name="pay_freight" 	attrs="{'invisible': [('customer','=', False)]}" />
+			 						<field name='representative_id'  domain="[('supplier','=',True),('representative','=',True)]" attrs="{'required':[('pay_freight','=',False),('customer','=',True)],'invisible':['|',('pay_freight','=',True),('customer','=',False)]}"/>
+			 				 </group>     
+			 				 <group name="Report" string="Report">
+				 					<field name="product_change" 
+				 						attrs="{'invisible': [('customer','=', False)]}" />	
+				 						
+				 					<field name="report" 
+				 							attrs="{'invisible': [('customer','=', False)]}" />
+				 					<field name="wc_num" 
+				 							attrs="{'invisible': [('customer','=', False)]}" />				 							
+				 					<field name="split_invoice" 
+				 							attrs="{'invisible': [('customer','=', False)]}" />		
+			 				 	<field name="w_report" 
+			 				 		attrs="{'invisible': [('customer','=', False)]}" />				 				 	
+			 				   
+			 				   <field name="dc_report" 
+			 				 		attrs="{'invisible': [('customer','=', False)]}" />				 				 	
+			 				   </group> 
+			 				   
+                  	</group>   
+ 				</xpath> 				
+ 				<field name="email" position="after">
+ 					<field name="cst"  attrs="{'invisible': [('customer','=', False)]}" />
+ 					 <field name="work_order" attrs="{'invisible': [('customer','=', False)]}" invisible="1" />
+ 					
+ 					<field name='tin_no' attrs="{'required':[('customer','!=',False)]}"/>
+ 					<field name='sup_num' string="Reference"/>
+					<field name='user_log' string="User" invisible='1'/>
+ 				</field>
+ 				
+ 				<field name="website" position="after">
+
+						 <field name="handling_charges" attrs="{'invisible': [('supplier','=', False)]}" />
+
+							<field name='representative' attrs="{'invisible': [('supplier','=', False)]}"/>
+
+							<field name='billing_cycle' attrs="{'invisible': [('supplier','=', False)]}"/>	 					 
+	 					
+ 				</field> 				
+ 				
+ 				
+ 			<!--	
+ 				<field name="email" position="after">
+ 					<group>
+ 						<separator name="Freight" string="Freight" attrs="{'invisible':[('customer','!=',True)]}"/>
+
+ 						<field name='freight' domain="[('domain', '=', 'contact')]" options="{&quot;no_open&quot;: True}" 
+ 						string="Generate Freight Invoice" attrs="{'invisible': [('customer','=', False)]}"/>
+ 						<field name='show_freight'  attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
+ 						<field name="pay_freight" 	attrs="{'invisible': [('customer','=', False)]}" />
+ 					</group>
+
+ 						
+ 						
+ 				</field>
+ 				
+ 				
+
+ 				
+ 				<field name="website" position="after">
+ 					 	<field name="cst"  attrs="{'invisible': [('customer','=', False)]}" />
+ 						<field name="work_order" attrs="{'invisible': [('customer','=', False)]}" invisible="1" />
+ 					
+ 					<field name='tin_no' attrs="{'required':[('customer','!=',False)]}"/>
+ 					<field name='sup_num' string="Reference"/>
+ 				
+
+ 					<field name='representative_id'  domain="[('supplier','=',True),('representative','=',True)]" attrs="{'required':[('pay_freight','=',False),('customer','=',True)],'invisible':['|',('pay_freight','=',True),('customer','=',False)]}"/>
+ 				
+ 				</field>
+
+ 				<field name="representative_id" position="after">
+				<group>
+					<separator name="Esugam" string="Esugam" attrs="{'invisible':[('customer','!=',True)]}"/>
+				
+ 					<field name='gen_esugam'  attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
+ 					<field name='show_esugam'  attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
+					<field name="handling_charges" attrs="{'invisible': [('supplier','=', False)]}" />
+ 					<field name='representative'  attrs="{'invisible': [('supplier','=', False)]}"/>
+ 					<field name="product_change" string="" attrs="{'invisible': [('customer','=', False)]}" />	
+ 					<field name="report" 	attrs="{'invisible': [('customer','=', False)]}" />
+ 				</group>
+ 					
+ 				</field>
+ 				
+ 				-->
+ 				<field name="property_account_receivable" position="after">
+						<field name='account_rec'/>
+ 				</field>
+ 				
+ 				<field name="property_account_payable" position="after">
+						<field name='account_pay'/>
+ 				</field>
+ 				
+ 				 <field name="debit" position="after">
+						<field name='pan_no'/>
+ 				</field>
+				
+				<xpath expr='//page[@string="Accounting"]' position="after">
+				<page string="E-sugam Details" attrs="{'invisible':[('supplier','!=',False)]}" >
+					<group col="4" colspan="4">
+						<field name="es_url1" colspan="4"/>
+						<field name="es_url2" colspan="4"/>
+						<field name="es_username" />
+						<field name="es_password" password="1"/> 							
+					</group>
+				</page>
+				</xpath>
+ 				<xpath expr="//field[@name='child_ids']/form/sheet/div/label[@for='use_parent_address']" position="after">
+ 						<field name="gen_esugam" attrs="{'invisible':[('supplier','=',True)]}" /><label for="gen_esugam" attrs="{'invisible':[('supplier','=',True)]}"/>
+ 						<field name="freight"/><label for="freight"/>
+ 						<field name="show_freight"/><label for="show_freight"/>
+ 						<group col="4" colspan="4">
+ 							<field name="es_url1" colspan="4"/>
+ 							<field name="es_url2" colspan="4"/>
+ 							<field name="es_username" />
+ 							<field name="es_password" password="1"/> 							
+ 						</group>
+				</xpath> 
+				<xpath expr="//field[@name='child_ids']/form/sheet/group/div/div/field[@name='state_id']" position="attributes">
+ 					 <attribute name="domain">[('country_id', '=',country_id)]</attribute>
+ 				</xpath> 
+			</field>
+		</record>
+		
+		<!--		to comment  opt_out field-->
+		<record model="ir.ui.view" id="kw_res_partner_opt_out_form">
+			<field name="name">kw.res.partner.opt_out.form</field>
+			<field name="model">res.partner</field>
+			<field name="inherit_id" ref="email_template.res_partner_opt_out_form"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='opt_out']" position="attributes">
+					<attribute name="invisible">1</attribute>
+				</xpath>
+			</field>
+		</record>
+		
+				
+		 <record id="kw_customer" model="ir.ui.view">
+            <field name="name">kw.customer</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="model">res.company</field>
+            <field name="arch" type="xml" >
+               <field name="company_registry" position="after">
+						<field name='tin'/>
+               			<field name='commodity'/>
+               			<field name='attachment'/>
+ 						<field name='toll_free' />
+ 				</field>	
+ 				
+ 			
+ 				<xpath expr='//field[@name="state_id"]' position="attributes">
+                    <attribute name="domain">[('country_id', '=',country_id)]</attribute>
+ 				</xpath>
+            	<notebook position="inside">
+            		<page string="E-sugam Information" position="inside">
+            			<!--<group>
+            				<field name='url' required="1"/>
+            				<group col="4" colspan="2">
+            					<field name='username' required="1"/>
+            					<field name='password' required="1" password="1"/>
+            				</group>
+            			</group>-->
+            			<group>
+            				<field name = 'esugam_ids'  widget="one2many_list" nolabel="1">
+            					<tree >
+            						<field name='state_id'/>
+            						<field name='username'/>
+            						<field name='url1'/>
+            						<field name='url2'/>
+            					    <field name='url3'/>
+            					</tree>
+            					<form string = "E-sugam Details">
+            						<field name='state_id' required="1" domain="[('country_id.name','=','India')]"/>
+            						<field name='username' required="1"/>
+            						<field name='password' required="1" password="1"/>
+            						<field name='url1' required="1" colapan="2"/>
+            						<field name='url2' required="1" colapan="2"/>
+            					    <field name='url3' required="1" colapan="2"/>
+            					</form>
+            				</field>
+            			</group>
+            		</page>
+            	</notebook>
+ 				 	
+			</field>
+		</record>
+		<record id="kw_user" model="ir.ui.view">
+            <field name="name">kw.user</field>
+            <field name="inherit_id" ref="base.view_users_form"/>
+            <field name="model">res.users</field>
+            <field name="arch" type="xml" >
+               <field name="active" position="after">
+						<field name='role' required="1"/>
+						<field name='customer_id' domain="[('customer','=',True)]"
+							 attrs="{'invisible': [('role','!=','freight')],'required': [('role','=','freight')]}"/>
+						<field name='location_id' attrs="{'invisible': [('role','!=','depot')],'required': [('role','=','depot')]}"/>					
+ 				</field>
+ 				
+ 				<field name="company_id" position="after">
+ 					<field name='state_id' required="1"/>
+ 					<field name='billing_cycle' attrs="{'invisible': [('role','!=','supplier')]}"/>
+ 					<field name='billing_cycle_tab' attrs="{'invisible': [('role','!=','supplier')]}"/>
+ 				</field>
+ 				<xpath expr="//sheet" position="after">
+ 				<div class="oe_chatter">
+					<field name="message_ids" widget="mail_thread"/>
+					<field name="message_follower_ids" widget="mail_followers"/>
+				</div>
+ 				</xpath>	
+			</field>
+		</record>
+		
+		<!-- ******************************** Farmers Search View  *************************************-->
+		<record model="ir.ui.view" id="farmers_search">
+				<field name="name">farmers_search</field>
+				<field name="model">kw.farmers</field>
+				<field name="type">search</field>
+				<field name="arch" type="xml">
+					<search string="Farmers" version="7.0">
+						<field name="name"/>
+						<field name="survey_no"/>
+						<field name="village"/>
+						<field name="hobli"/>
+						<field name="taluk"/>
+						<field name="district"/>
+					</search>
+				</field>
+			</record>
+			
+			
+		<!-- ******************************** Farmers Tree View  *************************************-->
+		<record model="ir.ui.view" id="farmers_tree">
+				<field name="name">farmers_tree</field>
+				<field name="model">kw.farmers</field>
+				<field name="type">tree</field>
+				<field name="arch" type="xml">
+					<tree string="Farmers" version="7.0">
+						<field name="name"/>
+						<field name="survey_no"/>
+						<field name="village"/>
+						<field name="hobli"/>
+						<field name="taluk"/>
+						<field name="district"/>
+					</tree>
+				</field>
+			</record>
+		
+		<!-- ******************************** Farmers From View  *************************************-->
+		<record model="ir.ui.view" id="farmers_form">
+				<field name="name">Farmers</field>
+				<field name="model">kw.farmers</field>
+				<field name="type">form</field>
+				<field name="arch" type="xml">
+					<form string="Client Details" version="7.0">
+						
+						<separator stinrg="Farmers"/>
+							<sheet>
+								<group col="4" colspan="2">			
+									<field name="name"/>
+									<field name="survey_no"/>
+									<field name="village"/>
+									<field name="hobli"/>
+									<field name="taluk"/>
+									<field name="district"/>
+								</group>
+							</sheet>
+					</form>
+				</field>
+			</record>		
+			
+		<record model="ir.actions.act_window" id="farmers_action">
+            	<field name="name">Farmers</field>
+            	<field name="type">ir.actions.act_window</field>
+            	<field name="res_model">kw.farmers</field>
+            	<field name="view_type">form</field>
+            	<field name="view_mode">form</field>
+	            
+	            <field name="search_view_id" ref="farmers_search"/>
+	        </record>
+	    
+	        
+	        <record model="ir.actions.act_window.view" id="farmers_action_tree">
+	        	<field name="view_mode">tree</field>
+	        	<field eval="1" name="sequence"/>
+	        	<field name="view_id" ref="farmers_tree"/>
+	        	<field name="act_window_id" ref="farmers_action"/>
+	        </record>
+	        		
+	        <record model="ir.actions.act_window.view" id="farmers_action_form">
+	        	<field name="view_mode">form</field>
+	        	<field eval="2" name="sequence"/>
+	        	<field name="view_id" ref="farmers_form"/>
+	        	<field name="act_window_id" ref="farmers_action"/>
+	        </record>	
+	        	
+	   <menuitem action="farmers_action" id="farmers" name="Farmers" parent="stock.menu_stock_configuration" sequence="2"/>	
+	   <menuitem id="stock.menu_stock_configuration" name="Configuration" parent="stock.menu_stock_root" sequence="15"
+									groups="base.group_no_one,kingswood.kw_admin_service"/>
+									
+									
+									
+	<!-- **********************************************Partner  ***********************************************************--> 
+	
+	<record id="kw_view_res_partner_filter" model="ir.ui.view">
+            <field name="name">kw.partner.select</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_res_partner_filter"/>
+            <field eval="1" name="priority"/>
+            <field name="arch" type="xml">
+             
+                    <xpath expr="//field[@name='name']" position="after">
+                    	<!-- <field name="name"/> -->
+	                    <field name="function"/>
+	                    <field name="phone"/>
+	                    <field name="email"/>
+	                    <field name="user_id"/>
+	                    <field name="is_company"/>
+	                    <field name="country_id" />
+	                	<field name="state_id"/>
+	                	
+                         <group expand="0" string="Group By...">
+	                        <filter string="name" icon="terp-stock_effects-object-colorize" domain="[]" context="{'group_by':'name'}"/>
+	                        <filter string="Phone" icon="terp-go-month" domain="[]"  context="{'group_by':'phone'}"/>
+	                       	<filter string="Country" icon="terp-go-month" domain="[]"  context="{'group_by':'country_id'}"/> 
+	                        <filter string="Is Company" icon="terp-folder-orange" domain="[]" context="{'group_by':'is_company'}"/>
+	                        <filter string="State" icon="terp-folder-orange" domain="[]" context="{'group_by':'state_id'}"/>
+	                        <filter string="Email" icon="terp-folder-orange" domain="[]" context="{'group_by':'email'}"/>
+						</group>          
+                     </xpath>
+           
+                
+            </field>
+        </record>  
+        
+        <record id="kw_view_partner_tree" model="ir.ui.view">
+            <field name="name">kw.partner.select</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_tree"/>
+            <field eval="1" name="priority"/>
+            <field name="arch" type="xml">
+             
+                    <xpath expr="//field[@name='parent_id']" position="after">
+        				<field name="state_id" invisible="1"/>
+       				</xpath>
+       		</field>
+        </record> 
+        
+        <record id="kw_view_user_tree" model="ir.ui.view">
+            <field name="name">kw.partner.select</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_tree"/>
+			<field name="arch" type="xml">
+             
+                    <xpath expr="//field[@name='login']" position="after">
+        				<field name="password" groups="base.group_no_one,kingswood.kw_admin_service"/>
+       				</xpath>
+       		</field>
+        </record> 
+        
+        
+        
+      <record model="ir.ui.view" id="kw_res_partner_search">
+			<field name="name">kw.res.partner.serch</field>
+			<field name="model">res.users</field>
+			<field name="inherit_id" ref="base.view_users_search"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='name']" position="after">
+					<field name="role"/>
+				</xpath>
+			</field>
+		</record>
+		
+	<!-- ******************************* Overiding Users Action************************** -->	
+		
+		
+		<record id="base.action_res_users" model="ir.actions.act_window">
+            <field name="name">Users</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.users</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="base.view_users_tree"/>
+            <field name="search_view_id" ref="base.view_users_search"/>
+            <field name="domain">[('id','!=',1)]</field>
+            <field name="help">Create and manage users that will connect to the system. Users can be deactivated should there be a period of time during which they will/should not connect to the system. You can assign them groups in order to give them specific access to the applications they need to use in the system.</field>
+        </record>
+		
+		<!-- ******************************* Billing Cycle Search View ************************** -->
+		
+	<record id="billing_cycle_search" model="ir.ui.view">
+            <field name="name">billing.cycle.search</field>
+            <field name="model">billing.cycle</field>
+            <field name="arch" type="xml">
+                <search string="Billing Cycle">
+               		<field name="partner_id"/>	
+                     <field name="open_bal"/>
+		             <field name="st_date" filter_domain="[('st_date','&gt;=',self)]"/>
+                	<field name="end_date" filter_domain="[('end_date','&lt;=',self)]"/>
+                	
+					<group expand="0" string="Group By..." >
+                       <filter string="Partner" icon="terp-folder-orange" domain="[]" context="{'group_by':'partner_id'}"/>
+                     </group>     
+                                        
+                </search>
+            </field>
+       </record>
+		
+	<!-- ******************************* Billing Cycle Tree View ************************** -->
+	<record id="billing_cycle_tree" model="ir.ui.view">
+            <field name="name">billing.cycle.tree</field>
+            <field name="model">billing.cycle</field>
+            <field name="arch" type="xml">
+                <tree string="Billing Cycle">
+               			<field name="partner_id" readonly="1"/>	
+				       <field name="st_date" readonly="1"/>
+					   	<field name="open_bal" readonly="1"/> 
+						<field name="end_date" readonly="1"/>
+						<field name="user_partner" invisible="1"/>	
+                      <button name="generate_report" icon="gtk-print" type="object" string="Print"/>                  
+                </tree>
+            </field>
+       </record>
+       
+    <!-- ******************************* Billing Cycle Form View ************************** -->
+    
+	<record id="billing_cycle_form" model="ir.ui.view">
+            <field name="name">billing.cycle.form</field>
+            <field name="model">billing.cycle</field>
+            <field name="arch" type="xml">
+                <form string="Billing Cycle" version="7.0" create="false" edit='false'>
+                	<header>
+                		<button name="generate_report" icon="gtk-print" type="object" string="Print"/> 
+                	</header>
+                	<sheet>
+                			<separator string="Billing Cycle" version="7.0"/>
+                	
+							
+								<group col="4" colspan="2">		
+									<field name="partner_id" readonly="1"/>	
+				                     <field name="st_date" readonly="1"/>
+				                     <field name="open_bal" readonly="1"/> 
+						             <field name="end_date" readonly="1"/>
+				                	 <field name="uid" invisible="1"/>
+				                	 <field name="user_partner" invisible="1"/>	 
+								</group>
+               		 	</sheet>
+               		 
+                                        
+                </form>
+            </field>
+       </record>   
+       
+      <!-- ******************************* Billing Cycle Action ************************** --> 
+      
+      
+      
+      <record model="ir.actions.act_window" id="billing_cycle_action">
+            	<field name="name">Billing Cycle</field>
+            	<field name="type">ir.actions.act_window</field>
+            	<field name="res_model">billing.cycle</field>
+				<field name="domain">[('user_partner','=',uid)]</field>
+            	<field name="view_type">form</field>
+            	<field name="view_mode">tree</field>
+	            
+	            <field name="search_view_id" ref="billing_cycle_search"/>
+	        </record>
+	    
+	        
+	        <record model="ir.actions.act_window.view" id="billing_cycle_action_tree">
+	        	<field name="view_mode">tree</field>
+	        	<field eval="1" name="sequence"/>
+	        	<field name="view_id" ref="billing_cycle_tree"/>
+	        	<field name="act_window_id" ref="billing_cycle_action"/>
+	        </record>
+	        		
+	        <!-- <record model="ir.actions.act_window.view" id="billing_cycle_action_form">
+	        	<field name="view_mode">form</field>
+	        	<field eval="2" name="sequence"/>
+	        	<field name="view_id" ref="billing_cycle_form"/>
+	        	<field name="act_window_id" ref="billing_cycle_action"/>
+	        </record> -->	
+	        	
+	 
+     <!-- <menuitem action="billing_cycle_action" icon="STOCK_JUSTIFY_FILL" sequence="14"
+            id="kw_billing_cycle_action"  parent="account.menu_finance_payables" name="Billing Cycle"
+            groups="base.group_no_one,kingswood.kw_admin_service"
+            /> -->
+     
+     <menuitem action="kingswood.billing_cycle_action" id="kw_menu_billing_cycle_action" parent="stock.menu_stock_warehouse_mgmt" name="Billing Cycle"
+		groups="kingswood.kw_facilitor_billing_service_tab" />
+	
+	
+            	
+		
+	<!-- ***********************************To add Branch-Office Field to States************************************** -->
+	<record id="kw_partner_form_state" model="ir.ui.view">
+			<field name="name">kw_country_state_form</field>
+			<field name="inherit_id" ref="base.view_country_state_form"/>
+			<field name="model">res.country.state</field>
+			<field name="arch" type="xml" >
+			<xpath expr="//field[@name='country_id']" position="after">
+ 					<field name="branch_office"/>
+ 				</xpath>	
+			</field>
+	</record>
+	
+	<menuitem action="base.action_country_state" id="kw_menu_country_state_partner" parent="stock.menu_stock_configuration" sequence="4" groups="base.group_no_one,kingswood.kw_admin_service"/>
+	
+	
+	
+	<!-- ****************************************** Tree View For Trucks***************** -->
+	
+	<record id="truck_tree" model="ir.ui.view">
+			<field name="name">kw_truck_tree</field>
+			<field name="model">goods.dealers</field>
+			<field name="arch" type="xml">
+				<tree string="Truck Details" version="7.0">
+					
+						
+					<field name="name"/>
+
+								
+					</tree>	
+			</field>
+	</record>
+	
+	<!-- ****************************************** Form View For Trucks***************** -->
+	
+	<record id="truck_form" model="ir.ui.view">
+			<field name="name">kw_truck_form</field>
+			<field name="model">goods.trucks</field>
+			<field name="arch" type="xml" >
+				<form string="Truck Details" version="7.0">
+					
+						<separator stinrg="Truck Details"/>
+							<sheet>
+								<group col="4" colspan="2">			
+										<field name="name" required='1'/>
+
+								</group>
+									
+							</sheet>
+					</form>	
+			</field>
+	</record>
+	
+	
+	<record model="ir.actions.act_window" id="goods_dealers_action">
+            	<field name="name">Truck Details</field>
+            	<field name="type">ir.actions.act_window</field>
+            	<field name="res_model">goods.trucks</field>
+            	<field name="view_type">form</field>
+            	<field name="view_mode">form</field>
+
+	        </record>
+	    
+	        
+	        <record model="ir.actions.act_window.view" id="client_action_tree">
+	        	<field name="view_mode">tree</field>
+	        	<field eval="1" name="sequence"/>
+	        	<field name="view_id" ref="truck_tree"/>
+	        	<field name="act_window_id" ref="goods_dealers_action"/>
+	        </record>
+	        		
+	        <record model="ir.actions.act_window.view" id="client_action_form">
+	        	<field name="view_mode">form</field>
+	        	<field eval="2" name="sequence"/>
+	        	<field name="view_id" ref="truck_form"/>
+	        	<field name="act_window_id" ref="goods_dealers_action"/>
+	        </record>	
+	
+	<menuitem action="goods_dealers_action" id="menu_goods_dealers_action" parent="stock.menu_stock_configuration" sequence="4"/>
+	
+	<!--  ************************************Partner Bank ************************************************ -->
+	
+   <record id="kw_partner_bank_form" model="ir.ui.view">
+			<field name="name">kw_partner_bank_form</field>
+			<field name="inherit_id" ref="base.view_partner_bank_form"/>
+			<field name="model">res.partner.bank</field>
+			<field name="arch" type="xml" >
+			<xpath expr="//field[@name='bank_bic']" position="after">
+ 					<field name="bank_address"/>
+ 					
+ 				</xpath>	
+ 				<xpath expr="//field[@name='owner_name']" position="attributes">
+						<attribute name="string">Facilitator Name </attribute>
+ 				</xpath>
+				<xpath expr="//field[@name='bank_name']" position="before">
+						<field name="account_owner" string="Account Owner Name"/>
+ 				</xpath>
+ 				<xpath expr="//field[@name='partner_id']" position="attributes">
+						<attribute name="string">Facilitator Name </attribute>
+ 				</xpath>
+			</field>
+	</record>
+	
+	
+	   <record id="kw_partner_bank_tree" model="ir.ui.view">
+			<field name="name">kw_partner_bank_tree</field>
+			<field name="inherit_id" ref="account.view_partner_property_form"/>
+			<field name="model">res.partner</field>
+			<field name="arch" type="xml" >
+ 				<xpath expr="//page[@string='Accounting']/field[@name='bank_ids']/tree[@string='Bank Details']/field[@name='owner_name']" position="attributes">
+						<attribute name="string">Facilitator Name </attribute>
+ 				</xpath>
+				<xpath expr="//page[@string='Accounting']/field[@name='bank_ids']/tree/field[@name='owner_name']" position="before">
+						<field name="account_owner"/>
+ 				</xpath>
+			</field>
+	</record>
+	
+	
+	
+	
+	
+        <record id="kw_sup_view_partner_form" model="ir.ui.view">
+            <field name="name">kw.facilitator.res.partner.form</field>
+            <field name="model">res.partner</field>
+            <field eval="1" name="priority"/>
+            <field name="arch" type="xml">
+                <form string="Partners" version="7.0">
+                <sheet>
+                    <field name="image" widget='image' class="oe_left oe_avatar" options='{"preview_image": "image_medium", "size": [90, 90]}'/>
+                    <div class="oe_title">
+                        <div class="oe_edit_only">
+                            <label for="name"/> (
+                            <field name="is_company" on_change="onchange_type(is_company)" class="oe_inline"/> <label for="is_company" string="Is a Company?"/>)
+                        </div>
+                        <h1>
+                            <field name="name" default_focus="1" placeholder="Name" />
+                        </h1>
+                        <field name="parent_id"
+                            placeholder="Company"
+                            domain="[('is_company', '=', True)]" context="{'default_is_company': True, 'default_supplier': supplier}"
+                            attrs="{'invisible': [('is_company','=', True),('parent_id', '=', False)]}"
+                            on_change="onchange_address(use_parent_address, parent_id)"/>
+                        <field name="category_id" widget="many2many_tags" placeholder="Tags..."/>
+                    </div>
+                    <div class="oe_right oe_button_box" name="buttons"> </div>
+
+                    <group attrs="{'readonly': [('user_log','=', 'KW_Supplier')]}">
+                        <group>
+                            <label for="type" attrs="{'invisible': [('parent_id','=', False)]}"/>
+                            <div attrs="{'invisible': [('parent_id','=', False)]}" name="div_type">
+                                <field class="oe_inline"
+                                    name="type"/>
+                            </div>
+
+                            <label for="street" string="Address"/>
+                            <div>
+                            	 <field name="partner_state" invisible='0'/>
+                                <field name="use_parent_address" class="oe_edit_only oe_inline"
+                                       on_change="onchange_address(use_parent_address, parent_id)"
+                                       attrs="{'invisible': [('parent_id','=', False),('use_parent_address','=',False)]}"/>
+                                <label for="use_parent_address" class="oe_edit_only" attrs="{'invisible': [('parent_id','=', False),('use_parent_address','=',False)]}"/>
+                                <button name="open_parent" type="object" string="(edit company address)" class="oe_link oe_edit_only"
+                                        attrs="{'invisible': ['|',('parent_id','=', False),('use_parent_address','=',False)]}"/>
+                                <field name="street" placeholder="Street..."  attrs="{'readonly': [('use_parent_address','=',True)]}"/>
+                                <field name="street2"  attrs="{'readonly': [('use_parent_address','=',True)]}"/>
+                                <div class="address_format">
+                                    <field name="city" placeholder="City" style="width: 40%%" attrs="{'readonly': [('use_parent_address','=',True)]}"/>
+                                    <field name="state_id" class="oe_no_button" placeholder="State" style="width: 37%%" options='{"no_open": True}' on_change="onchange_state(state_id)" attrs="{'readonly': [('use_parent_address','=',True)]}"/>
+                                    <field name="zip" placeholder="ZIP" style="width: 20%%" attrs="{'readonly': [('use_parent_address','=',True)]}"/>
+                                </div>
+                                <field name="country_id" placeholder="Country" class="oe_no_button" options='{"no_open": True}' attrs="{'readonly': [('use_parent_address','=',True)]}"/>
+                            </div>
+                            <field name="website" widget="url" placeholder="e.g. www.openerp.com"/>
+						 <field name="handling_charges" attrs="{'invisible': [('supplier','=', False)]}" />
+
+							<field name='representative' attrs="{'invisible': [('supplier','=', False)]}"/>
+
+							<field name='billing_cycle' attrs="{'invisible': [('supplier','=', False)]}" invisible='1'/>  
+							<field name='billing_cycle_tab' attrs="{'invisible': [('supplier','=', False)]}" invisible='1'/>
+							 <field name='user_log' invisible='1'/>     
+							  <field name='supplier' invisible='1'/> 
+							 <field name='customer' invisible='1'/> 
+							             
+                        </group>
+                        <group>
+                            <field name="function" placeholder="e.g. Sales Director"
+                                attrs="{'invisible': [('is_company','=', True)]}"/>
+                            <field name="phone" placeholder="e.g. +32.81.81.37.00"/>
+                            <field name="mobile"/>
+                            <field name="fax"/>
+                            <field name="email" widget="email"/>
+                            <field name="title" domain="[('domain', '=', 'contact')]"
+                                options='{"no_open": True}' attrs="{'invisible': [('is_company','=', True)]}" />
+                                
+                        </group>
+                    </group>
+
+                    <notebook colspan="4">
+						<page string="Billing Cycle" attrs="{'invisible': [('billing_cycle','!=', True),('user_log','=', 'KW_Supplier')]}">
+												<field name="billing_ids" context="{'billing_ids':billing_ids}" attrs="{'invisible': [('supplier','=', False)]}" groups="kingswood.kw_supplier_service">
+													<tree version="7.0" editable="top">
+														<field name="show_field" invisible="1"/>
+														<field name="st_date" readonly="1"/>
+														<field name="end_date" readonly="1"/>
+														<field name="open_bal" readonly="1"/>
+														<field name="uid" invisible="0"/> 
+														 <field name="user_partner" invisible="0"/>	
+														<button name="generate_report" icon="gtk-print" type="object" string="Print"/>
+													</tree>
+												</field>
+						</page>                        
+                    </notebook>
+                </sheet>
+                </form>
+            </field>
+        </record>	
+        
+	   <record id="kw_res_partner_kanban_view" model="ir.ui.view">
+			<field name="name">kw_res_partner_kanban_view</field>
+			<field name="inherit_id" ref="base.res_partner_kanban_view"/>
+			<field name="model">res.partner</field>
+			<field name="arch" type="xml" >
+ 				<xpath expr="//field[@name='email']" position="after">
+					<field name="billing_cycle" invisible='1'/>
+					<field name="user_log" invisible='1'/>
+ 				</xpath>
+				
+ 				<!-- <xpath expr="//kanban" position="attributes">
+					<attribute name="attrs"> {'invisible': [('billing_cycle','!=',True),('user_log','=', 'KW_Supplier')]} </attribute> 
+ 				</xpath> -->
+
+			</field>
+	</record>        
+        
+ 	   <record id="kw_base_view_partner_tree" model="ir.ui.view">
+			<field name="name">kw_base_view_partner_tree</field>
+			<field name="inherit_id" ref="base.view_partner_tree"/>
+			<field name="model">res.partner</field>
+			<field name="arch" type="xml" >
+				
+ 				<xpath expr="//field[@name='name']" position="after">
+					<field name="billing_cycle" invisible='1'/>
+					<field name="user_log" invisible='1'/>
+ 				</xpath>	
+ 							
+ 				<!-- <xpath expr="//tree" position="attributes">
+					<attribute name="attrs"> {'invisible': [('billing_cycle','!=',True),('user_log','=', 'KW_Supplier')]} </attribute> 
+ 				</xpath> -->
+
+			</field>
+	</record>       
+        
+        
+ 
+         <record id="kw_fac_action_partner_supplier_form" model="ir.actions.act_window">
+            <field name="name">Facilitators</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_type">form</field>
+            <field name="domain">[('supplier','=',True),('handling_charges','!=',True)]</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="context">{'search_default_supplier': 1,'default_customer': 0,'default_supplier': 1}</field>
+            <field name="filter" eval="True"/>
+            <!-- <field name="domain">[('state_id','=',partner_state)]</field> -->
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add a contact in your address book.
+              </p><p>
+                OpenERP helps you easily track all activities related to
+                a supplier: discussions, history of purchases,
+                documents, etc.
+              </p>
+            </field>
+        </record>       
+        
+        <record id="base.action_partner_form_view1" model="ir.actions.act_window.view">
+            <field eval="0" name="sequence"/>
+            <field name="view_mode">kanban</field>
+            <field name="view_id" ref="base.res_partner_kanban_view"/>
+            <field name="act_window_id" ref="kw_fac_action_partner_supplier_form"/>
+        </record>
+        
+        <record id="kw_fac_action_partner_form_view2" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="kw_sup_view_partner_form"/>
+            <field name="act_window_id" ref="kw_fac_action_partner_supplier_form"/>
+        </record>
+        <record id="base.action_partner_tree_view1" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="base.view_partner_tree"/>
+            <field name="act_window_id" ref="kw_fac_action_partner_supplier_form"/>
+        </record>
+     
+     
+     
+     
+        
+      
+	<menuitem action="kw_fac_action_partner_supplier_form" name="Facilitators" id="kw_fac_menu_menu_partner_form" parent="stock.menu_stock_warehouse_mgmt" 
+		sequence="3"
+		groups="kingswood.kw_supplier_billing_service"/>        
+	
+	<!--
+	
+	        <record id="kw_view_user_password" model="ir.ui.view">
+            <field name="name">kw.view.user.password</field>
+            <field name="model">kw.change.password</field>
+            <field name="arch" type="xml">
+                <form string="Change Password" version="7.0">
+                    <sheet>
+                        <group col="4" cosplan="2">
+                        	<group> 
+	                            <field name='login_name'/>
+	                            
+	                         </group>
+	                         
+	                         <group>
+	                         	<field name="password"/>
+	                         </group><group></group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <record id="kw_action_res_user_password" model="ir.actions.act_window">
+            <field name="name">Change Password</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">kw.change.password</field>
+            <field name="context">{'kw_password':1}</field> 
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>     
+        
+        <record id="kw_form_action_res_user_password" model="ir.actions.act_window.view">
+            <field eval="10" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="kw_view_user_password"/>
+            <field name="act_window_id" ref="kw_action_res_user_password"/>
+        </record>-->
+
+
+	<!-- ****************************************************** Users Password ********************************************* -->
+	
+	                <!-- wizard view -->
+        <record id="change_password_wizard_view" model="ir.ui.view">
+            <field name="name">Change Password</field>
+            <field name="model">change.password.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Change Password" version="7.0">
+                    <field name="user_ids"/>
+                    <footer>
+                        <button string="Change Password" name="change_password_button" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- wizard user list view -->
+        <record id="change_password_wizard_user_tree_view" model="ir.ui.view">
+            <field name="name">Change Password Users</field>
+            <field name="model">change.password.user</field>
+            <field name="arch" type="xml">
+                <!-- the user list is editable, but one cannot add or delete rows -->
+                <tree string="Users" editable="bottom" create="false" delete="false">
+                    <field name="user_login"/>
+                    <field name="new_passwd" required="True"/>
+                </tree>
+            </field>
+        </record>
+        
+        
+        <record id="kw_action_password_wizard_user" model="ir.actions.act_window">
+            <field name="name">Change Password</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">change.password.wizard</field>
+            <field name="context">{'kw_password':1}</field> 
+            <field name="view_type">form</field>
+            <field name="target">new</field>
+            <field name="view_mode">tree,form</field>
+        </record>     
+        
+        <record id="kw_form_action_form_user_password" model="ir.actions.act_window.view">
+            <field eval="10" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="change_password_wizard_view"/>
+            <field name="act_window_id" ref="kw_action_password_wizard_user"/>
+        </record> 
+        
+        <record id="kw_form_action_tree_user_password" model="ir.actions.act_window.view">
+            <field eval="10" name="sequence"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="change_password_wizard_user_tree_view"/>
+            <field name="act_window_id" ref="kw_action_password_wizard_user"/>
+        </record>                
+        
+	<menuitem action="kw_action_password_wizard_user" id="kw_user_password" parent="stock.menu_stock_warehouse_mgmt" 
+		sequence="3"
+		groups="base.group_no_one"/> 
+	
+	</data>
+</openerp>
