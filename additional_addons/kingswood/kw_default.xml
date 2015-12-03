@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openerp>
-	<data>
+	<data noupdate="1">
 
 
 
@@ -65,7 +65,7 @@
 			</record>			
 			
 		  <record forcecreate="True" id="scheduler_merge_old_logistic_invoice" model="ir.cron">
-				<field name="name">Scheduler Merge Old Invoice</field>
+				<field name="name">Scheduler Merge Old Logistic Invoice</field>
 				<field eval="False" name="active" />
 				<field name="user_id" ref="base.user_root" />
 				<field name="interval_number">1</field>
@@ -145,7 +145,7 @@
 			
 		  <record forcecreate="True" id="monthly_dispatch_mail" model="ir.cron">
 				<field name="name">Send Monthly Dispatch Mail</field>
-				<field eval="True" name="active" />
+				<field eval="False" name="active" />
 				<field name="user_id" ref="base.user_root" />
 				<field name="interval_number">1</field>
 				<field name="interval_type">days</field>

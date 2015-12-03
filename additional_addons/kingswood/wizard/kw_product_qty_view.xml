@@ -44,8 +44,12 @@
 	                     
 	                     <group>  
 	                       
-	                       <field name="rej_qty"  attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('dc_state', 'not in', ('done','freight_paid'))],'required':[('type','=','out')],'invisible':[('type', '!=', 'out')]}"/>
-                       		<field name="deduction_amt" attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('dc_state','not in', ('done','freight_paid'))],'required':[('type','=','out')],'invisible':[('type', '!=', 'out')]}"/>
+								<!-- Commented By Mani-->
+	                       <!--<field name="rej_qty"  attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('dc_state', 'not in', ('done','freight_paid'))],'required':[('type','=','out')],'invisible':[('type', '!=', 'out')]}"/>
+                       		<field name="deduction_amt" attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('dc_state','not in', ('done','freight_paid'))],'required':[('type','=','out')],'invisible':[('type', '!=', 'out')]}"/>-->
+	                     	
+	                     	<field name="rej_qty"  attrs="{'readonly': [('sup', '=', True)],'required':[('type','=','out')],'invisible':[('type', '!=', 'out')]}"/>
+	                     	<field name="deduction_amt" attrs="{'readonly': [('sup', '=', True)],'invisible':[('type', '!=', 'out')]}"/>
                        		<field name="freight_balance" attrs="{'readonly': ['|',('sup', '=', True),('dc_state','not in', ('done','freight_paid'))],'required':[('type','=','out')],'invisible':[('type', '!=', 'out')]}"/>
                        		<field name="show_freight" invisible='1'/>
                        		<field name="gen_freight" attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('cust', '=', True)],'invisible':[('show_freight','!=',True)]}"/>

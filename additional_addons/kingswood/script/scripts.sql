@@ -1109,8 +1109,9 @@ select
 			, a.supp_name
 			, 0 as debit
 			, 0 as credit
-			, case when sum(a.price_unit) is not null then sum((a.price_unit * a.qty)+a.freight_balance) 
-			else sum((a.line_price * a.qty)+ a.freight_balance) end as estimated_amt
+			-- substracting the freight paid amount
+			, case when sum(a.price_unit) is not null then sum((a.price_unit * a.qty)+a.freight_balance) - sum(fre_total)
+			else sum((a.line_price * a.qty)+ a.freight_balance) - sum(fre_total) end as estimated_amt
 			
 			from
 			(
@@ -1120,8 +1121,9 @@ select
 					--, sm.unloaded_qty
 					, sp.paying_agent_id as partner_id
 					, case when sp.state = 'in_transit' then sm.product_qty else sm.unloaded_qty end as qty
-					, case when (sm.product_qty * sp.freight_charge) is not null then  (sm.product_qty * sp.freight_charge)
-					  else 0 end as fre_total
+					, case when sp.state != 'freight_paid' then 
+						case when (sm.product_qty * sp.freight_charge) is not null then  (sm.product_qty * sp.freight_charge)
+						else 0 end else 0 end as fre_total
 					, (	select 
 							case when kw.product_price is not null 
 							then kw.product_price + (case when kw.transport_price is not null then kw.transport_price else 0 end)  else 0 end 
@@ -1134,7 +1136,7 @@ select
 						order by ef_date desc limit 1) as price_unit 
 					
 					, sm.price_unit as line_price
-					, case when sp.state = 'freight_paid' then -sp.freight_balance else sp.freight_balance end as freight_balance
+					, case when sp.state = 'freight_paid' then -sp.freight_balance else 0 end as freight_balance
 					, rp.name as supp_name
 				from stock_picking sp 
 				inner join stock_move sm on

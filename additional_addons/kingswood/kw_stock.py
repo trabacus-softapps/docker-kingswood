@@ -15,6 +15,7 @@ import os
 import re
 import base64
 from pdfminer.pdfinterp import PDFResourceManager, process_pdf
+#from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from cStringIO import StringIO
@@ -884,6 +885,7 @@ class stock_picking_out(osv.osv):
         device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
     
         fp = file(path, 'rb')
+        #changed process_pdf to get_pages
         process_pdf(rsrcmgr, device, fp)
         fp.close()
         device.close()
@@ -1090,11 +1092,11 @@ class stock_picking_out(osv.osv):
                 browser.find_element_by_id('Password').send_keys(password)
                 browser.find_element_by_id('txtCaptcha')
                 browser.find_element_by_id('txtCaptcha').send_keys(captcha)
-                time.sleep(5)
+                time.sleep(2)
                 
                 browser.find_element_by_id('btn_login')
                 browser.find_element_by_id('btn_login').click()
-                time.sleep(5)
+                time.sleep(2)
                 try:
                     browser.find_element_by_id('lbl_error')
                     error = browser.find_element_by_id('lbl_error').text
@@ -1759,6 +1761,8 @@ class stock_picking_out(osv.osv):
         prod_obj =self.pool.get('kw.product.price')
         refund_vals = {}
         refund_ln_vals = {}
+        # to calculate the price from deduction_amount
+        price=(ln.deduction_amt/ln.rejected_qty)
         if type == 'in_refund': 
 #             partner_id = ln.supplier_id.partner_id.id
             partner_id = case.paying_agent_id.id
@@ -1773,7 +1777,7 @@ class stock_picking_out(osv.osv):
 #                             else:
 #                                 price = j.sub_total
             
-            price=(ln.deduction_amt/ln.rejected_qty)
+            
                          
             
             
@@ -1805,9 +1809,9 @@ class stock_picking_out(osv.osv):
         refund_vals.update({'invoice_line':[(0, 0, refund_ln_vals)]})
         if type =='in_refund':
             refund_vals.update({'supp_delivery_orders_ids': [(6, 0, [case.id])]}),
-#         else:
-#             refund_vals.update({'delivery_orders_ids': [(6, 0, [case.id])]}),
-#         
+        else:
+            refund_vals.update({'delivery_orders_ids': [(6, 0, [case.id])]}),
+         
         inv_obj.create(cr, uid, refund_vals,context=context)
 
     # Mail,IF no product rate while creating facilitator invoice by schedular
@@ -2168,8 +2172,10 @@ class stock_picking_out(osv.osv):
                  kw_paying_agent_id=case.paying_agent_id.id
                  if case.partner_id.freight or case.gen_freight :
                     freight=True
+                    company = company
                  else:
                     freight=False
+                    company = case.company_id.id
                  if case.type=="out":
                      type = case.type
                      loaded_qty = 0
@@ -2186,29 +2192,31 @@ class stock_picking_out(osv.osv):
                          if account_expense_sup:
                              hc_expense_sup = account_expense_sup[0]
                          if 'Firewood' in str(ln.product_id.name):
-                            if case.partner_id.state_id.code == "KA":
-                               if case.partner_id.state_id.id == case.paying_agent_id.state_id.id:
-                                   account_expense_sup = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Purchase of FW-Local')])
-                               else:
-                                   account_expense_sup = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Purchase of FW-Interstate')])
+                             
+                            if case.paying_agent_id.state_id.code == "KA":
+                                account_expense_sup = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Purchase of FW-Local')])
                                    
-                            if case.partner_id.state_id.code == "TN":
-                                    account_expense_sup = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Purchase of FW-Interstate-TN')])
-                            if case.partner_id.state_id.code == "AP":
+                            if case.paying_agent_id.state_id.code == "TN":
+                                account_expense_sup = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Purchase of FW-Interstate-TN')])
+                            
+                            if case.paying_agent_id.state_id.code == "AP":
                                     account_expense_sup = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Purchase of FW-Interstate-AP')]) 
+                         
                          else:
-                            if case.partner_id.state_id.code == "KA":
+                            if case.paying_agent_id.state_id.code == "KA":
                                if case.partner_id.state_id.id == case.paying_agent_id.state_id.id:
                                    account_expense_sup = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Purchase of wood-Local')])
+                               
                                if case.partner_id.state_id.id != case.paying_agent_id.state_id.id:
                                    account_expense_sup = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Purchase of wood-Interstate')])
                                         
-                            if case.partner_id.state_id.code == "TN":
+                            if case.paying_agent_id.state_id.code == "TN":
                                 if case.partner_id.state_id.id == case.paying_agent_id.state_id.id:
                                     account_expense_sup = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Purchase of wood-Local-TN')])
                                 else: 
                                     account_expense_sup = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Purchase of wood-Interstate-TN')])
-                            if case.partner_id.state_id.code == "AP":
+                            
+                            if case.paying_agent_id.state_id.code == "AP":
                                 if case.partner_id.state_id.id == case.paying_agent_id.state_id.id:
                                     account_expense_sup = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Purchase of wood-Local-AP')])
                                 else: 
@@ -2224,7 +2232,7 @@ class stock_picking_out(osv.osv):
                          if account_expense_sup:
                             vals['account_id'] = account_expense_sup[0]
                          if hc_expense_sup:
-                             handling_vals['account_id']=hc_expense_sup
+                             handling_vals['account_id']=hc_expense_sup[0]
                          #### for lacation name not equal to supplier (eg: kingswood)
                                       ###################################################################################
                             ######             FOR KW LOGISTIC Account Supplier Invoice
@@ -2322,12 +2330,15 @@ class stock_picking_out(osv.osv):
                                                     if not s_parent_id:
                                                          raise osv.except_osv(_('Warning'),_('"%s"Account Not Found in Kingswood Logistic"')% (j.partner_id.name,))
                                              if partner:
-                                                s_id.update({partner.id:s_parent_id})
+                                                comp_partner = (partner.id,company)
+                                                s_id.update({comp_partner:s_parent_id})
                                             
                                              #CHECK THE CODE
                                              if ln.rejected_qty > 0 and ln.deduction_amt > 0:
                                                  if price1 > 0:
                                                     refund = self.create_refund(cr, uid, ids,'in_refund',case, ln,price1,context=context)
+                                                    # for creating customer invoice
+                                                    self.create_refund(cr, uid, ids,'out_refund',case, ln,price1,context=context)
                                                     if refund: 
                                                         invoices.append(refund)
                                                                                 
@@ -2370,7 +2381,7 @@ class stock_picking_out(osv.osv):
                                          handling_ft=False
                                          journal=journal_id
                                          company_id=company1
-                                     a_id=s_id[partner.id]
+                                     a_id=s_id[(partner.id,company)]
                                          
                                      
                                      handling_group[handling_key]={
@@ -2677,6 +2688,7 @@ class stock_picking_out(osv.osv):
         inv1=False
         inv2=False
         inv3=False
+        c_acc_id = False
         inv_obj = self.pool.get('account.invoice')
         inv_groups = {} 
         freight_group= {}
@@ -2788,34 +2800,39 @@ class stock_picking_out(osv.osv):
 #                                         self.create_refund(cr, uid, ids,'out_refund',case, ln,price)
                         
                        cr.execute("select substr(value_reference,17)::integer from ir_property where name =  'property_account_income_categ' and res_id = 'product.category,' || %s", (ln.product_id.categ_id.id, ))
-                       account_expense = cr.fetchall()
-                       if ln.product_id.name == 'Firewood':
-                           if case.partner_id.state_id.code == "KA":
+                       account_expense1 = cr.fetchall()
+                       
+                       if 'Firewood' in ln.product_id.name :
+                           if case.paying_agent_id.state_id.code == "KA":
                               account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Firewood')]) 
-                           if case.partner_id.state_id.code == "TN":
+                           if case.paying_agent_id.state_id.code == "TN":
                               account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of FW-Interstate-TN')])
-                           if case.partner_id.state_id.code == "AP":
+                           if case.paying_agent_id.state_id.code == "AP":
                               account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of FW-Interstate-AP')]) 
                        else:
-                           if case.partner_id.state_id.code == "KA":
+                           #Karnataka
+                           if case.paying_agent_id.state_id.code == "KA":
                               if case.partner_id.state_id.id == case.paying_agent_id.state_id.id:
                                   account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Local')])
                               if case.partner_id.state_id.id != case.paying_agent_id.state_id.id:
                                   account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Interstate')])     
-                           if case.partner_id.state_id.code == "TN":
+                           #Tamilnadu
+                           if case.paying_agent_id.state_id.code == "TN":
                               if case.partner_id.state_id.id == case.paying_agent_id.state_id.id:
                                   account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Local-TN')])
                               if case.partner_id.state_id.id != case.paying_agent_id.state_id.id:
                                   account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Interstate-TN')]) 
 
-                           if case.partner_id.state_id.code == "AP":
+                           if case.paying_agent_id.state_id.code == "AP":
                               if case.partner_id.state_id.id == case.paying_agent_id.state_id.id:
                                   account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Local-AP')])
                               if case.partner_id.state_id.id != case.paying_agent_id.state_id.id:
-                                  account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Interstate-TN')])
+                                  account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Interstate-AP')])
                                                                                                     
                        if account_expense:
-                           val['account_id'] = account_expense[0]                                 
+                           val['account_id'] = account_expense[0]     
+                       else:
+                            val['account_id'] = account_expense1[0]                            
 #                        if price1==0 and price==0:
 #                               raise osv.except_osv(_('Warning'),_('Check Goods Price, Selected Customer "%s" Do Not Have Rate for "%s" In The Goods Master')% (case.partner_id.name,ln.product_id.name ))
                        
@@ -2891,7 +2908,8 @@ class stock_picking_out(osv.osv):
                                c_parent_id=case.partner_id.parent_id.account_rec and case.partner_id.parent_id.account_rec.id or False
                            if not c_parent_id:
                                 raise osv.except_osv(_('Warning'),_('"%s"Account Not Found in Kingswood Logistic"')% (case.partner_id.name,))
-                          
+                       else:
+                           c_acc_id = case.partner_id.property_account_receivable and case.partner_id.property_account_receivable.id or False
                                
                        
                        if not key in product_groups:                        
@@ -2913,7 +2931,8 @@ class stock_picking_out(osv.osv):
                                              'journal_id' : cust_journal_id,
                                              'branch_state':branch_state_id,
                                              'report':case.partner_id.split_invoice,
-                                             'cft':ln.product_id.cft
+                                             'cft':ln.product_id.cft,
+                                             'account_id':c_acc_id,
                                              }
                        else:
                            prod_obj=self.pool.get('kw.product.price')
@@ -2984,12 +3003,14 @@ class stock_picking_out(osv.osv):
                             inv_vals.update({
                                                     'delivery_orders_ids': [(6, 0, delivery_orders[p])],
                                                     'invoice_line': [(0, 0, product_groups[p])],
+                                                    
                                             })
                             if cft:
                                 inv_vals['invoice_line'] = [(0, 0, product_groups[p]),(0,0,product_cpf[p])]
                                 
                             inv_vals.update({'destination':destination,
                                              'journal_id' : cust_journal_id,
+                                              
                                              })
                             
                             inv1=inv_obj.create(cr, uid, inv_vals)
@@ -3287,6 +3308,8 @@ class stock_picking_out(osv.osv):
                     dc_count = dc_count[0]
                 else:
                     dc_count = 0
+                
+                print "dc_count,",dc_count,product_id,partner_id,paying_agent_id
                                 
                         
                 cr.execute("select count(id) from stock_picking where type='out' and product_id ="+ str(product_id) +" and partner_id ="+ str(partner_id) +" and paying_agent_id="+ str(paying_agent_id) +"and create_date::date = '"+str(today)+"' ::date")
@@ -3311,6 +3334,7 @@ class stock_picking_out(osv.osv):
                            +str(today)+"""' ::date and sm.location_id ="""+str(location_id))
                            
                            
+               
                 dc = cr.fetchone()
                 if dc:
                     dc = dc[0]
@@ -5359,7 +5383,7 @@ class stock_picking_in(osv.osv):
             cr.execute("SELECT invoice_id FROM incoming_shipment_invoice_rel where in_shipment_id = "+str(case.id))
             Iinv_ids = cr.fetchall()
             if Iinv_ids:
-                res[case.id]['sup_invoice'] = True
+                res[case.id] = True
         return res
 
     
@@ -5377,7 +5401,7 @@ class stock_picking_in(osv.osv):
               'product'         : fields.function(_get_move_lines,type="char", size=30, string="Product",store=True, multi="move_lines"),
               'qty'             : fields.function(_get_move_lines,type="float", string="Quantity",store=True, multi="move_lines"),
 
-              'location_id'     : fields.function(_get_move_lines,type="many2one",relation = 'stock.location',string="Location",store=True,multi="move_lines"),
+              'location_id'     : fields.function(_get_move_lines,type="many2one",relation = 'stock.location',string="Stock Location",store=True,multi="move_lines"),
            'dest_location_id'        : fields.many2one('stock.location','Location'),
               'product_id'      : fields.many2one('product.product', 'Products',track_visibility='onchange'),
               'truck_no'        : fields.char('Vehicle Number',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
@@ -5686,8 +5710,7 @@ class stock_picking_in(osv.osv):
         if ids:
             print "incoming", len(ids)
             print ids
-            cr.execute("""SELECT dr.in_shipment_id FROM incoming_shipment_invoice_rel dr inner 
-            join account_invoice ac on ac.id=dr.invoice_id WHERE dr.in_shipment_id  IN %s and ac.state <>'cancel'""",(tuple(ids),))             
+            cr.execute("""SELECT dr.in_shipment_id FROM incoming_shipment_invoice_rel dr inner join account_invoice ac on ac.id=dr.invoice_id WHERE dr.in_shipment_id  IN %s and ac.state <>'cancel'""",(tuple(ids),))             
 #             cr.execute("SELECT in_shipment_id FROM incoming_shipment_invoice_rel WHERE in_shipment_id IN %s ",(tuple(ids),))
             order_id = cr.fetchall()
         

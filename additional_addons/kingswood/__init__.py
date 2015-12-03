@@ -1,3 +1,4 @@
+import controllers
 import kw_product
 import kw_partner
 import kw_stock

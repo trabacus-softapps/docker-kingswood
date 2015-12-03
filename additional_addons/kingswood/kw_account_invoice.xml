@@ -167,6 +167,7 @@
 				<field name='destination'/>	
 				<field name="branch_state" required="1" attrs="{'readonly':[('state','!=','draft')]}"
 					domain="[('branch_office', '=', True)]"/>
+			    <field name="other_charges" attrs="{'readonly':[('state','not in','draft')]}"/>
  									
 					
 			</field>
@@ -323,6 +324,18 @@
 						<field name='delivery_orders_ids' context="{'form_view_ref':'kingswood.kw_stock_form', 'tree_view_ref':'kingswood.kw_stock_tree'}" readonly="1"/>
 					</page>
 				</xpath>
+                
+<!--                FOr adding Handling and transport details-->
+                <xpath expr="//page[@string='Other Info']" position="after">
+                    <page string="Transport / Handling Information" attrs="{'invisible':[('other_charges','!=',True)]}">
+                        <group col="4" colspan="2">
+                            <field name="transport_charges" attrs="{'required':[('other_charges','=',True)],'readonly':[('state','not in','draft')]}"/> 
+                            <field name="transport_acc_id" domain="[('company_id','=',company_id)]" attrs="{'required':[('other_charges','=',True)],'readonly':[('state','not in','draft')]}"/>
+                            <field name="loading_charges" attrs="{'required':[('other_charges','=',True)],'readonly':[('state','not in','draft')]}"/> 
+                            <field name="loading_acc_id" domain="[('company_id','=',company_id)]" attrs="{'required':[('other_charges','=',True)],'readonly':[('state','not in','draft')]}"/> 
+                        </group>
+                    </page>
+                </xpath>
 				
   		 </field>	
 		 </record>

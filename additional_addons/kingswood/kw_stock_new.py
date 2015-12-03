@@ -19,7 +19,7 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from cStringIO import StringIO
 import requests
-# from pyPdf import PdfFileWriter, PdfFileReader
+from pyPdf import PdfFileWriter, PdfFileReader
 
 import zipfile
 import logging
@@ -50,13 +50,8 @@ _logger = logging.getLogger(__name__)
 # FIXME: this is a temporary workaround because of a framework bug (ref: lp996816). It should be removed as soon as
 #        the bug is fixed
 # Need to remove the columns
-
-
-
 class stock_picking_out(osv.osv):
-    _name = "stock.picking.out"
-    _inherit=['stock.picking.out','mail.thread', 'ir.needaction_mixin']
-    
+    _inherit='stock.picking.out'
     
     
     
@@ -79,8 +74,7 @@ class stock_picking_out(osv.osv):
                 cr.execute("select customer_id from customer_list_rel where supplier_id = " + str(user.partner_id.id))         
                 custs = cr.fetchall()
                 for s in custs:
-                    cust_ids.append(s[0]) 
-                print res['fields'],"res[fields]"
+                    cust_ids.append(s[0])
                 for field in res['fields']:
                     if field == 'partner_id':
                         res['fields'][field]['domain'] = [('id','in', cust_ids)]
@@ -89,8 +83,7 @@ class stock_picking_out(osv.osv):
                 cr.execute("select id from res_partner")
                 custs=cr.fetchall()
                 for s in custs:
-                    cust_ids.append(s[0]) 
-                print res['fields'],"res[fields]"
+                    cust_ids.append(s[0])
                 for field in res['fields']:
                     if field == 'partner_id':
                         res['fields'][field]['domain'] = [('customer','=',True)]
@@ -106,8 +99,6 @@ class stock_picking_out(osv.osv):
 #                 node.set('required', '1')
 #             
 #             res['arch'] = etree.tostring(doc)
-                        
-        print res                
         return res
     
     def _get_paying_agent(self, cr, uid, ids, args, field_name, context = None):
@@ -250,53 +241,31 @@ class stock_picking_out(osv.osv):
         u_id=context.get('uid')
         if u_id:
             uid=u_id
-#         cr.execute("select login from res_users where id  ="+str(uid))
-#         user=cr.fetchone()[0]
-        product_change = False
+        cr.execute("select login from res_users where id  ="+str(uid))
+        user=cr.fetchone()[0]
+       
         for case in self.browse(cr, uid, ids):
             if case.type=='out':
                 for temp in case.move_lines:
-#                     if case.product_id.product_change:
-#                        product_change= case.product_id.product_change
-#                     self.write(cr, uid, [case.id],{'product_change':case.product_id.product_change},context = context)
-#                         
                     
                     res[case.id] = {'product': " ", 'qty':0.00,'transporter':" ",'price_unit':0.0,'users':'' ,'freight':''}
-#                     res[case.id]['product']  = temp.product_id.name
+                    res[case.id]['product']  = temp.product_id.name
                     res[case.id]['qty']  = temp.product_qty
                     res[case.id]['product_id']= temp.product_id.id
                     res[case.id]['price_unit'] = temp.price_unit
                     case.product_id.id=temp.product_id.id
-#                     res[case.id]['location_id']=temp.location_id.id
-                    cr.execute("select create_uid from stock_picking where id="+str(case.id))
-                    create_uid=cr.fetchone()[0]
-                    cr.execute("select login from res_users where id  ="+str(create_uid))
-                    user=cr.fetchone()[0]
+                    res[case.id]['location_id']=temp.location_id.id
                     res[case.id]['users']=user
                     res[case.id]['freight']=case.partner_id.freight
- 
                     cr.execute("select id from res_partner where lower(name) like 'kingswood%'")
                     paying_agent=cr.fetchall()
                     paying_agent=zip(*paying_agent)[0]
                     if case.paying_agent_id.id in paying_agent:
+                        
+                     
                         res[case.id]['transporter']  = case.transporter_id.name
                     else:
                         res[case.id]['transporter']  = case.driver_name  
-#                 d=case.id
-#                 
-#                 cr.execute("select to_char(s.date, 'YYYY') as year,to_char(s.date, 'MM') as month,to_char(s.date, 'YYYY-MM-DD') as day from stock_picking s where id =%s and type='out'",(d,))
-#                 date=cr.fetchall()[0]
-#                 if date:
-# #                     print "year",date[0]     
-# #                     print "month",date[1]
-# #                     print "day",date[1]   
-#                     cr.execute("UPDATE stock_picking SET year =%s where id=%s", (date[0],d))
-#                     cr.execute("UPDATE stock_picking SET month =%s where id=%s", (date[1],d))
-#                     cr.execute("UPDATE stock_picking SET day =%s where id=%s", (date[2],d))
-#                   
-#                 cr.execute("select product_id from stock_move where picking_id=%s",(d,))
-#                 product_id=date=cr.fetchone()[0]
-#                 cr.execute("UPDATE stock_picking SET product_id =%s where id=%s", (product_id,d))
                  
                
         return res
@@ -328,19 +297,6 @@ class stock_picking_out(osv.osv):
                          res[case.id] = False
                     if g.name == 'KW_Customer':
                         res[case.id] = True
-#             cr.execute("select to_char(s.date, 'YYYY') as year,to_char(s.date, 'MM') as month,to_char(s.date, 'YYYY-MM-DD') as day from stock_picking s where id =%s",(d,))
-#             date=cr.fetchall()[0]
-#             if date:
-#                 print "year",date[0]     
-#                 print "month",date[1]
-#                 print "day",date[1]   
-#                 cr.execute("UPDATE stock_picking SET year =%s where id=%s", (date[0],d))
-#                 cr.execute("UPDATE stock_picking SET month =%s where id=%s", (date[1],d))
-#                 cr.execute("UPDATE stock_picking SET day =%s where id=%s", (date[2],d))
-#                 
-#             cr.execute("select product_id from stock_move where picking_id=%s",(d,))
-#             product_id=date=cr.fetchone()[0]
-#             cr.execute("UPDATE stock_picking SET product_id =%s where id=%s", (product_id,d))
         return res
     
     def _get_user(self, cr, uid, ids, args, field_name, context = None):
@@ -375,7 +331,6 @@ class stock_picking_out(osv.osv):
                     if res[case.id]=='KW_Depot' or res[case.id] == 'KW_Admin':
                         
                         user = user_obj.browse(cr, uid, [uid])[0]
-                        print user.role
                         cr.execute("select id from res_partner where lower(name) like 'kingswood%'")
                         paying_agent=cr.fetchall()
                         paying_agent=zip(*paying_agent)[0]
@@ -383,8 +338,6 @@ class stock_picking_out(osv.osv):
                             if user.role=='representative':
                                 if case.paying_agent_id in paying_agent:
                                     case.paying_agent='representative'
-                
-                                    
                                         
                             else:
                                 if case.paying_agent_id in paying_agent:
@@ -488,7 +441,7 @@ class stock_picking_out(osv.osv):
                                                       ('assigned', 'Ready to Deliver'),
                                                       ('done', 'Delivered'),
                                                       ('cancel', 'Cancelled'),
-                                                      ('freight_paid','Freight Paid')],'Status', readonly=True, select=True,track_visibility='onchange',),
+                                                      ('freight_paid','Freight Paid')],'Status', readonly=True, select=True,),
               'freight_charge'   : fields.float('Freight Charge/MT',digits=(0,2),states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
               'freight_advance'  : fields.float('Freight Advance',digits=(0,2),states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}), 
               'driver_name'      : fields.char('Transporter/Owner Name',size=100,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
@@ -504,12 +457,11 @@ class stock_picking_out(osv.osv):
               'date_function'   : fields.function(_get_new_date,type='datetime',string="Creation Date",store=True),
               'paying_agent_id' : fields.many2one('res.partner','Paying Agent',states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
               'paying_agent'    : fields.function(_get_paying_agent,type='char',method=True,string="paying_agent", store=True),
-               'product'         : fields.function(_get_move_lines,type="char", size=30, string="Product",store=False, multi="move_lines"),
+              'product'         : fields.function(_get_move_lines,type="char", size=30, string="Product",store=True, multi="move_lines"),
               'qty'             : fields.function(_get_move_lines,type="float", string="Quantity",store=True, multi="move_lines"),
               'transporter'     : fields.function(_get_move_lines,type="char", size=30,string="Transporter",store=True,multi="move_lines"),
               'price_unit'      : fields.function(_get_move_lines,type="float",string="Unit Price",store=True,multi="move_lines"),
               'product_id'      : fields.many2one('product.product', 'Products'),
-              
               
               #for reporting purpose
               'invoice_line_id'    : fields.many2one('account.invoice.line', 'invoice line'),
@@ -518,18 +470,7 @@ class stock_picking_out(osv.osv):
               'location_id'     : fields.function(_get_move_lines,type="integer",string="location_id",store=True,multi="move_lines"),
               'users'           : fields.function(_get_move_lines,type="char", string="User",store=True, multi="move_lines"),
               'freight'         : fields.function(_get_move_lines,type="boolean",string="freight",store=True,multi="move_lines"), 
-             
-               #FOR VIEW PURPOSE
-               
-               'year': fields.char('Year', size=4, readonly=True),
-              'month': fields.selection([('01', 'January'), ('02', 'February'), ('03', 'March'), ('04', 'April'),
-                                            ('05', 'May'), ('06', 'June'), ('07', 'July'), ('08', 'August'), ('09', 'September'),
-                                            ('10', 'October'), ('11', 'November'), ('12', 'December')], 'Month', readonly=True),
-              'day': fields.char('Day', size=128, readonly=True),
-              
               }
-    
-    _order = 'date desc'
     
     _defaults = { 'hide_fields' : _get_default_permission,
                  'date_function': _get_default_new_date,
@@ -567,7 +508,6 @@ class stock_picking_out(osv.osv):
                 
         if log_user=='KW_Depot' or log_user == 'KW_Admin':
             user = user_obj.browse(cr, uid, [uid])[0]
-            print user.role
             cr.execute("select id from res_partner where lower(name) like 'kingswood%'")
             paying_agent=cr.fetchall()
             paying_agent=zip(*paying_agent)[0]
@@ -825,9 +765,6 @@ class stock_picking_out(osv.osv):
 #         if context.get('type', '') == 'out':
         user_id = self.pool.get('res.users').browse(cr, uid, [uid])[0]
         esugam_obj = self.pool.get('esugam.master')
-        voucher_obj = self.pool.get('account.voucher')
-        journal_obj = self.pool.get('account.journal')
-        
         desc =""
         qty = 0
         price = 0
@@ -855,10 +792,12 @@ class stock_picking_out(osv.osv):
                     raise osv.except_osv(_('Warning'),_('Please Enter the Valid Loaded Qty'))
                 
                 
-                print case.partner_id.gen_esugam    
+                  
             #for creating vKW_Depotoucher lines
             if case.partner_id.gen_esugam == True and user_id.partner_id.state_id.name =='Karnataka':
                 if case.transporter_id and case.freight_advance >0:
+                    voucher_obj = self.pool.get('account.voucher')
+                    journal_obj = self.pool.get('account.journal')
                     j_ids = journal_obj.search(cr, uid, [('name','=','Cash'),('company_id','=',case.company_id.id)]) 
                     voucher_vals1 = {   'partner_id'       : case.transporter_id.id,
                                           'type'              :   'payment',
@@ -878,6 +817,7 @@ class stock_picking_out(osv.osv):
                         url1 = e.url1
                         url2 = e.url2
                 esugam = self.generate_esugam(cr,uid,desc, qty, price, product_id, username, password, url1,url2, case, context)
+                self.write(cr, uid, ids, {'state':'in_transit','esugam_no':esugam})
             
             elif case.partner_id.gen_esugam == True and case.partner_id.state_id.name == 'Karnataka' and user_id.partner_id.state_id.name !='Andhra Pradesh':
                 esugam_ids = esugam_obj.search(cr, uid, [('state_id','=',case.partner_id.state_id.id)])
@@ -886,6 +826,7 @@ class stock_picking_out(osv.osv):
                 url1 = case.partner_id.es_url1
                 url2 = case.partner_id.es_url2
                 esugam = self.generate_esugam(cr, uid, desc, qty, price, product_id, username, password, url1, url2, case, context)
+                self.write(cr, uid, ids, {'state':'in_transit','esugam_no':esugam})          
 
             self.write(cr, uid, ids, {'state':'in_transit','esugam_no':esugam}) 
             move_obj.action_done(cr, uid, move_ids, context=None)
@@ -944,150 +885,151 @@ class stock_picking_out(osv.osv):
         move_obj = self.pool.get('stock.move')
         today = time.strftime('%Y-%m-%d %H:%M:%S')
         for case in self.browse(cr, uid, ids):
-            for ln in case.move_lines:
-               
-                if not ln.unloaded_qty >0 and not ln.rejected_qty >0:
-                    raise osv.except_osv(_('Warning'),_('Please Enter the Valid Qty in Unloaded and Rejected'))
-                    
-                if ln.delivery_date > today:
-                    raise osv.except_osv(_('Warning'),_('Please Enter the Valid Delivery Date'))
-        return self.write(cr, uid, ids, {'state':'done'}, context=context)
+                for ln in case.move_lines:
+                   
+                    if not ln.unloaded_qty >0 and not ln.rejected_qty >0:
+                        raise osv.except_osv(_('Warning'),_('Please Enter the Valid Qty in Unloaded and Rejected'))
+                        
+                    if ln.delivery_date > today:
+                        raise osv.except_osv(_('Warning'),_('Please Enter the Valid Delivery Date'))
+                self.write(cr, uid, ids, {'state':'done'}, context=context)
+        return True
     
-#     def print_report(self,cr,uid,ids,context=None):
-#         rep_obj = self.pool.get('ir.actions.report.xml')
-#         res={}
-#         res1={}
-#         data = {}
-#         data2 ={}
-#         attachment_obj = self.pool.get('ir.attachment') 
-#         pwriter = PdfFileWriter()
-# #         os.makedirs('/home/serveradmin/Desktop/temp')
-#         for i in self.browse(cr,uid,ids):
-#             id=i.id
-#             name=i.name
-#             if i.partner_id.freight==False:
-#                 res = rep_obj.pentaho_report_action(cr, uid, 'Delivery Challan', ids,None,None)
-#                 
-#                 res = netsvc.LocalService('report.' + 'Delivery Challan')
-#                 (f1, format) = res.create(cr, uid, ids, data, context) 
-# #                 f=open('Desktop/temp/') 
-# #                 dc_file1 = file("/home/serveradmin/Desktop/temp/delivery_challan.pdf", 'w')
-#                 dc_file1 = file('/tmp/'+i.name+'.pdf','wb')
-#                 dc_file1.write(f1)
-#                 dc_file1.close()
-#                 
-# #                 dc_file4 = file("/home/serveradmin/Desktop/temp/delivery_challan.pdf", 'rb')
-#                 dc_file1 = open('/tmp/'+i.name+'.pdf','rb')
-#                 data = dc_file4.read()
-#                 dc_file4.close()
-#                 
-#                 
-#             else:
-#                 
-# #                 res = rep_obj.pentaho_report_action(cr, uid, 'Delivery Challan', ids,None,None)
-# # #                 ofile = file("/Downloads/" + str('Delivery Challan') + ".pdf", 'wb')           
-# # #                 pwriter = PdfFileWriter()
-# #                 res1 = rep_obj.pentaho_report_action(cr, uid, 'Delivery Challan1', ids,None,None)
-#                 
-#                 res = netsvc.LocalService('report.' + 'Delivery Challan')
-#                 (f1, format) = res.create(cr, uid, ids, data, context)  
-# #                 dc_file1 = file("/home/serveradmin/Desktop/temp/delivery_challan.pdf", 'w')
-#                 dc_file1 = open('/tmp/'+i.name+'.pdf','wb')
-#                 dc_file1.write(f1)
-#                 dc_file1.close()
-# 
-#                 
-#                 res1 = netsvc.LocalService('report.' + 'Delivery Challan1')
-#                 (f2, format) = res1.create(cr, uid, ids, data2, context)
-#                 dc_file2 = file("/home/serveradmin/Desktop/temp/delivery_challan1.pdf", 'w')
-# #                 dc_file1 = open('/tmp/'+i.name+'1.pdf','wb')
-#                 dc_file2.write(f2)
-#                 dc_file2.close()
-#                 
-# #                 current_file='/tmp/'+i.name+'.pdf'
-# #                 current_file1='/tmp/'+i.name+'1.pdf'
-#                 
-#                 current_file="/home/serveradmin/Desktop/temp/delivery_challan.pdf"
-#                 current_file1="/home/serveradmin/Desktop/temp/delivery_challan1.pdf"
-#                 
-#                 
-#                 pfile = PdfFileReader(file("/home/serveradmin/Desktop/temp/delivery_challan.pdf", 'rb'))  
-# #                 pfile = PdfFileReader(file(current_file, 'rb')) 
-#                 for page in range(0, pfile.getNumPages()): 
-#                     pwriter.addPage(pfile.getPage(page))
-#                 
-#                 dfile = PdfFileReader(file("/home/serveradmin/Desktop/temp/delivery_challan1.pdf", 'rb')) 
-# #                 dfile = PdfFileReader(file(current_file1, 'rb'))  
-#                 for page in range(0, dfile.getNumPages()): 
-#                     pwriter.addPage(dfile.getPage(page))
-#                     
-#                 
-#                 dc_file3 = file("/home/serveradmin/Desktop/temp/delivery_challan3.pdf", 'w')
-#                 pwriter.write(dc_file3)
-#                 dc_file3.close()
-#                 
-#                 dc_file4 = file("/home/serveradmin/Desktop/temp/delivery_challan3.pdf", 'rb')
-#                 data = dc_file4.read()
-#                 dc_file4.close()
-#                 print 'id',id
-# 
-#             
-# 
-#             attval = {}
-#             cr.execute("select id from ir_attachment where res_id = " + str(id) + " and res_model = 'stock.picking.out' and name = '"+ str(name) +".pdf'")
-#             file_att = cr.fetchall()
-#             if file_att:
-#                 file_att=file_att[0]
-# 
-#             if not file_att:
-# 
-#                 attval = {
-# 
-#                         'name'       : str(name) + ".pdf",
-#                         'res_model': self._name,
-#                         'datas'   : str(base64.encodestring(data)) ,
-#                         'res_id'  : id,
-#                         'datas_fname': str(name) + ".pdf",
-#                         'type'    : 'binary',
-#                         
-# 
-#                          }
-# 
-#                 attachment_obj.create(cr,uid,attval,context=context)  
-#               
-#             else: 
-#                 str1=str(base64.encodestring(data))
-#                 obj="stock.picking.out"
-#                 res_id=file_att[0]
-#                 cr.execute("UPDATE ir_attachment SET db_datas=%s where id=%s", (str1,res_id))  
-#                     
-#         return True
-
-    def print_delivery_challan(self,cr,uid,ids,context=None):
+    def print_report(self,cr,uid,ids,context=None):
         rep_obj = self.pool.get('ir.actions.report.xml')
         res={}
         res1={}
         data = {}
         data2 ={}
         attachment_obj = self.pool.get('ir.attachment') 
-#         pwriter = PdfFileWriter()
+        pwriter = PdfFileWriter()
 #         os.makedirs('/home/serveradmin/Desktop/temp')
-        
-        res = rep_obj.pentaho_report_action(cr, uid, 'Delivery Challan', ids,None,None)
+        for i in self.browse(cr,uid,ids):
+            id=i.id
+            name=i.name
+            if i.partner_id.freight==False:
+                res = rep_obj.pentaho_report_action(cr, uid, 'Delivery Challan', ids,None,None)
+                 
+                res = netsvc.LocalService('report.' + 'Delivery Challan')
+                (f1, format) = res.create(cr, uid, ids, data, context) 
+#                 f=open('Desktop/temp/') 
+                dc_file1 = file("/home/serveradmin/Desktop/temp/delivery_challan.pdf", 'w')
+#                 dc_file1 = file('/tmp/'+i.name+'.pdf','wb')
+                dc_file1.write(f1)
+                dc_file1.close()
+                 
+                dc_file4 = file("/home/serveradmin/Desktop/temp/delivery_challan.pdf", 'rb')
+#                 dc_file1 = open('/tmp/'+i.name+'.pdf','rb')
+                data = dc_file4.read()
+                dc_file4.close()
+                 
+                 
+            else:
+                 
+#                 res = rep_obj.pentaho_report_action(cr, uid, 'Delivery Challan', ids,None,None)
+# #                 ofile = file("/Downloads/" + str('Delivery Challan') + ".pdf", 'wb')           
+# #                 pwriter = PdfFileWriter()
+#                 res1 = rep_obj.pentaho_report_action(cr, uid, 'Delivery Challan1', ids,None,None)
+                 
+                res = netsvc.LocalService('report.' + 'Delivery Challan')
+                (f1, format) = res.create(cr, uid, ids, data, context)  
+                dc_file1 = file("/home/serveradmin/Desktop/temp/delivery_challan.pdf", 'w')
+#                 dc_file1 = open('/tmp/'+i.name+'.pdf','wb')
+                dc_file1.write(f1)
+                dc_file1.close()
+ 
+                 
+                res1 = netsvc.LocalService('report.' + 'Delivery Challan1')
+                (f2, format) = res1.create(cr, uid, ids, data2, context)
+                dc_file2 = file("/home/serveradmin/Desktop/temp/delivery_challan1.pdf", 'w')
+#                 dc_file1 = open('/tmp/'+i.name+'1.pdf','wb')
+                dc_file2.write(f2)
+                dc_file2.close()
+                 
+#                 current_file='/tmp/'+i.name+'.pdf'
+#                 current_file1='/tmp/'+i.name+'1.pdf'
+                 
+                current_file="/home/serveradmin/Desktop/temp/delivery_challan.pdf"
+                current_file1="/home/serveradmin/Desktop/temp/delivery_challan1.pdf"
+                 
+                 
+                pfile = PdfFileReader(file("/home/serveradmin/Desktop/temp/delivery_challan.pdf", 'rb'))  
+#                 pfile = PdfFileReader(file(current_file, 'rb')) 
+                for page in range(0, pfile.getNumPages()): 
+                    pwriter.addPage(pfile.getPage(page))
+                 
+                dfile = PdfFileReader(file("/home/serveradmin/Desktop/temp/delivery_challan1.pdf", 'rb')) 
+#                 dfile = PdfFileReader(file(current_file1, 'rb'))  
+                for page in range(0, dfile.getNumPages()): 
+                    pwriter.addPage(dfile.getPage(page))
+                     
+                 
+                dc_file3 = file("/home/serveradmin/Desktop/temp/delivery_challan3.pdf", 'w')
+                pwriter.write(dc_file3)
+                dc_file3.close()
+                 
+                dc_file4 = file("/home/serveradmin/Desktop/temp/delivery_challan3.pdf", 'rb')
+                data = dc_file4.read()
+                dc_file4.close()
+ 
+             
+ 
+            attval = {}
+            cr.execute("select id from ir_attachment where res_id = " + str(id) + " and res_model = 'stock.picking.out' and name = '"+ str(name) +".pdf'")
+            file_att = cr.fetchall()
+            if file_att:
+                file_att=file_att[0]
+ 
+            if not file_att:
+ 
+                attval = {
+ 
+                        'name'       : str(name) + ".pdf",
+                        'res_model': self._name,
+                        'datas'   : str(base64.encodestring(data)) ,
+                        'res_id'  : id,
+                        'datas_fname': str(name) + ".pdf",
+                        'type'    : 'binary',
+                         
+ 
+                         }
+ 
+                attachment_obj.create(cr,uid,attval,context=context)  
+               
+            else: 
+                str1=str(base64.encodestring(data))
+                obj="stock.picking.out"
+                res_id=file_att[0]
+                cr.execute("UPDATE ir_attachment SET db_datas=%s where id=%s", (str1,res_id))  
+                     
+        return True
 
+    def print_report1(self,cr,uid,ids,context=None):
+        rep_obj = self.pool.get('ir.actions.report.xml')
+        res={}
+        res1={}
+        data = {}
+        data2 ={}
+        attachment_obj = self.pool.get('ir.attachment') 
+        pwriter = PdfFileWriter()
+#         os.makedirs('/home/serveradmin/Desktop/temp')
+         
+        res = rep_obj.pentaho_report_action(cr, uid, 'Delivery Challan', ids,None,None)
+ 
         return res
     
     
-    def print_freight_advice(self,cr,uid,ids,context=None):
+    def print_report2(self,cr,uid,ids,context=None):
         rep_obj = self.pool.get('ir.actions.report.xml')
         res={}
         res1={}
-        data = {}
+        data1 = {}
         data2 ={}
         attachment_obj = self.pool.get('ir.attachment') 
-#         pwriter = PdfFileWriter()
+        pwriter = PdfFileWriter()
 #         os.makedirs('/home/serveradmin/Desktop/temp')
         res = rep_obj.pentaho_report_action(cr, uid, 'Freight Advice', ids,None,None)
+ 
         return res
         
 #         res = rep_obj.pentaho_report_action(cr, uid, 'Delivery Challan', ids,None,None)
@@ -1100,7 +1042,7 @@ class stock_picking_out(osv.osv):
 #         for i in self.browse(cr,uid,ids):
 #             id=i.id
 #             name=i.name
-#             (f1, format) = res.create(cr, uid, ids, data, context)  
+#             (f1, format) = res.create(cr, uid, ids, data1, context)  
 #             dc_file1 = file("/home/serveradmin/Desktop/temp/delivery_challan.pdf", 'w')
 # #             dc_file1 = open('/tmp/'+i.name+'.pdf','wb')
 #             dc_file1.write(f1)
@@ -1137,7 +1079,7 @@ class stock_picking_out(osv.osv):
 #             dc_file3.close()
 #                 
 #             dc_file4 = file("/home/serveradmin/Desktop/temp/delivery_challan3.pdf", 'rb')
-#             data = dc_file4.read()
+#             data1 = dc_file4.read()
 #             dc_file4.close()
 #             print 'id',id
 #  
@@ -1155,7 +1097,7 @@ class stock_picking_out(osv.osv):
 #  
 #                         'name'       : str(name) + ".pdf",
 #                         'res_model': self._name,
-#                         'datas'   : str(base64.encodestring(data)) ,
+#                         'datas'   : str(base64.encodestring(data1)) ,
 #                         'res_id'  : id,
 #                         'datas_fname': str(name) + ".pdf",
 #                         'type'    : 'binary',
@@ -1163,26 +1105,22 @@ class stock_picking_out(osv.osv):
 #  
 #                          }
 #  
-#                 attachment_obj.create(cr,uid,attval,context=context) 
+# #                 attachment_obj.create(cr,uid,attval,context=context) 
 #                 
 # #                 dict: {'type': 'ir.actions.report.xml', 'datas': {'output_type': u'pdf', 'model': u'stock.picking.out', 'ids': [1404]}, 
 # #                         'report_name': u'Delivery Challan'}
 #                 
 #                 main_obj = pooler.get_pool(cr.dbname).get('stock.picking.out')
 # 
-#                 res = main_obj.search(cr, uid, ids)
+#                 res = main_obj.search(cr, uid,[('id','=',id)])
 # 
 #                 data = {}
-#                 
-#                 date['datas']=data
-#                 
 #                 data['ids'] = ids
-# 
 #                 data['model'] = 'stock.picking.out'
 # 
 #                 return {
 # 
-#                             'report_name': 'Delivery Challan',           
+#                             'report_name': 'Delivery Challan1',           
 # 
 #                             'type': 'ir.actions.report.xml',           
 # 
@@ -1192,7 +1130,7 @@ class stock_picking_out(osv.osv):
 # 
 #                 }
 #                 
-#         return True
+# #         return True
     
     
 
@@ -1238,7 +1176,6 @@ class stock_picking_out(osv.osv):
             refund_vals.update({'supp_delivery_orders_ids': [(6, 0, [case.id])]}),
         else:
             refund_vals.update({'delivery_orders_ids': [(6, 0, [case.id])]}),
-        print "refund_vals", refund_vals
         inv_obj.create(cr, uid, refund_vals)
 
    
@@ -1276,125 +1213,113 @@ class stock_picking_out(osv.osv):
         #TO check whether the invoices has been created for selected delivery orders
         cr.execute('SELECT del_ord_id FROM delivery_invoice_rel WHERE del_ord_id IN %s',(tuple(ids),))
         order_id = cr.fetchall()
-        print 'order_id' , order_id
         if order_id:
             raise osv.except_osv(_('Warning'),_('Invoice Already Created for the Selected Delivery Order'))
   
         for case in self.browse(cr, uid, ids):
-            type=case.type
-            if type=="out":
-#             print 'id-', uid
-#             if case.user_log != 'KW_Admin':
-#                 raise osv.except_osv(_('Warning'),_('You Cannot Create Invoice For The Delivery Challan'))
-                if case.state in ('done','freight_paid'):
-                   val={}
-                   vals={}
-                   val['price_unit'] = 0
-                   freight_val={}
-                   freight_val['price_unit'] = 0
-                   for ln in case.move_lines:
-                       price=0
-                       prod_obj=self.pool.get('kw.product.price')
-                       for i in ln.product_id.customer_ids:
-                           if case.partner_id.id == i.name.id:
-                                prod_ids=prod_obj.search(cr, uid, [('ef_date','<=',case.date),('cust_info_id','=',i.id)],limit=1, order='ef_date desc')
-                                for j in prod_obj.browse(cr,uid,prod_ids):
-                                    if case.partner_id.freight:
-                                        if j.transport_price>0:
-                                            price = j.product_price
-                                        else:
-                                            raise osv.except_osv(_('Warning'),_('Update the Freight Price in "%s" Product Master For The customer "%s"')% (ln.product_id.name,case.partner_id.name,))
+            if case.user_log != 'KW_Admin':
+                raise osv.except_osv(_('Warning'),_('You Cannot Create Invoice For The Delivery Challan'))
+            if case.state in ('done','freight_paid'):
+               val={}
+               vals={}
+               val['price_unit'] = 0
+               freight_val={}
+               freight_val['price_unit'] = 0
+               for ln in case.move_lines:
+                   price=0
+                   prod_obj=self.pool.get('kw.product.price')
+                   for i in ln.product_id.customer_ids:
+                       if case.partner_id.id == i.name.id:
+                            prod_ids=prod_obj.search(cr, uid, [('ef_date','<=',case.date),('cust_info_id','=',i.id)],limit=1, order='ef_date desc')
+                            for j in prod_obj.browse(cr,uid,prod_ids):
+                                if case.partner_id.freight:
+                                    if j.transport_price>0:
+                                        price = j.product_price
                                     else:
-                                        price = j.product_price +j.transport_price 
-                                val['price_unit']  = price
-                                # for creating Customer and Paying agents Refunds if rejected Quantity is > 0
-                                if ln.rejected_qty > 0:
-                                    self.create_refund(cr, uid, ids,'in_refund',case, ln,price)
-                                    self.create_refund(cr, uid, ids,'out_refund',case, ln,price)
-                        
-                       cr.execute("select substr(value_reference,17)::integer from ir_property where name =  'property_account_income_categ' and res_id = 'product.category,' || %s", (ln.product_id.categ_id.id, ))
+                                        raise osv.except_osv(_('Warning'),_('Update the Freight Price in "%s" Product Master For The customer "%s"')% (ln.product_id.name,case.partner_id.name,))
+                                else:
+                                    price = j.product_price +j.transport_price 
+                            val['price_unit']  = price
+                            # for creating Customer and Paying agents Refunds if rejected Quantity is > 0
+                            if ln.rejected_qty > 0:
+                                self.create_refund(cr, uid, ids,'in_refund',case, ln,price)
+                                self.create_refund(cr, uid, ids,'out_refund',case, ln,price)
+                    
+                   cr.execute("select substr(value_reference,17)::integer from ir_property where name =  'property_account_income_categ' and res_id = 'product.category,' || %s", (ln.product_id.categ_id.id, ))
+                   account_expense = cr.fetchall()
+                   if account_expense:
+                       val['account_id'] = account_expense[0]
+                   if price==0:
+                          raise osv.except_osv(_('Warning'),_('Check Goods Price, Selected Customer "%s" Do Not Have Rate for "%s" In The Goods Master')% (case.partner_id.name,ln.product_id.name ))
+                   
+                   freight_obj=self.pool.get('product.product')
+                   freight_ids=freight_obj.search(cr, uid, [('name_template','=','Freight')])
+                   for ft in freight_obj.browse(cr,uid,freight_ids):
+                       freight_val['product_id']=ft.id
+                       freight_val['name']=ft.name_template
+                       freight_val['quantity'] = ln.unloaded_qty
+                       freight_val['uos_id']=ft.uom_id.id
+                       cr.execute("select substr(value_reference,17)::integer from ir_property where name =  'property_account_income_categ' and res_id = 'product.category,' || %s", (ft.categ_id.id, ))
                        account_expense = cr.fetchall()
                        if account_expense:
-                           val['account_id'] = account_expense[0]
-                       if price==0:
-                              raise osv.except_osv(_('Warning'),_('Check Goods Price, Selected Customer "%s" Do Not Have Rate for "%s" In The Goods Master')% (case.partner_id.name,ln.product_id.name ))
-                       
-                       freight_obj=self.pool.get('product.product')
-                       freight_ids=freight_obj.search(cr, uid, [('name_template','=','Freight')])
-                       for ft in freight_obj.browse(cr,uid,freight_ids):
-                           freight_val['product_id']=ft.id
-                           freight_val['name']=ft.name_template
-                           freight_val['quantity'] = ln.unloaded_qty
-                           freight_val['uos_id']=ft.uom_id.id
-                           print "ft.categ_id.id",ft.categ_id.id
-                           cr.execute("select substr(value_reference,17)::integer from ir_property where name =  'property_account_income_categ' and res_id = 'product.category,' || %s", (ft.categ_id.id, ))
-                           account_expense = cr.fetchall()
                            if account_expense:
-                               if account_expense:
-                                   freight_val['account_id'] = account_expense[0]
-     #to do freight line in invoice line readonly                      
-    #                        freight_val['state'] = 'done' 
-                           
-                       val['product_id'] = ln.product_id.id
-                       val['name'] = ln.name
-                       val['quantity'] = ln.unloaded_qty
-                       val['rejected_qty'] = ln.rejected_qty
-                       val['uos_id'] = ln.product_uom.id
-                       val['state'] = 'draft' 
+                               freight_val['account_id'] = account_expense[0]
+ #to do freight line in invoice line readonly                      
+#                        freight_val['state'] = 'done' 
                        
-                       #for Checking the state and update the taxes according to the state
-                       if case.partner_id.state_id.name == 'Karnataka':
-                           cr.execute("select tax_id from product_taxes_rel where prod_id=%s",(ln.product_id.id,))
-                           tax_obj=cr.fetchall()
-                       else:
-                            cr.execute("select tax_id from product_csttaxes_rel where prod_id=%s",(ln.product_id.id,))
-                            tax_obj = cr.fetchall() 
-                           
-                       if tax_obj: 
-                           val.update({
-                                               'invoice_line_tax_id': [(6, 0,list(tax_obj[0]))]
-                                       })
-                       i=[]
+                   val['product_id'] = ln.product_id.id
+                   val['name'] = ln.name
+                   val['quantity'] = ln.unloaded_qty
+                   val['rejected_qty'] = ln.rejected_qty
+                   val['uos_id'] = ln.product_uom.id
+                   val['state'] = 'draft' 
+                   
+                   #for Checking the state and update the taxes according to the state
+                   if case.partner_id.state_id.name == 'Karnataka':
+                       cr.execute("select tax_id from product_taxes_rel where prod_id=%s",(ln.product_id.id,))
+                       tax_obj=cr.fetchall()
+                   else:
+                        cr.execute("select tax_id from product_csttaxes_rel where prod_id=%s",(ln.product_id.id,))
+                        tax_obj = cr.fetchall() 
                        
-                       #for grouping the customer invoices based on product,price and partner_id
-                       key = ln.product_id.id,price,case.partner_id.id,ln.delivery_date
-                       sup_grp[key]=vals
-                       if not key in product_groups:                           
-                           product_groups[key] = val.copy()
-                           freight_group[key] = freight_val.copy()
-                           delivery_orders[key] = [case.id]
-                           inv_groups[key] = {'partner_id'   : case.partner_id.id,
-                                             'date_invoice': ln.delivery_date,
-                                             'type':   'out_invoice',
-                                             
-                                             }
-                       else:
-                           prod_obj=self.pool.get('kw.product.price')
-                           for i in ln.product_id.customer_ids:
-                              
-                                if case.partner_id.id == i.name.id:
-                                  prod_ids=prod_obj.search(cr, uid, [('ef_date','<=',case.date),('cust_info_id','=',i.id)],limit=1, order='ef_date desc')
-                               
-                                  for j in prod_obj.browse(cr,uid,prod_ids):
-                                       val['price_unit']  = j.product_price
-          
-                                       print product_groups[key]['quantity']
-                                       product_groups[key]['quantity'] += ln.unloaded_qty
-                                       
-                                       product_groups[key]['rejected_qty'] += ln.rejected_qty
-                                       val['price_unit']  += ln.product_id.list_price
-                                       print "freight_group[key]['quantity']",freight_group[key]['quantity']
-                                       freight_group[key]['quantity']+=ln.unloaded_qty
-                                       delivery_orders[key].append(case.id)
-                                       print "freight_group[key]",freight_group[key]
-                      
-                                       
-                else:
-                    raise osv.except_osv(_('Warning'),_('Delivery Order "%s" Should Be In Delivered State')% (case.name,))  
+                   if tax_obj: 
+                       val.update({
+                                           'invoice_line_tax_id': [(6, 0,list(tax_obj[0]))]
+                                   })
+                   i=[]
+                   
+                   #for grouping the customer invoices based on product,price and partner_id
+                   key = ln.product_id.id,price,case.partner_id.id,ln.delivery_date
+                   sup_grp[key]=vals
+                   if not key in product_groups:                           
+                       product_groups[key] = val.copy()
+                       freight_group[key] = freight_val.copy()
+                       delivery_orders[key] = [case.id]
+                       inv_groups[key] = {'partner_id'   : case.partner_id.id,
+                                         'date_invoice': ln.delivery_date,
+                                         'type':   'out_invoice',
+                                         
+                                         }
+                   else:
+                       prod_obj=self.pool.get('kw.product.price')
+                       for i in ln.product_id.customer_ids:
+                          
+                            if case.partner_id.id == i.name.id:
+                              prod_ids=prod_obj.search(cr, uid, [('ef_date','<=',case.date),('cust_info_id','=',i.id)],limit=1, order='ef_date desc')
+                           
+                              for j in prod_obj.browse(cr,uid,prod_ids):
+                                   val['price_unit']  = j.product_price
+                                   product_groups[key]['quantity'] += ln.unloaded_qty
+                                   
+                                   product_groups[key]['rejected_qty'] += ln.rejected_qty
+                                   val['price_unit']  += ln.product_id.list_price
+                                   freight_group[key]['quantity']+=ln.unloaded_qty
+                                   delivery_orders[key].append(case.id)
+            else:
+                raise osv.except_osv(_('Warning'),_('Delivery Order "%s" Should Be In Delivered State')% (case.name,))  
         
           #Supplier Invoice
          ### Supplier freight if kw_depot or kw_admin creates delivery order behalf of Supplier
-        
         order_line = {} 
         tax_vals={}
         vals={}
@@ -1412,328 +1337,306 @@ class stock_picking_out(osv.osv):
         freight_del_orders = {}
         freight_inv_group = {}
         freight_invoice_lines = {}
-        handling_invoices ={}
         name=""
         journal_id = journal_obj.search(cr, uid, [('type', '=', 'purchase_refund')])[0]
         sup_freight_val['price_unit']=0
         for case in self.browse(cr, uid, ids):  
-            if case.type=="out":
-                a=""
-                loaded_qty = 0
-                rejected_qty = 0
-                for ln in case.move_lines:
-                    name=ln.location_id.name
+            a=""
+            loaded_qty = 0
+            rejected_qty = 0
+            for ln in case.move_lines:
+                name=ln.location_id.name
+                if ln.location_id.name == "Suppliers":
+                    cr.execute("select substr(value_reference,17)::integer from ir_property where name =  'property_account_expense_categ' and res_id = 'product.category,' || %s", (ft.categ_id.id,))
+                    ft_account_expense = cr.fetchall()
+                    if ft_account_expense:
+                        sup_freight_val['account_id'] = ft_account_expense[0]    
+                    sup_freight_val['product_id']=ft.id
+                    sup_freight_val['name']=ft.name_template
+                    sup_freight_val['quantity'] = ln.unloaded_qty
+                    sup_freight_val['uos_id']=ft.uom_id.id
+                    sup_freight_val['state'] = 'done' 
+#                     sup_freight_val['price_unit'] += case.freight_total
+                    
+                    supp_freight_del_orders.append(case.id)
+                    
+                    
+                    vals['product_id'] = ln.product_id.id
+                    vals['name'] = ln.name
+                    vals['quantity'] = ln.unloaded_qty
+                    vals['rejected_qty'] = ln.rejected_qty
+                    vals['uos_id'] = ln.product_uom.id    
+                    vals['price_unit'] = 0
+                    vals['move_line_id'] = ln.id
+                    cr.execute("select substr(value_reference,17)::integer from ir_property where name =  'property_account_expense_categ' and res_id = 'product.category,' || %s", (ln.product_id.categ_id.id, ))
+                    account_expense = cr.fetchall()
+                    if account_expense:
+                        vals['account_id'] = account_expense[0]
+                    for i in ln.product_id.seller_ids:
+                         if case.paying_agent_id.id == i.name.id:
+                            prod_ids=prod_obj.search(cr, uid, [('ef_date','<=',case.date),('supp_info_id','=',i.id)],limit=1, order='ef_date desc')
+                            for j in prod_obj.browse(cr,uid,prod_ids):
+                                price1 = j.product_price
+                                vals['price_unit']  = price1
+                                if case.partner_id.freight == True:
+                                    if j.transport_price==0:
+                                        raise osv.except_osv(_('Warning'),_('Update the Freight Price in "%s" Product Master For The Facilitator "%s"')% (ln.product_id.name,case.paying_agent_id.name,))
+                                freight_price = j.transport_price
+                                sup_freight_val['price_unit'] = freight_price
+                    if ln.location_id.name != "Suppliers":
+                        price1=1
+                    if price1==0:
+                        raise osv.except_osv(_('Warning'),_('Check Goods Price, Selected Supplier "%s" Do Not Have Rate for "%s" In The Goods Master')% (case.paying_agent_id.name,ln.product_id.name ))
+           
+                    #check for the key
+                    supp_key = case.paying_agent_id.id,case.partner_id.freight,freight_price,ln.delivery_date
+                    freight_key = case.paying_agent_id.id, case.partner_id.id,freight_price,ln.delivery_date
+                    product_key =case.paying_agent_id.id,ln.product_id.id,ln.price_unit
+                    
+                    #grouping the supplier invoices based on supplier,freight, and freight_price 
                     if ln.location_id.name == "Suppliers":
-                        cr.execute("select substr(value_reference,17)::integer from ir_property where name =  'property_account_expense_categ' and res_id = 'product.category,' || %s", (ft.categ_id.id,))
-                        ft_account_expense = cr.fetchall()
-                        if ft_account_expense:
-                            sup_freight_val['account_id'] = ft_account_expense[0]    
-                        sup_freight_val['product_id']=ft.id
-                        sup_freight_val['name']=ft.name_template
-                        sup_freight_val['quantity'] = ln.unloaded_qty
-                        sup_freight_val['uos_id']=ft.uom_id.id
-                        sup_freight_val['state'] = 'done' 
-    #                     sup_freight_val['price_unit'] += case.freight_total
+                        if supp_key not in supp_inv_group :
+                            supp_del_orders[supp_key] =[case.id]
+                            supp_inv_group[supp_key] = {'partner_id'   : case.paying_agent_id.id,
+                                                        'date_invoice': ln.delivery_date,
+                                                        'type':   'in_invoice',
+#                                                      'freight':freight,
+                                                  'journal_id' : journal_id,
+                                                 }
+                            supp_invoice_lines[supp_key] = [(vals.copy())]
+                            if case.partner_id.freight == False:
+                                supp_invoice_lines[supp_key][0]['price_unit'] += freight_price
+                            freight_vals[supp_key] = [(sup_freight_val.copy())]
+                            
                         
-                        supp_freight_del_orders.append(case.id)
+                        else:
+                            if case.partner_id.freight == False:
+                                vals['price_unit'] += freight_price
+                            supp_invoice_lines[supp_key].append((vals.copy()))
+                            freight_vals[supp_key] = [(sup_freight_val.copy())]
+                            supp_del_orders[supp_key].append(case.id)
+#                             supp_freight_del_orders[supp_key].append(case.id)
                         
-                        
-                        vals['product_id'] = ln.product_id.id
-                        vals['name'] = ln.name
-                        vals['quantity'] = ln.unloaded_qty
-                        vals['rejected_qty'] = ln.rejected_qty
-                        vals['uos_id'] = ln.product_uom.id    
-                        vals['price_unit'] = 0
-                        vals['move_line_id'] = ln.id
-                        cr.execute("select substr(value_reference,17)::integer from ir_property where name =  'property_account_expense_categ' and res_id = 'product.category,' || %s", (ln.product_id.categ_id.id, ))
-                        account_expense = cr.fetchall()
-                        if account_expense:
-                            vals['account_id'] = account_expense[0]
-                        for i in ln.product_id.seller_ids:
-                             if case.paying_agent_id.id == i.name.id:
-                                prod_ids=prod_obj.search(cr, uid, [('ef_date','<=',case.date),('supp_info_id','=',i.id)],limit=1, order='ef_date desc')
-                                for j in prod_obj.browse(cr,uid,prod_ids):
-                                    price1 = j.product_price
-                                    vals['price_unit']  = price1
-                                    if case.partner_id.freight == True:
-                                        if j.transport_price==0:
-                                            raise osv.except_osv(_('Warning'),_('Update the Freight Price in "%s" Product Master For The Facilitator "%s"')% (ln.product_id.name,case.paying_agent_id.name,))
-                                    freight_price = j.transport_price
-                                    sup_freight_val['price_unit'] = freight_price
+                    # for creating freight invoices based on supplier,customer and freight price 
+                    if ln.location_id.name == "Suppliers":
+                        if freight_key not in freight_inv_group:
+                            if case.partner_id.freight == True:
+                                freight_del_orders[freight_key] = [case.id]
+                                freight_inv_group[freight_key] = {'partner_id'   : case.paying_agent_id.id,
+                                                     'date_invoice': ln.delivery_date,
+                                                     'type':   'in_invoice',
+        #                                                  'freight':freight,
+                                                     'journal_id' : journal_id,
+                                                     }
+                                freight_invoice_lines[freight_key] = [(sup_freight_val.copy())]
+                        else:
+                            freight_invoice_lines[freight_key].append((sup_freight_val.copy()))
+                            freight_del_orders[freight_key].append(case.id)
+
+                #### for lacation name not equal to supplier (eg: kingswood)
+                if ln.location_id.name != "Suppliers":
+                    sup_freight_obj=self.pool.get('product.product')
+                    sup_freight_ids=sup_freight_obj.search(cr, uid, [('name_template','=','Freight')])
+                    cr.execute("select id from res_partner where lower(name) like 'kingswood%'")
+                    paying_agent=cr.fetchall()
+                    paying_agent=zip(*paying_agent)[0]
+                    if case.paying_agent_id.id in paying_agent:
+                        paying_agent_ids=self.search(cr, uid, [('partner_id', '=', case.transporter_id.id)])
+                        for j in self.browse(cr,uid,paying_agent_ids):
+                                    total_freight=j.freight_total
                                     
-                                    # for creating handling charge invoices
-                                    if j.partner_id and j.handling_charge >0:
-                                        handling_invoices.update(inv_obj.onchange_partner_id(cr, uid, ids,'in_invoice', j.partner_id.id)['value'])
-                                        handling_invoices.update({
-                                                                 'partner_id'   : j.partner_id.id,
+                        for ft in freight_obj.browse(cr,uid,sup_freight_ids):
+                            cr.execute("select substr(value_reference,17)::integer from ir_property where name =  'property_account_expense_categ' and res_id = 'product.category,' || %s", (ft.categ_id.id,))
+                            ft_account_expense = cr.fetchall()
+                            if ft_account_expense:
+                                supplier_freight_val['account_id'] = ft_account_expense[0]    
+                            supplier_freight_val['product_id']=ft.id
+                            supplier_freight_val['name']=ft.name_template
+                            supplier_freight_val['quantity'] = ln.unloaded_qty
+                            supplier_freight_val['uos_id']=ft.uom_id.id
+                            supplier_freight_val['state'] = 'done' 
+                            supplier_freight_val['price_unit'] = case.freight_total
+                            
+                        supplier_freight_del_orders.append(case.id)
+                        if case.transporter_id.id not in paying_agent:
+                            supp_fr_group = {'partner_id'   : case.transporter_id.id,
                                                                 'date_invoice': ln.delivery_date,
                                                                 'type':   'in_invoice',
-                                                                'journal_id' : journal_id})
-                                        
-                                        handling_invoices.update({
-                                                    
-                                                         'invoice_line': [(0,0,{'name':ln.name,'product_id':ln.product_id.id,'price_unit':j.handling_charge,'rejected_qty':ln.rejected_qty})],
-                                                         'supp_delivery_orders_ids': [(6, 0, [case.id])],
-                                        }) 
-                                        inv_obj.create(cr, uid, handling_invoices,context=context)
-                                        
-                        if ln.location_id.name != "Suppliers":
-                            price1=1
-                        if price1==0:
-                            raise osv.except_osv(_('Warning'),_('Check Goods Price, Selected Supplier "%s" Do Not Have Rate for "%s" In The Goods Master')% (case.paying_agent_id.name,ln.product_id.name ))
-               
-                        #check for the key
-                        supp_key = case.paying_agent_id.id,case.partner_id.freight,freight_price,ln.delivery_date
-                        freight_key = case.paying_agent_id.id, case.partner_id.id,freight_price,ln.delivery_date
-                        product_key =case.paying_agent_id.id,ln.product_id.id,ln.price_unit
-                        
-                        #grouping the supplier invoices based on supplier,freight, and freight_price 
-                        if ln.location_id.name == "Suppliers":
-                            if supp_key not in supp_inv_group :
-                                supp_del_orders[supp_key] =[case.id]
-                                supp_inv_group[supp_key] = {'partner_id'   : case.paying_agent_id.id,
-                                                            'date_invoice': ln.delivery_date,
-                                                            'type':   'in_invoice',
-    #                                                      'freight':freight,
-                                                      'journal_id' : journal_id,
-                                                     }
-                                supp_invoice_lines[supp_key] = [(vals.copy())]
-                                if case.partner_id.freight == False:
-                                    supp_invoice_lines[supp_key][0]['price_unit'] += freight_price
-                                freight_vals[supp_key] = [(sup_freight_val.copy())]
-                                
-                            
-                            else:
-                                if case.partner_id.freight == False:
-                                    vals['price_unit'] += freight_price
-                                supp_invoice_lines[supp_key].append((vals.copy()))
-                                freight_vals[supp_key] = [(sup_freight_val.copy())]
-                                supp_del_orders[supp_key].append(case.id)
-    #                             supp_freight_del_orders[supp_key].append(case.id)
-                            
-                        # for creating freight invoices based on supplier,customer and freight price 
-                        if ln.location_id.name == "Suppliers":
-                            if freight_key not in freight_inv_group:
-                                if case.partner_id.freight == True:
-                                    freight_del_orders[freight_key] = [case.id]
-                                    freight_inv_group[freight_key] = {'partner_id'   : case.paying_agent_id.id,
-                                                         'date_invoice': ln.delivery_date,
-                                                         'type':   'in_invoice',
-            #                                                  'freight':freight,
-                                                         'journal_id' : journal_id,
+                                                         #'journal_id' : journal_id,
                                                          }
-                                    freight_invoice_lines[freight_key] = [(sup_freight_val.copy())]
-                            else:
-                                freight_invoice_lines[freight_key].append((sup_freight_val.copy()))
-                                freight_del_orders[freight_key].append(case.id)
-    
-                    #### for lacation name not equal to supplier (eg: kingswood)
-                    if ln.location_id.name != "Suppliers":
-                        sup_freight_obj=self.pool.get('product.product')
-                        sup_freight_ids=sup_freight_obj.search(cr, uid, [('name_template','=','Freight')])
-                        cr.execute("select id from res_partner where lower(name) like 'kingswood%'")
-                        paying_agent=cr.fetchall()
-                        paying_agent=zip(*paying_agent)[0]
-                        if case.paying_agent_id.id in paying_agent:
-                            paying_agent_ids=self.search(cr, uid, [('partner_id', '=', case.transporter_id.id)])
-                            for j in self.browse(cr,uid,paying_agent_ids):
-                                        total_freight=j.freight_total
-                                        
-                            for ft in freight_obj.browse(cr,uid,sup_freight_ids):
-                                cr.execute("select substr(value_reference,17)::integer from ir_property where name =  'property_account_expense_categ' and res_id = 'product.category,' || %s", (ft.categ_id.id,))
-                                ft_account_expense = cr.fetchall()
-                                if ft_account_expense:
-                                    supplier_freight_val['account_id'] = ft_account_expense[0]    
-                                supplier_freight_val['product_id']=ft.id
-                                supplier_freight_val['name']=ft.name_template
-                                supplier_freight_val['quantity'] = ln.unloaded_qty
-                                supplier_freight_val['uos_id']=ft.uom_id.id
-                                supplier_freight_val['state'] = 'done' 
-                                supplier_freight_val['price_unit'] = case.freight_total
-                                
-                            supplier_freight_del_orders.append(case.id)
-                            if case.transporter_id.id not in paying_agent:
-                                supp_fr_group = {'partner_id'   : case.transporter_id.id,
-                                                                    'date_invoice': ln.delivery_date,
-                                                                    'type':   'in_invoice',
-                                                             #'journal_id' : journal_id,
-                                                             }
-                                
-                                sup_inv_vals.update(inv_obj.onchange_partner_id(cr, uid, ids,'in_invoice', supp_fr_group['partner_id'])['value'])
-                                sup_inv_vals.update(supp_fr_group)  
-                                sup_inv_vals.update({
-                                                                           
-                                                           'supp_delivery_orders_ids': [(6, 0, supplier_freight_del_orders)],
-                                                           'invoice_line': [(0,0, supplier_freight_val)],
-                                                                           
-                                                }) 
-                                cr.execute("select id from res_company where lower(name) like '%logistics%'")
-                                company=cr.fetchone()
-                                if company:
-                                    sup_inv_vals.update({'company_id':company})
-                                                         
-                                            
-                                sup_inv_vals.update({'freight':True}) 
-                                inv_obj.create(cr, uid, sup_inv_vals)
                             
-        #for grouping the product id_price and product_id for supplier goods invoice lines
-        if type=="out":
-            for keys in supp_invoice_lines:
-                line_groups = []
-                for k in supp_invoice_lines[keys]:
-                    product_key = k['product_id'],k['price_unit']
-                    if product_key not in line_groups:
-                         if not keys in line_vals:
-                             line_vals[keys] = [(0,0,k)]
-                         else:
-                            line_vals[keys].append((0,0,k))
-                         line_groups.append(product_key)
-                    else:
-                        #print line_vals[keys][0][2]
-                        line_vals[keys][0][2]['rejected_qty'] +=k['rejected_qty']
-                        line_vals[keys][0][2]['quantity'] +=k['quantity']
-            
-            # for creating the freight invoice lines
-            for f_key in freight_invoice_lines:
-                freight_groups = []
-                for f in freight_invoice_lines[f_key]:
-                    freight_product_key = f['product_id'],f['price_unit']
-                    if freight_product_key not in freight_groups:
-                        if not f_key in freight_line_vals:
-                             freight_line_vals[f_key] = [(0,0,f)]
-                        else:
-                            freight_line_vals[f_key].append((0,0,f))
-                        freight_groups.append(freight_product_key)
-                    else:
-                        #print line_vals[keys][0][2]
-                        freight_line_vals[f_key][0][2]['price_unit'] =f['price_unit']
-                        freight_line_vals[f_key][0][2]['quantity'] +=f['quantity']
-            #creating supplier goods invoice
-            price_unit=0
-                
-            context.update({'type':'in_invoice'})
-            for inv in line_vals:
-                if inv not in paying_agent:
-                    sup_inv_vals.update(inv_obj.onchange_partner_id(cr, uid, ids,'in_invoice', supp_inv_group[inv]['partner_id'])['value'])
-                    sup_inv_vals.update(supp_inv_group[inv])
-                    sup_inv_vals.update({
-                                                    
-                                        'invoice_line': line_vals[inv],
-                                        'supp_delivery_orders_ids': [(6, 0, supp_del_orders[inv])],
-                                    }) 
-                    inv_obj.create(cr, uid, sup_inv_vals,context=context) 
-                    
-            #for creating supplier freight invoices
-            for freight_inv in freight_line_vals:
-                price_unit=0
-                facilitator=[]
-                freight_inv_vals.update(inv_obj.onchange_partner_id(cr, uid, ids,'in_invoice', freight_inv_group[freight_inv]['partner_id'])['value'])
-                freight_inv_vals.update(freight_inv_group[freight_inv])
-                freight_inv_vals.update({
-                                                                   
-                                           'supp_delivery_orders_ids': [(6, 0, freight_del_orders[freight_inv])],
-                                           'invoice_line': freight_line_vals[freight_inv],
-                                                                                                                                      
-                                        }) 
-                cr.execute("select id from res_company where lower(name) like '%logistics%'")
-                company=cr.fetchone()
-                if company:
-                    freight_inv_vals.update({'company_id':company})
+                            sup_inv_vals.update(inv_obj.onchange_partner_id(cr, uid, ids,'in_invoice', supp_fr_group['partner_id'])['value'])
+                            sup_inv_vals.update(supp_fr_group)  
+                            sup_inv_vals.update({
+                                                                       
+                                                       'supp_delivery_orders_ids': [(6, 0, supplier_freight_del_orders)],
+                                                       'invoice_line': [(0,0, supplier_freight_val)],
+                                                                       
+                                            }) 
+                            cr.execute("select id from res_company where lower(name) like '%logistics%'")
+                            company=cr.fetchone()
+                            if company:
+                                sup_inv_vals.update({'company_id':company})
                                                      
                                         
-                freight_inv_vals.update({'freight':True}) 
-               
-                #to create freight invoice for supplier
-                inv_obj.create(cr, uid, freight_inv_vals) 
+                            sup_inv_vals.update({'freight':True}) 
+                            inv_obj.create(cr, uid, sup_inv_vals)
+                            
+        #for grouping the product id_price and product_id for supplier goods invoice lines
+        for keys in supp_invoice_lines:
+            line_groups = []
+            for k in supp_invoice_lines[keys]:
+                product_key = k['product_id'],k['price_unit']
+                if product_key not in line_groups:
+                     if not keys in line_vals:
+                         line_vals[keys] = [(0,0,k)]
+                     else:
+                        line_vals[keys].append((0,0,k))
+                     line_groups.append(product_key)
+                else:
+                    #print line_vals[keys][0][2]
+                    line_vals[keys][0][2]['rejected_qty'] +=k['rejected_qty']
+                    line_vals[keys][0][2]['quantity'] +=k['quantity']
+        
+        # for creating the freight invoice lines
+        for f_key in freight_invoice_lines:
+            freight_groups = []
+            for f in freight_invoice_lines[f_key]:
+                freight_product_key = f['product_id'],f['price_unit']
+                if freight_product_key not in freight_groups:
+                    if not f_key in freight_line_vals:
+                         freight_line_vals[f_key] = [(0,0,f)]
+                    else:
+                        freight_line_vals[f_key].append((0,0,f))
+                    freight_groups.append(freight_product_key)
+                else:
+                    #print line_vals[keys][0][2]
+                    freight_line_vals[f_key][0][2]['price_unit'] =f['price_unit']
+                    freight_line_vals[f_key][0][2]['quantity'] +=f['quantity']
+        #creating supplier goods invoice
+        price_unit=0
+            
+        context.update({'type':'in_invoice'})
+        for inv in line_vals:
+            if inv not in paying_agent:
+                sup_inv_vals.update(inv_obj.onchange_partner_id(cr, uid, ids,'in_invoice', supp_inv_group[inv]['partner_id'])['value'])
+                sup_inv_vals.update(supp_inv_group[inv])
+                sup_inv_vals.update({
+                                                
+                                    'invoice_line': line_vals[inv],
+                                    'supp_delivery_orders_ids': [(6, 0, supp_del_orders[inv])],
+                                }) 
+                inv_obj.create(cr, uid, sup_inv_vals,context=context) 
+                
+        #for creating supplier freight invoices
+        for freight_inv in freight_line_vals:
+            price_unit=0
+            facilitator=[]
+            freight_inv_vals.update(inv_obj.onchange_partner_id(cr, uid, ids,'in_invoice', freight_inv_group[freight_inv]['partner_id'])['value'])
+            freight_inv_vals.update(freight_inv_group[freight_inv])
+            freight_inv_vals.update({
+                                                               
+                                       'supp_delivery_orders_ids': [(6, 0, freight_del_orders[freight_inv])],
+                                       'invoice_line': freight_line_vals[freight_inv],
+                                                                                                                                  
+                                    }) 
+            cr.execute("select id from res_company where lower(name) like '%logistics%'")
+            company=cr.fetchone()
+            if company:
+                freight_inv_vals.update({'company_id':company})
+                                                 
+                                    
+            freight_inv_vals.update({'freight':True}) 
+           
+            #to create freight invoice for supplier
+            inv_obj.create(cr, uid, freight_inv_vals) 
 
 
     #Customer Invoice
-        if type=="out":
-            partner = [] # for control
-            transport_rate=0
-            destination=""
-            
-            for case in self.browse(cr,uid, ids):
-                if case.partner_id.freight==True:
-                    if price>0: 
-                           
-                        for p in product_groups:
-                            freight_val['price_unit']=0
-                            
-                            if case.partner_id.id in p and p not in partner:
-                                destination=case.partner_id.city
-                                for i in self.browse(cr, uid,delivery_orders[p]):
-                                    for temp in i.move_lines:
-                                        for j in temp.product_id.customer_ids:
-                                            if case.partner_id.id==j.name.id:
-                                               transport_rate = j.transport_rate
-                                      
-                                    freight_val['price_unit']=transport_rate
-                                              
-    #                                 freight_val['price_unit'] += i.freight_total
-                                    print "freight_group[p]",freight_group[p]   
-                                    freight_group[p].update({'price_unit'   : freight_val['price_unit'],
-    #                                                     'quantity'     : freight_val['quantity'],
-    #                                                     'product_id'   : freight_val['product_id'],
-    #                                                      'name'        : freight_val['name'],
-    #                                                      'uos_id'      : freight_val['uos_id'],
-    #                                                      'account_id'  : freight_val['account_id'],
-    # #                                                      'state'        :freight_val['state']
-                                                         })
-                                    print "freight_group[p]",freight_group[p]
-                                inv_vals = inv_groups[p].copy()
-                                inv_vals.update(inv_obj.onchange_partner_id(cr, uid, ids,'out_invoice', inv_groups[p]['partner_id'])['value'])
-                                inv_vals.update({
-                                                        'delivery_orders_ids': [(6, 0, delivery_orders[p])],
-                                                        'invoice_line': [(0, 0, product_groups[p])],
-                                                        
-                                                })
-                                inv_vals.update({'destination':destination})
-                                inv_obj.create(cr, uid, inv_vals)
-                                
-                                
-                                
-                                #for creating Freight Invoice
-                                inv_vals.update({
-                                                        'delivery_orders_ids': [(6, 0, delivery_orders[p])],
-                                                        'invoice_line': [(0,0,freight_group[p])],
-                                                        
-                                                })
-                                
-                                #for Reporting purpose
-                                cr.execute("select id from res_company where lower(name) like '%logistics%'")
-                                company=cr.fetchone()
-                                if company:
-                                    inv_vals.update({'company_id':company})
-                                                         
-                                            
-                                inv_vals.update({'freight':True,
-                                                 'destination':destination
-                                                 })
-                                                         
-                                partner.append(p)
-                                inv_obj.create(cr, uid, inv_vals)
+
+        partner = [] # for control
+        transport_rate=0
+        destination=""
         
-                    else:
-                        raise osv.except_osv(_('Warning'),_('Check Goods Price, Selected Customer Do Not Have Rate In The Goods Master ')) 
-                                       
-                else: 
-                    if price>0: 
-                        val['state'] = 'draft'            
-                        for p in product_groups:
-                            if case.partner_id.id in p and p not in partner:
-                                inv_vals = inv_groups[p].copy()
-                                inv_vals.update(inv_obj.onchange_partner_id(cr, uid, ids,'out_invoice', inv_groups[p]['partner_id'])['value'])
-                                inv_vals.update({
-                                                     'delivery_orders_ids': [(6, 0, delivery_orders[p])],
-                                                      'invoice_line': [(0, 0, product_groups[p])],
-                                                    })
-                                order_obj=self.pool.get('delivery_order_rel')
-                                inv_obj.create(cr, uid, inv_vals)
-                                partner.append(p)
-                                    
-                    else:
-                        raise osv.except_osv(_('Warning'),_('Check Goods Price, Selected Customer Do Not Have Rate In The Goods Master'))
+        for case in self.browse(cr,uid, ids):
+            if case.partner_id.freight==True:
+                if price>0: 
+                       
+                    for p in product_groups:
+                        freight_val['price_unit']=0
+                        
+                        if case.partner_id.id in p and p not in partner:
+                            destination=case.partner_id.city
+                            for i in self.browse(cr, uid,delivery_orders[p]):
+                                for temp in i.move_lines:
+                                    for j in temp.product_id.customer_ids:
+                                        if case.partner_id.id==j.name.id:
+                                           transport_rate = j.transport_rate
+                                  
+                                freight_val['price_unit']=transport_rate
+                                          
+#                                 freight_val['price_unit'] += i.freight_total
+                                freight_group[p].update({'price_unit'   : freight_val['price_unit'],
+#                                                     'quantity'     : freight_val['quantity'],
+#                                                     'product_id'   : freight_val['product_id'],
+#                                                      'name'        : freight_val['name'],
+#                                                      'uos_id'      : freight_val['uos_id'],
+#                                                      'account_id'  : freight_val['account_id'],
+# #                                                      'state'        :freight_val['state']
+                                                     })
+                            inv_vals = inv_groups[p].copy()
+                            inv_vals.update(inv_obj.onchange_partner_id(cr, uid, ids,'out_invoice', inv_groups[p]['partner_id'])['value'])
+                            inv_vals.update({
+                                                    'delivery_orders_ids': [(6, 0, delivery_orders[p])],
+                                                    'invoice_line': [(0, 0, product_groups[p])],
+                                                    
+                                            })
+                            inv_vals.update({'destination':destination})
+                            inv_obj.create(cr, uid, inv_vals)
+                            
+                            
+                            
+                            #for creating Freight Invoice
+                            inv_vals.update({
+                                                    'delivery_orders_ids': [(6, 0, delivery_orders[p])],
+                                                    'invoice_line': [(0,0,freight_group[p])],
+                                                    
+                                            })
+                            
+                            #for Reporting purpose
+                            cr.execute("select id from res_company where lower(name) like '%logistics%'")
+                            company=cr.fetchone()
+                            if company:
+                                inv_vals.update({'company_id':company})
+                                                     
+                                        
+                            inv_vals.update({'freight':True,
+                                             'destination':destination
+                                             })
+                                                     
+                            partner.append(p)
+                            inv_obj.create(cr, uid, inv_vals)
+    
+                else:
+                    raise osv.except_osv(_('Warning'),_('Check Goods Price, Selected Customer Do Not Have Rate In The Goods Master ')) 
+                                   
+            else: 
+                if price>0: 
+                    val['state'] = 'draft'            
+                    for p in product_groups:
+                        if case.partner_id.id in p and p not in partner:
+                            inv_vals = inv_groups[p].copy()
+                            inv_vals.update(inv_obj.onchange_partner_id(cr, uid, ids,'out_invoice', inv_groups[p]['partner_id'])['value'])
+                            inv_vals.update({
+                                                 'delivery_orders_ids': [(6, 0, delivery_orders[p])],
+                                                  'invoice_line': [(0, 0, product_groups[p])],
+                                                })
+                            order_obj=self.pool.get('delivery_order_rel')
+                            inv_obj.create(cr, uid, inv_vals)
+                            partner.append(p)
+                                
+                else:
+                    raise osv.except_osv(_('Warning'),_('Check Goods Price, Selected Customer Do Not Have Rate In The Goods Master'))
                 
         return True
     
@@ -1744,7 +1647,6 @@ class stock_picking_out(osv.osv):
         #for creating invoices from deliver orders
         cr.execute("""select id from stock_picking where state in ('done', 'freight_paid') and date::date = """+"'"+datetime.today().strftime("%Y-%m-%d")+"'")
         do_ids = cr.fetchall()
-        print "do_ids1",do_ids
         do_ids = [d[0] for d in do_ids]
         inv_ids = do_ids
         
@@ -1761,20 +1663,19 @@ class stock_picking_out(osv.osv):
                 self.get_invoice(cr, uid, inv_ids, False, context)
         
         #for creating invoices from incoming shipments
-        print "inside the incoming shipment invoice Schedular"
-        cr.execute("""select id from stock_picking where state in ('done') and type = 'in' and date::date = """+"'"+datetime.today().strftime("%Y-%m-%d")+"'")
-        in_ids = cr.fetchall()
-        shipment_ids = [d[0] for d in in_ids]
-        ship_inv_ids = shipment_ids
-        if shipment_ids:
-            cr.execute('SELECT in_shipment_id FROM incoming_shipment_invoice_rel WHERE in_shipment_id IN %s',(tuple(shipment_ids),))
-            ship_order_ids = cr.fetchall()
-            if ship_order_ids:
-                ship_order_ids = [s[0] for s in ship_order_ids ]
-                ship_inv_ids = list(set(shipment_ids).difference(ship_order_ids))
-              
-            if ship_inv_ids:
-                self.pool.get('stock.picking.in').get_invoice(cr, uid,ship_inv_ids, False, context )
+#         print "inside the incoming shipment invoice Schedular"
+#         cr.execute("""select id from stock_picking where state in ('done') and type = 'in' and date::date = """+"'"+datetime.today().strftime("%Y-%m-%d")+"'")
+#         in_ids = cr.fetchall()
+#         shipment_ids = [d[0] for d in in_ids]
+#         if shipment_ids:
+#             cr.execute('SELECT in_shipment_id FROM incoming_shipment_invoice_rel WHERE in_shipment_id IN %s',(tuple(shipment_ids),))
+#             ship_order_ids = cr.fetchall()
+#             if ship_order_ids:
+#                 ship_order_ids = [s[0] for s in ship_order_ids ]
+#                 ship_inv_ids = list(set(shipment_ids).difference(ship_order_ids))
+#             
+#             if ship_inv_ids:
+#                 self.pool.get('stock.move').get_invoice(cr, uid,ship_inv_ids, False, context )
         return True   
     
     def create(self,cr,uid,vals,context=None):
@@ -1849,13 +1750,13 @@ class stock_picking_out(osv.osv):
         code = cr.fetchone()
         if code:
             year = code[0]
-        format = 'DC/' + year + '/' + user.state_id.code +'/'
+        format = 'DC/' + year + '/'
         cr.execute("select name from stock_picking where name like '"+format+"'|| '%' order by to_number(substr(name,(length('"+format+"')+1)),'99999') desc limit 1")
         prev_format = cr.fetchone()
         if not prev_format:
             name = format + '00001'
         else:
-            auto_gen = prev_format[0][-5:]
+            auto_gen = prev_format[0][9:]
             name = format + str(int(auto_gen) + 1).zfill(5)
         self.write(cr, uid, [res],{'name':name},context=context)
         return res
@@ -2004,16 +1905,9 @@ class stock_picking_out(osv.osv):
         user_id = self.pool.get('res.users').browse(cr, uid,[uid])[0]
         if user_id:
             raise osv.except_osv(_('Warning!'), _("You Cannot Duplicate the record, You Can only Create New Record "))
-        return super(stock_picking_out, self).copy(cr, uid, id, default, context=context)
-    
-    def unlink(self, cr, uid, ids, context=None):
-        for case in self.browse(cr, uid, ids):
-            if case.state != 'draft':
-                raise osv.except_osv(_('Warning!'), _("You Cannot Delete the record, You Can only Delete Draft Record "))
-        return super(stock_picking_out, self).unlink(cr, uid, ids, context = context) 
+        return super(stock_picking_out, self).copy(cr, uid, id, default, context=context) 
                
 stock_picking_out()
-
 
 class stock_picking(osv.osv):
     _inherit='stock.picking' 
@@ -2039,8 +1933,7 @@ class stock_picking(osv.osv):
                 cr.execute("select customer_id from customer_list_rel where supplier_id = " + str(user.partner_id.id))         
                 custs = cr.fetchall()
                 for s in custs:
-                    cust_ids.append(s[0]) 
-                print res['fields'],"res[fields]"
+                    cust_ids.append(s[0])
                 for field in res['fields']:
                     if field == 'partner_id':
                         res['fields'][field]['domain'] = [('id','in', cust_ids)]
@@ -2192,7 +2085,6 @@ class stock_picking(osv.osv):
                     if res[case.id]=='KW_Depot' or res[case.id] == 'KW_Admin':
                         
                         user = user_obj.browse(cr, uid, [uid])[0]
-                        print user.role
                         cr.execute("select id from res_partner where lower(name) like 'kingswood%'")
                         paying_agent=cr.fetchall()
                         paying_agent=zip(*paying_agent)[0]
@@ -2206,7 +2098,7 @@ class stock_picking(osv.osv):
                             else:
                                 if case.paying_agent_id in paying_agent:
                                     case.paying_agent='kingswood'
-        print 'res ',res 
+        
         return res
     
     def _get_default_user(self, cr, uid, context=None):
@@ -2226,7 +2118,7 @@ class stock_picking(osv.osv):
                 res = 'KW_Depot'
             if g.name == 'KW_Admin':
                 res = 'KW_Admin'
-        print "Res",res
+        
                     
         return res
      
@@ -2338,7 +2230,6 @@ class stock_picking(osv.osv):
         res={}
         for case in self.browse(cr,uid,ids):
              res[case.id]=datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-        print "date",res
         return res
      
     def _get_default_new_date(self, cr, uid, context=None):
@@ -2399,15 +2290,6 @@ class stock_picking(osv.osv):
 
             'product_id'       : fields.many2one('product.product', 'Products'),
             'freight_balance' :fields.float('Freight Balance',digits=(0,2)),
-            
-             #FOR VIEW PURPOSE
-               
-               'year': fields.char('Year', size=4, readonly=True),
-              'month': fields.selection([('01', 'January'), ('02', 'February'), ('03', 'March'), ('04', 'April'),
-                                            ('05', 'May'), ('06', 'June'), ('07', 'July'), ('08', 'August'), ('09', 'September'),
-                                            ('10', 'October'), ('11', 'November'), ('12', 'December')], 'Month', readonly=True),
-              'day': fields.char('Day', size=128, readonly=True),
-              'day': fields.char('Day', size=128, readonly=True),
             #for reporting purpose
               'invoice_line_id'    : fields.many2one('account.invoice.line', 'invoice line'),
                'purchase_id': fields.many2one('purchase.order', 'Purchase Order',
@@ -2416,7 +2298,6 @@ class stock_picking(osv.osv):
               'users'           : fields.function(_get_move_lines,type="char", string="User",store=True, multi="move_lines"), 
               'freight'         : fields.function(_get_move_lines,type="boolean",string="freight",store=True,multi="move_lines"), 
               }
-    _order = 'date desc'
     _defaults={
                
                 'paying_agent_id':_get_default_paying_agent_id,
@@ -2447,358 +2328,6 @@ class stock_picking(osv.osv):
         return res
 stock_picking()
 
-# class stock_move(osv.osv):
-#     _inherit='stock.move'
-#     
-#     def fields_view_get(self, cr, uid, view_id=None, view_type='form', context=None, toolbar=False, submenu=False):
-#         
-#         user = self.pool.get('res.users').browse(cr,uid,uid)
-#         
-#         if context is None:context = {}
-#         res = super(stock_move, self).fields_view_get(cr, uid, view_id=view_id, view_type=view_type, context=context, toolbar=toolbar,submenu=False)
-#         
-#         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#         # For Supplier Groups: Filtering related Customers in OUT
-#         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#         if context.get('picking_type', '') == 'out' and view_type =='tree':
-#             cr.execute("select true from res_groups_users_rel gu \
-#                         inner join res_groups g on g.id = gu.gid \
-#                         where g.name = 'KW_Supplier' and uid ="+str(uid))
-#             is_supp = cr.fetchone()
-#             
-#             if is_supp and is_supp[0] == True:
-#                 prod_ids = [] 
-#                 cr.execute("select product_id from product_supplierinfo where name = " + str(user.partner_id.id))         
-#                 prods = cr.fetchall()
-#                 
-#                 for s in prods:
-#                     prod_ids.append(s[0]) 
-#                 print res['fields'],"res[fields]"
-#                 for field in res['fields']:
-#                     if field == 'product_id':
-#                         res['fields'][field]['domain'] = [('id','in', prod_ids)]
-#                 
-#                 print  "RES", res
-#         return res
-#     
-#     
-#     def _get_permission(self, cr, uid, ids, args, field_name, context = None):
-#         res ={}
-#         g_ids = []
-#         for case in self.browse(cr, uid, ids):
-#             res[case.id] = True
-#             cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
-#             gid = cr.dictfetchall()
-#             for x in gid:
-#                 g_ids.append(x['gid'])
-#             for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
-#                 if g.name == 'KW_Supplier':
-#                     res[case.id] = False
-#                 if g.name == 'KW_Depot':
-#                     res[case.id] = False
-#                 if g.name == 'KW_Customer':
-#                     res[case.id] = True
-#         return res
-#     
-#     def _get_default_permission(self, cr, uid, context=None):
-#         res = True
-#         g_ids = []
-#         cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
-#         gid = cr.dictfetchall()
-#         for x in gid:
-#             g_ids.append(x['gid'])
-#         for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
-#             if g.name == 'KW_Supplier':
-#                 res = False
-#             if g.name == 'KW_Depot':
-#                 res = False
-#             if g.name == 'KW_Customer':
-#                 res = True
-#         return res
-#     
-#     def _get_location(self, cr, uid, ids, args, field_name, context = None):
-#         res ={}
-#         for case in self.browse(cr, uid, ids):
-#             res[case.id]=case.location_id.complete_name
-#         return res
-#    
-#     def _get_default_location(self, cr, uid, context=None):
-#         res =""
-#         cr.execute("select complete_name from stock_location where lower(name) like 'supplier%' order by id limit 1")
-#         paying_agent=cr.fetchone()   
-#         
-#         res=paying_agent
-#         return res
-#     
-#     def _default_location_source(self, cr, uid, context=None):
-#         
-#         log_user={}
-#         user_obj = self.pool.get('res.users')
-#         user = user_obj.browse(cr, uid, [uid])[0]
-#         if context.get('picking_type', '') == 'out':
-#             res = True
-#     #         context.update({'address_in_id': False})
-#             mod_obj = self.pool.get('ir.model.data')
-#             picking_type = context.get('picking_type')
-#             m=context.get('move_line', [])
-#             pid=context.get('default_partner_id')
-#             paying_agent_id=context.get('paying_agent_id')
-#             
-#             #context.update({'address_in_id': False})
-#             location=0
-#     #         context.update({'address_out_id': False})
-#             location_id = False
-#             g_ids = []
-#             if context is None:
-#                 context = {}
-#             cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
-#             gid = cr.dictfetchall()
-#             for x in gid:
-#                 g_ids.append(x['gid'])
-#             for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
-#                 if g.name == 'KW_Supplier':
-#                     context.update({'address_in_id': paying_agent_id})
-#     #             else:     
-#     #             if g.name== 'KW_Admin':
-#     #                   context.update({'default_partner_id':pid,'address_out_id': pid,'picking_type': 'out'})
-#                 if g.name == 'KW_Depot':
-#                     log_user= 'KW_Depot'
-#                     context.update({'address_in_id': pid})
-#                 
-#                 elif g.name!='KW_Supplier':
-#                     cr.execute("select id from res_partner where lower(name) like 'kingswood%'")
-#                     paying_agent=cr.fetchall()
-#                     paying_agent=zip(*paying_agent)[0]
-#                     if paying_agent_id not in paying_agent:
-#                         context.update({'address_in_id': pid})
-#                         
-#                 if log_user=='KW_Depot' and user.role=='depot':
-#                     context.update({'address_in_id': ''})
-#                     cr.execute("select id from res_partner where lower(name) like 'kingswood%'")
-#                     paying_agent=cr.fetchall()
-#                     paying_agent=zip(*paying_agent)[0]
-#                     if paying_agent_id in paying_agent:
-#                            
-#                             #paying_agent_obj = self.browse(cr,uid,[paying_agent_id])[0]
-#                            
-#                             prod_obj = self.pool.get('stock.picking').browse(cr,uid,[paying_agent_id])[0]
-#                             prod_obj.paying_agent='kingswood'
-#                             location=1
-#                             location_id=user.location_id.id 
-#                         
-#                 if g.name!='KW_Admin':
-#                     cr.execute("select id from res_partner where lower(name) like 'kingswood%'")
-#                     paying_agent=cr.fetchall()
-#                     paying_agent=zip(*paying_agent)[0]
-#                     context.update({'address_in_id': pid})
-#                     if paying_agent_id in paying_agent:
-#                         context.update({'address_out_id': pid})           
-#                         context.update({'address_in_id': ''})
-#                     else:
-#                         context.update({'address_out_id':''})   
-#                         
-# #                     print "Location",user.location_id.name
-# #                     if user.location_id:
-#                     
-#                        
-#                             
-#             
-#                 """ Gets default address of partner for source location
-#                     @return: Address id or False
-#                     """
-#             if location==0:
-#                 
-#                 if context.get('move_line', []) is False:
-#                     try:
-#                         location_id = context['move_line'][0][2]['location_id']
-#                     except:
-#                         pass
-#                 elif context.get('address_in_id', False):
-#                     context.update({'address_in_id':paying_agent_id})
-#                     part_obj_add = self.pool.get('res.partner').browse(cr, uid, context['address_in_id'], context=context)
-#                     if part_obj_add:
-#                          location_id = part_obj_add.property_stock_supplier.id
-#                 else:
-#                     location_xml_id = False
-#                     if picking_type == 'in':
-#                         location_xml_id = 'stock_location_suppliers'
-#                     elif picking_type in ('out', 'internal'):
-#                         location_xml_id = 'stock_location_stock'
-#                     if location_xml_id:
-#                         try:
-#                             location_model, location_id = mod_obj.get_object_reference(cr, uid, 'stock', location_xml_id)
-#                             self.pool.get('stock.location').check_access_rule(cr, uid, [location_id], 'read', context=context)
-#                         except (orm.except_orm, ValueError):
-#                             location_id = False
-#         else:
-#                 location_id=super(stock_move,self)._default_location_source(cr, uid, context=context)
-#         
-#         return location_id 
-#     
-#     def _default_location_destination(self, cr, uid, context=None):
-#         """ Gets default address of partner for destination location
-#         @return: Address id or False
-#         """
-#         location_dest_id=super(stock_move,self)._default_location_destination(cr, uid, context=context)
-#         user_obj = self.pool.get('res.users')
-#         user = user_obj.browse(cr, uid, [uid])[0]
-#         if context.get('picking_type', '') == 'in':
-#             mod_obj = self.pool.get('ir.model.data')
-#             g_ids = []
-#             if context is None:
-#                 context = {}
-#             cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
-#             gid = cr.dictfetchall()
-#             for x in gid:
-#                 g_ids.append(x['gid'])
-#             for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
-#                 if g.name=='KW_Depot' and user.role=='depot':
-#                     if user.location_id.id:
-#                         location_dest_id=user.location_id.id
-#                     else:
-#                         raise osv.except_osv(_('Warning'),_('Check Location for the logged in User "%s" ')% (user.log))
-#         return location_dest_id
-#     
-# #     def action_confirm(self, cr, uid, ids, context=None):
-# #         """ Confirms stock move.
-# #          
-# #         """
-# #         res={}
-# #         for case in self.browse(cr,uid,ids):
-# #             cr.execute("select id from stock_move where picking_id = " + str(user.partner_id.id))         
-# #             custs = cr.fetchall()
-# #             raise osv.except_osv(_('Warning'),_('You cannot process picking more than one stock moves.'))
-# #                  
-# #         res=super(stock_move,self).action_confirm(cr, uid,ids,context=context)
-#  
-#         return res
-#     
-#     _columns={
-#               'unloaded_qty'    :   fields.float('Delivered Quantity (MT)',digits=(0,3)),
-#               'rejected_qty'    :   fields.float('Rejected Quantity (MT)',digits=(0,3)),
-#               #'supplier_id'     : fields.function(_get_supplier, type='many2one', relation='res.users', string='Suppliers'),
-#                'supplier_id'    :   fields.many2one('res.users','Suppliers'),
-#                #'partner_id'     : fields.related('picking_id', 'partner_id',type='many2one',relation='res.users',store=True ),
-#               'hide_fields'     : fields.function(_get_permission,type='boolean',method=True,string="Permission"),
-#               'state'           : fields.selection([('draft', 'New'),
-#                                    ('cancel', 'Cancelled'),
-#                                    ('waiting', 'Waiting Another Move'),
-#                                    ('confirmed', 'Waiting Availability'),
-#                                    ('assigned', 'Available'),
-#                                    ('done', 'Done'),
-#                                    ], 'Status', readonly=True, select=True,
-#                                      help= "* New: When the stock move is created and not yet confirmed.\n"\
-#                                            "* Waiting Another Move: This state can be seen when a move is waiting for another one, for example in a chained flow.\n"\
-#                                            "* Waiting Availability: This state is reached when the procurement resolution is not straight forward. It may need the scheduler to run, a component to me manufactured...\n"\
-#                                            "* Available: When products are reserved, it is set to \'Available\'.\n"\
-#                                            "* Done: When the shipment is processed, the state is \'Done\'."),
-#               'deduction_amt'   : fields.float('Deduction Amount',digits=(0,2)),
-#               'location'        :fields.function(_get_location,type='char',method=True,string="Source Location"),
-#               'delivery_date'   : fields.date('Delivery Date',required=True)
-# #               'product_qty'     : fields.float('Quantity', digits_compute=dp.get_precision('Product Unit of Measure'),
-# #                                                required=True,states={'done': [('readonly', True)]},
-# #                                                help="This is the quantity of products from an inventory "
-# #                                                 "point of view. For moves in the state 'done', this is the "
-# #                                                 "quantity of products that were actually moved. For other "
-# #                                                 "moves, this is the quantity of product that is planned to "
-# #                                                 "be moved. Lowering this quantity does not generate a "
-# #                                                 "backorder. Changing this quantity on assigned moves affects "
-# #                                                 "the product reservation, and should be done with care."
-# #                                                 ),
-#               }
-#     _defaults={
-#                 'location_id': _default_location_source,
-#                 'location_dest_id': _default_location_destination,
-#                 'hide_fields' : _get_default_permission,
-#                 'partner_id': False,
-#                 'supplier_id': lambda self,cr,uid,c: uid,
-#                 'state'      :   'draft',
-#                 'deduction_amt'    : 0,
-#                 'location': _get_default_location,
-#                 'delivery_date': time.strftime('%Y-%m-%d') 
-# #                 'location_dest_id': _default_location_destination,
-#               }
-#     
-#     
-#     
-#     
-#     
-#     def onchange_product_id(self, cr, uid, ids, prod_id=False, loc_id=False,
-#                             loc_dest_id=False, partner_id=False):
-#         """ On change of product id, if finds UoM, UoS, quantity and UoS quantity.
-#         @param prod_id: Changed Product id
-#         @param loc_id: Source location id
-#         @param loc_dest_id: Destination location id
-#         @param partner_id: Address id of partner
-#         @return: Dictionary of values
-#         """
-# #         if not  partner_id:
-# #             raise osv.except_osv(_('No Customer Defined!'), _('Before choosing a product,\n select a customer .'))
-# #         res ={}
-#         price=0
-#         
-#         res=super(stock_move,self).onchange_product_id(cr, uid, ids, prod_id=prod_id, loc_id=loc_id,loc_dest_id=False, partner_id=False)
-#          
-#         if prod_id:
-#             product = self.pool.get('product.product').browse(cr, uid, [prod_id], context={})[0]
-#             price=product.list_price
-#             res['value']['price_unit']=product.list_price
-#                      
-#             if price==0.0:    
-#                    raise osv.except_osv(_('Warning'),_('Check Goods Price, Selected Customer Do Not Have Rate In The Goods Master'))
-#         print "res",res
-#         return res
-# #             for p in product.customer_ids:
-# #                 if partner_id == p.name.id:                
-# #                     price=p.rate
-# #res['value'].update({'price_unit':p.rate})
-#             
-#      
-#             
-#             
-#         
-#     def default_get(self, cr, uid, fields, context=None):
-#         loc_obj = self.pool.get('stock.location')
-#         user_id = self.pool.get('res.users').browse(cr, uid, [uid])[0]
-#         res = super(stock_move, self).default_get(cr, uid, fields, context=context)
-#         if 'default_partner_id' in context:
-#             res.update({'partner_id':context['default_partner_id']})
-# #         if 'picking_type' in context and context['picking_type'] == 'in':
-# #             if user_id.city:
-# #                 loc_ids = loc_obj.search(cr, uid, [('name','=',user_id.city)])
-# #                 if loc_ids:
-# #                     res.update({'location_dest_id' : loc_ids[0]})
-#         return res
-#   
-#     def create(self,cr,uid,vals,context=None):
-#        
-# #         if 'rejected_qty' in vals and 'unloaded_qty' in vals:
-# #             res=vals['rejected_qty']+vals['unloaded_qty']
-# #             if res>vals['product_qty']:
-# #                 raise osv.except_osv(_('Warning'),_('Check Unloaded and Rejected Quantity'))
-#         return super(stock_move,self).create(cr, uid, vals, context)
-#     
-#     def write(self, cr, uid, ids, vals, context=None):
-#         for case in self.browse(cr,uid,ids):
-#             print case.picking_id.state, "picking state"
-# #             picking_state = case.picking_id.state
-# #             if case.hide_fields == False:
-# #                 if case.picking_id.state =='in_transit':
-# #                    case.state = 'done'
-# #                    raise osv.except_osv(_('Warning'),_('Cannot edit Delivery order in In Transit State'))
-#             n= case.rejected_qty
-#             rejected_qty = vals.get('rejected_qty',case.rejected_qty)
-#             unloaded_qty = vals.get('unloaded_qty',case.unloaded_qty)
-#             product_qty = vals.get('product_qty',case.product_qty)
-#             res=unloaded_qty+rejected_qty
-# #             if res>product_qty:
-# #                 raise osv.except_osv(_('Warning'),_('Check  Quantity'))
-#             
-#                 
-#         return super(stock_move, self).write(cr, uid, ids, vals, context=context)    
-#      
-# stock_move()
-
 class stock_move(osv.osv):
     _inherit='stock.move'
     
@@ -2825,12 +2354,9 @@ class stock_move(osv.osv):
                 
                 for s in prods:
                     prod_ids.append(s[0]) 
-                print res['fields'],"res[fields]"
                 for field in res['fields']:
                     if field == 'product_id':
                         res['fields'][field]['domain'] = [('id','in', prod_ids)]
-                
-                print  "RES", res
         return res
     
     
@@ -2850,39 +2376,6 @@ class stock_move(osv.osv):
                     res[case.id] = False
                 if g.name == 'KW_Customer':
                     res[case.id] = True
-                    
-                    cr.execute("select partner_id from res_users where id="+str(uid))
-                    partner_id=cr.fetchone()[0]
-                    cr.execute("select product_change from res_partner where id="+str(partner_id))
-                    partner=cr.fetchone()[0]
-                    if not partner:
-                        partner=False
-                    cr.execute("UPDATE stock_move SET product_change =%s where id=%s", (partner,case.id))
-                    cr.execute("UPDATE stock_move SET location_dest_id =%s where id=%s", (case.location_dest_id.id,case.id))
-                if g.name == 'KW_Admin': 
-                    res[case.id] = False
-                    if case.id != 'in_transit':
-                        picking_id=case.picking_id.id
-    #                     cr.execute("select partner_id from res_users where id="+str(uid))
-    #                     partner_id=case.partner_id.id
-                        cr.execute("select partner_id from stock_picking where id="+str(picking_id))
-                        partner_id=cr.fetchone()[0]
-                        
-                        cr.execute("select product_change from res_partner where id="+str(partner_id))
-                        partner=cr.fetchone()[0]
-                        if not partner:
-                            partner=False
-                        cr.execute("UPDATE stock_move SET product_change =%s where id=%s", (partner,case.id))  
-                        if case.state=='done':
-                            res[case.id] = False
-        #                     cr.execute("select partner_id from res_users where id="+str(uid))
-    #                         cr.execute("select partner_id from stock_picking where id="+str(picking_id))
-    #                         partner_id=cr.fetchone()[0]
-                        
-                            cr.execute("select product_change from res_partner where id="+str(partner_id))
-                            partner=cr.fetchone()[0]
-                        
-#                     case.product_change=partner
         return res
     
     def _get_default_permission(self, cr, uid, context=None):
@@ -2905,9 +2398,6 @@ class stock_move(osv.osv):
         res ={}
         for case in self.browse(cr, uid, ids):
             res[case.id]=case.location_id.complete_name
-        
-        
-           
         return res
    
     def _get_default_location(self, cr, uid, context=None):
@@ -2949,7 +2439,6 @@ class stock_move(osv.osv):
     #             else:     
     #             if g.name== 'KW_Admin':
     #                   context.update({'default_partner_id':pid,'address_out_id': pid,'picking_type': 'out'})
-    
                 if g.name == 'KW_Depot':
                     log_user= 'KW_Depot'
                     context.update({'address_in_id': pid})
@@ -3083,8 +2572,7 @@ class stock_move(osv.osv):
                                            "* Done: When the shipment is processed, the state is \'Done\'."),
               'deduction_amt'   : fields.float('Deduction Amount',digits=(0,2)),
               'location'        :fields.function(_get_location,type='char',method=True,string="Source Location"),
-              'delivery_date'   : fields.date('Delivery Date',required=True),
-              'product_change'  : fields.boolean("Allow Product Change"), 
+              'delivery_date'   : fields.date('Delivery Date',required=True)
 #               'product_qty'     : fields.float('Quantity', digits_compute=dp.get_precision('Product Unit of Measure'),
 #                                                required=True,states={'done': [('readonly', True)]},
 #                                                help="This is the quantity of products from an inventory "
@@ -3136,7 +2624,7 @@ class stock_move(osv.osv):
                      
             if price==0.0:    
                    raise osv.except_osv(_('Warning'),_('Check Goods Price, Selected Customer Do Not Have Rate In The Goods Master'))
-        print "res",res
+        
         return res
 #             for p in product.customer_ids:
 #                 if partner_id == p.name.id:                
@@ -3161,16 +2649,15 @@ class stock_move(osv.osv):
         return res
   
     def create(self,cr,uid,vals,context=None):
-        
-    #         if 'rejected_qty' in vals and 'unloaded_qty' in vals:
-    #             res=vals['rejected_qty']+vals['unloaded_qty']
-    #             if res>vals['product_qty']:
-    #                 raise osv.except_osv(_('Warning'),_('Check Unloaded and Rejected Quantity'))
+       
+#         if 'rejected_qty' in vals and 'unloaded_qty' in vals:
+#             res=vals['rejected_qty']+vals['unloaded_qty']
+#             if res>vals['product_qty']:
+#                 raise osv.except_osv(_('Warning'),_('Check Unloaded and Rejected Quantity'))
         return super(stock_move,self).create(cr, uid, vals, context)
     
     def write(self, cr, uid, ids, vals, context=None):
         for case in self.browse(cr,uid,ids):
-            print case.picking_id.state, "picking state"
 #             picking_state = case.picking_id.state
 #             if case.hide_fields == False:
 #                 if case.picking_id.state =='in_transit':
@@ -3207,17 +2694,10 @@ stock_move()
 #                 res[case.id]['product']  = temp.product_id.name
 #                 res[case.id]['qty']  = temp.product_qty  
 #                 res[case.id]['location_id']=temp.location_dest_id.id
-#                 cr.execute("select create_uid from stock_picking where id="+str(case.id))
-#                 create_uid=cr.fetchone()[0]
-#                 cr.execute("select login from res_users where id  ="+str(create_uid))
-#                 user=cr.fetchone()[0]
 #                 res[case.id]['users']=user
 #          
 #         cr.execute("select id from stock_picking")
 #         stock_ids=cr.fetchall()
-#         date={}
-#         month={}
-#         year={}
 #         i=0
 #         for i in stock_ids:
 #             cr.execute("select type from stock_picking where id=%s",(i,))
@@ -3229,27 +2709,7 @@ stock_move()
 #                 create_id=cr.fetchone()[0]
 #                 cr.execute("select login from res_users where id  ="+str(create_id))
 #                 log=cr.fetchone()[0]
-#                 cr.execute("UPDATE stock_picking SET users =%s where id=%s", (log,i))
-#                 
-#                 cr.execute("select to_char(s.date, 'YYYY') as year,to_char(s.date, 'MM') as month,to_char(s.date, 'YYYY-MM-DD') as day from stock_picking s where id =%s",(i))
-#                 date=cr.fetchall()[0]
-#                 if date:
-#                     print "year",date[0]     
-#                     print "month",date[1]
-#                     print "day",date[1]           
-#                     m=0
-#                     for m in date:
-#                         cr.execute("UPDATE stock_picking SET year =%s where id=%s", (date[0],i))
-#                         cr.execute("UPDATE stock_picking SET month =%s where id=%s", (date[1],i))
-#                         cr.execute("UPDATE stock_picking SET day =%s where id=%s", (date[2],i))
-# #                     date.update({ i:date[0]})
-# #                     month.update({ i:date[0]})
-# #                     day.update({i:date[2]})           
-# 
-#                                 
-#                  
-#                 
-#                 
+#                 cr.execute("UPDATE stock_picking SET users =%s where id=%s", (log,i)) 
 #      
 #         return res
 #     
@@ -3264,18 +2724,9 @@ stock_move()
 #               'truck_no'        : fields.char('Vehicle Number',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
 #               'purchase_id'     : fields.many2one('purchase.order', 'Purchase Order',
 #                                              ondelete='set null', select=True),
-#                'users'           : fields.function(_get_move_lines,type="char", string="User",store=True, multi="move_lines"),
-#                
-#                #FOR VIEW PURPOSE
-#                
-#                'year': fields.char('Year', size=4, readonly=True),
-#               'month': fields.selection([('01', 'January'), ('02', 'February'), ('03', 'March'), ('04', 'April'),
-#                                             ('05', 'May'), ('06', 'June'), ('07', 'July'), ('08', 'August'), ('09', 'September'),
-#                                             ('10', 'October'), ('11', 'November'), ('12', 'December')], 'Month', readonly=True),
-#               'day': fields.char('Day', size=128, readonly=True),        
+#                'users'           : fields.function(_get_move_lines,type="char", string="User",store=True, multi="move_lines"),          
 #               }
 #     
-#     _order = 'date desc'
 #     
 # 
 #     _defaults={
@@ -3305,7 +2756,6 @@ stock_move()
 #         not_draft=[]
 # #         inv_obj = self.pool.get('account.invoice')
 # #         inv_groups = {} 
-#         type=''
 #         tax_vals={}
 #         vals={}
 #         sup_inv_vals = {}
@@ -3321,7 +2771,6 @@ stock_move()
 #         if user.role!='admin':
 #                 raise osv.except_osv(_('Warning'),_('You Cannot Create Invoice For The Incoming Shipments'))
 #         for case in self.browse(cr, uid, ids):
-#             type=case.type
 #             if case.state in ('done'):
 #                 a=""
 #                 loaded_qty = 0
@@ -3407,67 +2856,27 @@ stock_move()
 #             inv_obj.create(cr, uid, sup_inv_vals,context=context) 
 #         return True
 #     
-# #     def do_invoice(self, cr, uid, automatic = False, use_new_cursor = False,context = None ):
-# # #         print "inside the invoice Schedular"
-# # # #         do_ids = self.search(cr, uid, [('state','in',('done','freight_paid'))])
-# # #         #for creating invoices from deliver orders
-# # #         cr.execute("""select id from stock_picking where state in ('done', 'freight_paid') and date::date = """+"'"+datetime.today().strftime("%Y-%m-%d")+"'")
-# # #         do_ids = cr.fetchall()
-# # #         print "do_ids1",do_ids
-# # #         do_ids = [d[0] for d in do_ids]
-# # #         inv_ids = do_ids
-# # #         
-# # #         #print "do_ids2",do_ids
-# # #        
-# # #         if do_ids:
-# # #             cr.execute('SELECT del_ord_id FROM delivery_invoice_rel WHERE del_ord_id IN %s',(tuple(do_ids),))
-# # #             order_ids = cr.fetchall()
-# # #             if order_ids:
-# # #                 order_ids = [i[0] for i in order_ids ]
-# # #                 inv_ids = list(set(do_ids).difference(order_ids))
-# # #                 
-# # #             if inv_ids:
-# # #                 self.get_invoice(cr, uid, inv_ids, False, context)
-# #         
-# #         #for creating invoices from incoming shipments
-# #         print "inside the incoming shipment invoice Schedular"
-# #         cr.execute("""select id from stock_picking where state in ('done') and type = 'in' and date::date = """+"'"+datetime.today().strftime("%Y-%m-%d")+"'")
-# #         in_ids = cr.fetchall()
-# #         shipment_ids = [d[0] for d in in_ids]
-# #         ship_inv_ids=shipment_ids
-# #         if shipment_ids:
-# #             cr.execute('SELECT in_shipment_id FROM incoming_shipment_invoice_rel WHERE in_shipment_id IN %s',(tuple(shipment_ids),))
-# #             ship_order_ids = cr.fetchall()
-# #             if ship_order_ids:
-# #                 ship_order_ids = [s[0] for s in ship_order_ids ]
-# #                 ship_inv_ids = list(set(shipment_ids).difference(ship_order_ids))
-# #              
-# #             if ship_inv_ids:
-# #                  self.get_invoice(cr, uid, ship_inv_ids, False, context)
-# #         return True   
-#     
 #     def create(self,cr,uid,vals,context=None):
 #         move_lines=[]
 #         today = time.strftime('%Y-%m-%d') 
-#         user = self.pool.get('res.users').browse(cr, uid, [uid])[0]
 #         
 #         # for creating the sequence code
-#         cr.execute("select code from account_fiscalyear where date_start < '"+today+"' and date_stop >'" +today+"'")
-#         seq_code = cr.fetchone()
-#         if seq_code:
-#             code = seq_code[0]
-#         format = 'IN/' + code + '/' + user.state_id.code + '/'
-#         cr.execute("select name from stock_picking where name like '"+format+"'|| '%' order by to_number(substr(name,(length('"+format+"')+1)),'99999') desc limit 1")
-#         prev_format = cr.fetchone()
-#         if not prev_format:
-#             name = format + '00001'
-#         else:
-#             auto_gen = prev_format[0][-5:]
-#             name = format + str(int(auto_gen) + 1).zfill(5)
-#         vals.update({'name':name})
-#         move_lines=vals.get('move_lines')
-#         if move_lines==[]:
-#             raise osv.except_osv(_('Warning'),_('Add one product')) 
+# #         cr.execute("select code from account_fiscalyear where date_start < '"+today+"' and date_stop >'" +today+"'")
+# #         seq_code = cr.fetchone()
+# #         if seq_code:
+# #             code = seq_code[0]
+# #         format = 'IN/' + '13-14' + '/'
+# #         cr.execute("select name from stock_picking where name like '"+format+"'|| '%' order by to_number(substr(name,(length('"+format+"')+1)),'99999') desc limit 1")
+# #         prev_format = cr.fetchone()
+# #         if not prev_format:
+# #             name = format + '00001'
+# #         else:
+# #             auto_gen = prev_format[0][9:]
+# #             name = format + str(int(auto_gen) + 1).zfill(5)
+# #         vals.update({'name':name})
+# #         move_lines=vals.get('move_lines')
+# #         if move_lines==[]:
+# #             raise osv.except_osv(_('Warning'),_('Add one product')) 
 # #         if vals.get('move_lines',False):
 # #             for m in vals['move_lines']:
 # #                  lines_len=len(vals['move_lines'])
@@ -3521,11 +2930,6 @@ stock_move()
 #         res=super(stock_picking_in,self).draft_force_assign(cr, uid,ids,*args)
 #         return res
 #     
-#     def unlink(self, cr, uid, ids, context=None):
-#         for case in self.browse(cr, uid, ids):
-#             if case.state != 'draft':
-#                 raise osv.except_osv(_('Warning!'), _("You Cannot Delete the record, You Can only Delete Draft Record "))
-#         return super(stock_picking_in, self).unlink(cr, uid, ids, context = context)
 # stock_picking_in()
 
 
@@ -3559,6 +2963,64 @@ class stock_picking_in(osv.osv):
                 user=cr.fetchone()[0]
                 res[case.id]['users']=user
                 d=case.id
+#                 cr.execute("select to_char(s.date, 'YYYY') as year,to_char(s.date, 'MM') as month,to_char(s.date, 'YYYY-MM-DD') as day from stock_picking s where id =%s and type='in'",(d,))
+#                 date=cr.fetchall()
+#                 if date:
+# #                     print "year",date[0]     
+# #                     print "month",date[1]
+# #                     print "day",date[1]   
+#                     cr.execute("UPDATE stock_picking SET year =%s where id=%s", (date[0],d))
+#                     cr.execute("UPDATE stock_picking SET month =%s where id=%s", (date[1],d))
+#                     cr.execute("UPDATE stock_picking SET day =%s where id=%s", (date[2],d))
+#                    
+#                 cr.execute("select product_id from stock_move where picking_id=%s",(d,))
+#                 product_id=date=cr.fetchone()[0]
+#                 cr.execute("UPDATE stock_picking SET product_id =%s where id=%s", (product_id,d))
+                
+#         d=d-10            
+# #         cr.execute("select year from stock_picking where id=%s",(d,))
+# #         d_year=date=cr.fetchone()[0]  
+#         d_year=8
+#         if not d_year: 
+#             cr.execute("select id from stock_picking")
+#             stock_ids=cr.fetchall()
+#             date={}
+#             month={}
+#             year={}
+#             i=0
+#             for i in stock_ids:
+#                 cr.execute("select type from stock_picking where id=%s",(i,))
+#                 type=cr.fetchall()
+#                 type=zip(*type)[0]
+#                 print "type", type[0]
+#                   
+#                 if type:
+# #                     cr.execute("select create_uid from stock_picking where id=%s",(i))
+# #                     create_id=cr.fetchone()[0]
+# #                     cr.execute("select login from res_users where id  ="+str(create_id))
+# #                     log=cr.fetchone()[0]
+# #                     cr.execute("UPDATE stock_picking SET users =%s where id=%s", (log,i))
+#                        
+#                     cr.execute("select to_char(s.date, 'YYYY') as year,to_char(s.date, 'MM') as month,to_char(s.date, 'YYYY-MM-DD') as day from stock_picking s where id =%s",(i))
+#                     date=cr.fetchall()[0]
+#                     if date:
+#                         print "year",date[0]     
+#                         print "month",date[1]
+#                         print "day",date[1]           
+#                         m=0
+#                         for m in date:
+#                             cr.execute("UPDATE stock_picking SET year =%s where id=%s", (date[0],i))
+#                             cr.execute("UPDATE stock_picking SET month =%s where id=%s", (date[1],i))
+#                             cr.execute("UPDATE stock_picking SET day =%s where id=%s", (date[2],i))
+#     #                     date.update({ i:date[0]})
+#     #                     month.update({ i:date[0]})
+#     #                     day.update({i:date[2]})           
+
+                                
+                 
+                
+                
+     
         return res
     
     def get_location(self, cr, uid, context=None):
@@ -3723,8 +3185,7 @@ class stock_picking_in(osv.osv):
                                             
                                 'invoice_line': line_vals[inv],
                                 'incoming_shipment_ids': [(6, 0, supp_del_orders[inv])],
-                            }) 
-            print "inv", sup_inv_vals
+                            })
 #             if ln.location_id.name == "Suppliers":
             context.update({'type':'in_invoice'})
             inv_obj.create(cr, uid, sup_inv_vals,context=context) 
@@ -3770,41 +3231,71 @@ class stock_picking_in(osv.osv):
 #         return True   
     
 #     # TODO: commented for testing 
-    def create(self,cr,uid,vals,context=None):
-        move_lines=[]
-        today = time.strftime('%Y-%m-%d') 
-        user = self.pool.get('res.users').browse(cr, uid, [uid])[0]
-         
-        # for creating the sequence code
-         
-                 
-        cr.execute("select code from account_fiscalyear where date_start < '"+today+"' and date_stop >'" +today+"'")
-        seq_code = cr.fetchone()
-        if seq_code:
-            code = seq_code[0]
-        format = 'IN/' + code + '/' + user.state_id.code + '/'
-        cr.execute("select name from stock_picking where name like '"+format+"'|| '%' order by to_number(substr(name,(length('"+format+"')+1)),'99999') desc limit 1")
-        prev_format = cr.fetchone()
-        if not prev_format:
-            name = format + '00001'
-        else:
-            auto_gen = prev_format[0][-5:]
-            name = format + str(int(auto_gen) + 1).zfill(5)
-        vals.update({'name':name})
-        move_lines=vals.get('move_lines')
-        if move_lines==[]:
-            raise osv.except_osv(_('Warning'),_('Add one product')) 
-#         if vals.get('move_lines',False):
-#             for m in vals['move_lines']:
-#                  lines_len=len(vals['move_lines'])
-#                  if lines_len>1:
-#                      raise osv.except_osv(_('Warning'),_('Add only one product'))
-        if 'move_lines' in vals:
-            for ml in vals['move_lines']:
-                    vals['product_id']=ml[2]['product_id']        
-        return super(stock_picking_in,self).create(cr, uid, vals, context)
+#     def create(self,cr,uid,vals,context=None):
+#         move_lines=[]
+#         today = time.strftime('%Y-%m-%d') 
+#         user = self.pool.get('res.users').browse(cr, uid, [uid])[0]
+#         
+#         # for creating the sequence code
+#         
+#                 
+#         cr.execute("select code from account_fiscalyear where date_start < '"+today+"' and date_stop >'" +today+"'")
+#         seq_code = cr.fetchone()
+#         if seq_code:
+#             code = seq_code[0]
+#         format = 'IN/' + code + '/' + user.state_id.code + '/'
+#         cr.execute("select name from stock_picking where name like '"+format+"'|| '%' order by to_number(substr(name,(length('"+format+"')+1)),'99999') desc limit 1")
+#         prev_format = cr.fetchone()
+#         if not prev_format:
+#             name = format + '00001'
+#         else:
+#             auto_gen = prev_format[0][-5:]
+#             name = format + str(int(auto_gen) + 1).zfill(5)
+#         vals.update({'name':name})
+#         move_lines=vals.get('move_lines')
+#         if move_lines==[]:
+#             raise osv.except_osv(_('Warning'),_('Add one product')) 
+# #         if vals.get('move_lines',False):
+# #             for m in vals['move_lines']:
+# #                  lines_len=len(vals['move_lines'])
+# #                  if lines_len>1:
+# #                      raise osv.except_osv(_('Warning'),_('Add only one product'))
+#         if 'move_lines' in vals:
+#             for ml in vals['move_lines']:
+#                     vals['product_id']=ml[2]['product_id']        
+#         return super(stock_picking_in,self).create(cr, uid, vals, context)
         
-
+# TODO: delete it        
+#     def write(self, cr, uid, ids, vals, context=None):
+#         res=super(stock_picking_in, self).write(cr, uid, ids, vals, context=context)
+#         
+# #         if vals.get('move_lines',False):
+# #             if not vals['move_lines'][0][2]:
+# #                 raise osv.except_osv(_('Warning'),_('Add one product'))
+# #             for m in vals['move_lines']:
+# #                  lines_len=len(vals['move_lines'])
+# #                  if lines_len>1:
+# #                      raise osv.except_osv(_('Warning'),_('Add only one product'))
+#                  
+# #         sm_obj = self.pool.get('stock.move')
+# #         if 'move_lines' in vals:
+# #             if not vals['move_lines'][0][2]:
+# #                 raise osv.except_osv(_('Warning'),_('Cannot Delete product'))
+# #             if vals['move_lines'][0][2]:
+# #                 sm_obj = self.pool.get('stock.move')
+# #                 sm_ids=sm_obj.browse(cr, uid, ids, context=context)
+# #                 vals1 ={}
+# #                  
+# #                 for case in self.browse(cr, uid, ids):
+# #                     for ln in case.move_lines:
+# #                         if 'move_lines' in vals: 
+# #                             lines_len=len(vals['move_lines'])
+# #                               
+# #                             if lines_len>1:
+# #                                 raise osv.except_osv(_('Warning'),_('Add only one product'))
+# #                     sm_obj.write(cr, uid, [ln.id], vals,context)
+#                        
+#         return res 
     
     def draft_force_assign(self, cr, uid, ids, *args):
         """ Confirms picking directly from draft state.
@@ -3819,16 +3310,12 @@ class stock_picking_in(osv.osv):
         return super(stock_picking_in,self).draft_force_assign(cr, uid,ids,*args)
        
     
-    def unlink(self, cr, uid, ids, context=None):
-        for case in self.pool.get('stock.picking').browse(cr, uid, ids):
-            print 'case.state', case.move_lines
-            if case.state != 'draft':
-                raise osv.except_osv(_('Warning!'), _("You Cannot Delete the record, You Can only Delete Draft Record "))
-        return super(stock_picking_in, self).unlink(cr, uid, ids, context = context)
+#     def unlink(self, cr, uid, ids, context=None):
+#         for case in self.pool.get('stock.picking').browse(cr, uid, ids):
+#             print 'case.state', case.move_lines
+#             if case.state != 'draft':
+#                 raise osv.except_osv(_('Warning!'), _("You Cannot Delete the record, You Can only Delete Draft Record "))
+#         return super(stock_picking_in, self).unlink(cr, uid, ids, context = context)
 
 stock_picking_in()
-
-
-
-
 

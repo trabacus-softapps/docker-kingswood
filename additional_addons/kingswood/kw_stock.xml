@@ -30,7 +30,11 @@
                      <field name="year" invisible="1"/>
                      <field name="location_id" invisible="0"/>
                      <field name="sup_invoice" string="Facilitator Invoice" invisible="0"/>
-		             <field name="cust_invoice" string="Customer Invoice" attrs="{'invisible': [('type', '=', 'in')]}" />	
+		             <field name="cust_invoice" string="Customer Invoice" attrs="{'invisible': [('type', '=', 'in')]}" />
+                	
+                	<field name="date_from" filter_domain="[('date_function','&gt;=',self)]" string="Creation Date From"/>
+                	<field name="date_to" filter_domain="[('date_function','&lt;=',self)]" string="Creation Date To"/>
+                	
                 	<field name="date_from" filter_domain="[('delivery_date_function','&gt;=',self)]"/>
                 	<field name="date_to" filter_domain="[('delivery_date_function','&lt;=',self)]"/>
                     <filter icon="terp-check" name="draft" string="Draft" domain="[('state','=','draft')]" help="Assigned Delivery Orders"/>
@@ -78,6 +82,7 @@
                     <field name="product_id"/>
                 	<field name="date" invisible="1"/>
                 	<field name="day" string="Creation Date"/>
+                	<field name="delivery_date_function"/>
                  <!--   <field name="product" invisible="1"/>-->
                     <field name="qty" string="Loaded Quantity in MTs" sum="Total"/>
                     <field name="del_quantity" sum="Total"/>
@@ -87,7 +92,7 @@
                    <field name="location_id" invisible='1'/>
                 	
                 	 <field name='freight_charge'/>
-                	<field name='freight_balance' string="Freight Balance"/> 
+                	<field name='freight_balance' string="Freight Balance" sum="Total"/> 
                     <field name="esugam_no" string="E-Sugam No."/>
                     <!-- <field name="stock_journal_id" groups="account.group_account_user"/> -->
                     <!-- <field name="driver_name" string="Transporter Name"/> -->

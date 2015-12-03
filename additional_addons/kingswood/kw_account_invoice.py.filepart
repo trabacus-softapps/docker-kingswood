@@ -142,23 +142,8 @@ class account_invoice(osv.osv):
         txt = '' 
         qty=0
         qty_txt=''
-        c_acc_id = False
         stock_obj=self.pool.get('stock.picking.out')
         for case in self.browse(cr, uid, ids):
-            if case.type == 'out_invoice' and case.company_id.id == 1:
-                if (case.account_id.name == "Total Sundry Creditors") or (case.account_id.name == "Sundry Creditors") or (case.account_id.name == "Total Sundry Debtors") or (case.account_id.name == "Sundry Debtors") :
-                    c_acc_id = case.partner_id.property_account_receivable and case.partner_id.property_account_receivable.id or False
-                    if case.partner_id.parent_id:
-                        c_acc_id = case.partner_id.parent_id.property_account_receivable and case.partner_id.parent_id.property_account_receivable.id or False
-                    if c_acc_id:
-                        cr.execute("update account_invoice set account_id="+str(c_acc_id)+" where id=%s",(case.id,))
-            else:
-                c_acc_id= case.partner_id.account_rec and case.partner_id.account_rec.id or False
-                if case.partner_id.parent_id:
-                    c_acc_id=case.partner_id.parent_id.account_rec and case.partner_id.parent_id.account_rec.id or False  
-                if c_acc_id:
-                    cr.execute("update account_invoice set account_id="+str(c_acc_id)+" where id=%s",(case.id,))                    
-                                  
             qty=0
             res[case.id]={
                           'amt_txt':'','product_id':False,'qty_txt':False,'handling_charges':False,'quantity':0.00
@@ -281,14 +266,6 @@ class account_invoice(osv.osv):
                 'handling_order'            : fields.char('Handling charge Order Number'),  
     #for total balance
     
-        # columns for ITC limited
-        'other_charges'    : fields.boolean('Other Charges'),
-        'transport_charges' : fields.float('Transport Charges'),
-        'transport_acc_id'  : fields.many2one('account.account','Account'),
-        'loading_charges' : fields.float('Loading Charges'),
-        'loading_acc_id'  : fields.many2one('account.account','Account'),
-        
-    
               
                       
                     
@@ -296,7 +273,6 @@ class account_invoice(osv.osv):
     _defaults={
                'inv_num':'',
                'back_date':False,
-               'other_charges' : False
 #                'create_date':lambda *a: time.strftime('%Y-%m-%d'),
                  
                }  
@@ -1014,7 +990,7 @@ class account_invoice(osv.osv):
             
             shedular_date = datetime.strptime(case.date_invoice, '%Y-%m-%d') - relativedelta(days=int(day_to))
             shedular_date = shedular_date.strftime('%Y-%m-%d')         
-            cr.execute("select id from account_invoice where state='draft' and handling_charges = True and company_id = "+str(case.company_id.id)+" and partner_id= '" + str(case.partner_id.id) + "'and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) = '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
+            cr.execute("select id from account_invoice where state='draft' and partner_id= '" + str(case.partner_id.id) + "'and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) = '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
             other_sup=[x[0] for x in cr.fetchall()]  
                        
             
@@ -1025,8 +1001,8 @@ class account_invoice(osv.osv):
             print 'other_sup',case.id
             print "no-",len(other_sup)
             print "name-",case.partner_id.name
-            group_ids=self.search(cr,uid,[('partner_id','=',case.partner_id.id),('handling_charges','=', True),('company_id','=',case.company_id.id),('state','=','draft'),('id','in',other_sup)],order='partner_id',)
-            group_in_ids=self.search(cr,uid,[('origin','=','IN'),('handling_charges','=', True),('partner_id','=',case.partner_id.id),('company_id','=',case.company_id.id),('state','=','draft'),('id','in',other_sup)],order='origin',)
+            group_ids=self.search(cr,uid,[('partner_id','=',case.partner_id.id),('company_id','=',case.company_id.id),('state','=','draft'),('id','in',other_sup)],order='partner_id',)
+            group_in_ids=self.search(cr,uid,[('origin','=','IN'),('partner_id','=',case.partner_id.id),('company_id','=',case.company_id.id),('state','=','draft'),('id','in',other_sup)],order='origin',)
             
             if group_in_ids:
                 for in_ship in group_in_ids:
@@ -1112,60 +1088,6 @@ class account_invoice(osv.osv):
                 wf_service.trg_validate(uid, 'account.invoice', group_in_ids[0], 'invoice_open', cr) 
                 self.write(cr, uid, group_in_ids, {'date_invoice':shedular_date}, context)                                            
         return True
-    
-    
-    def do_merge_old_invoice(self, cr, uid, automatic=False, use_new_cursor=False, context=None):
-        if not context:
-            context={}
-        
-        date_day = time.strftime('%Y-%m-%d')
-        day_to=self.get_month(cr,uid,[],date_day,{'day':1}) 
-        wf_service = netsvc.LocalService('workflow')
-        shedular_date = datetime.strptime(date_day, '%Y-%m-%d') - relativedelta(days=int(day_to))
-        shedular_date = shedular_date.strftime('%Y-%m-%d')        
-        print shedular_date
-        today=context.get('in_date',shedular_date)
-        supplier_id=context.get('supplier_id',False)
-        partner_obj=self.pool.get('res.partner')
-        del_ord_out_ids=[]
-        del_ord_in_ids=[]
-        shipment_ids=[]
-        res={}
-        res1={}
-        partner_company=[]
-        partner=[]
-        inv_m=False
-        inv_month=[]
-        company=[]
-        partner_ids=partner_obj.search(cr,uid,[('handling_charges','=',True)])
-        month_to=self.get_month(cr,uid,[],today,{'month':1}) 
-        print 'month_to',month_to
-        year_to=self.get_month(cr,uid,[],today,{'year':1}) 
-        
-        sup_comp = 1
-        inv_comp=context.get('inv',False)
-        
-        if inv_comp:
-           if inv_comp == 'sup':
-                cr.execute("select id from res_company where lower(name) like '%supplier%'")
-                sup_comp=cr.fetchone()
-           elif inv_comp == 'logistic':
-                cr.execute("select id from res_company where lower(name) like '%logistic%'")
-                sup_comp=cr.fetchone()     
-        if sup_comp: 
-            sup_comp=sup_comp[0]  
-                       
-        if supplier_id:
-            cr.execute("select id from account_invoice where state='draft' and handling_charges = True and company_id ="+str(sup_comp)+" and partner_id= '" + str(supplier_id) + "' and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
-        else:
-            cr.execute("select id from account_invoice where state='draft' and handling_charges = True and company_id ="+str(sup_comp)+" and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
-        old_inv=[x[0] for x in cr.fetchall()] 
-        if old_inv:
-             res = self.do_merge_old_inv(cr,uid,old_inv,context)         
-        
-        
-        return res
-        
     #Schedular for merging Facilitator Invoices
     def do_merge_facilitator(self, cr, uid, automatic=False, use_new_cursor=False, context=None):
         if not context:
@@ -1179,7 +1101,6 @@ class account_invoice(osv.osv):
         print shedular_date
         today=context.get('in_date',shedular_date)
         supplier_id=context.get('supplier_id',False)
-        
         partner_obj=self.pool.get('res.partner')
         del_ord_out_ids=[]
         del_ord_in_ids=[]
@@ -1189,53 +1110,36 @@ class account_invoice(osv.osv):
         partner_company=[]
         partner=[]
         inv_m=False
-        p_id = False
         inv_month=[]
         company=[]
-        partners=[]
         partner_ids=partner_obj.search(cr,uid,[('handling_charges','=',True)])
         month_to=self.get_month(cr,uid,[],today,{'month':1}) 
-        year_to=self.get_month(cr,uid,[],today,{'year':1}) 
         print 'month_to',month_to
-        sup_comp = 1
-        inv_comp=context.get('inv',False)
-        s_comp = context.get('comp_id',False) 
-        if inv_comp:
-           if inv_comp == 'sup':
-                cr.execute("select id from res_company where lower(name) like '%supplier%'")
-                sup_comp=cr.fetchone()
-           elif inv_comp == 'logistic':
-                cr.execute("select id from res_company where lower(name) like '%logistic%'")
-                sup_comp=cr.fetchone()     
-        if sup_comp: 
-            sup_comp= s_comp or sup_comp[0] 
+        year_to=self.get_month(cr,uid,[],today,{'year':1}) 
         
-        
-                                
         if int(month_to)<8 and int(year_to)==2014:
             if supplier_id:
-                cr.execute("select id from account_invoice where state='draft' and handling_charges = True and company_id ="+str(sup_comp)+" and partner_id= '" + str(supplier_id) + "'and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(8) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
+                cr.execute("select id from account_invoice where state='draft' and partner_id= '" + str(supplier_id) + "'and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(8) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
             else:
-                cr.execute("select id from account_invoice where state='draft' and handling_charges = True and company_id ="+str(sup_comp)+" and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(8) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
+                cr.execute("select id from account_invoice where state='draft' and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(8) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
             other_sup=[x[0] for x in cr.fetchall()] 
         else:     
             if supplier_id:
-                cr.execute("select id from account_invoice where state='draft'  and handling_charges = True and company_id ="+str(sup_comp)+" and partner_id= '" + str(supplier_id) + "' and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) = '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
+                cr.execute("select id from account_invoice where state='draft' and partner_id= '" + str(supplier_id) + "' and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) = '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
             else:
-                cr.execute("select id from account_invoice where state='draft' and handling_charges = True and company_id ="+str(sup_comp)+" and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) = '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
+                cr.execute("select id from account_invoice where state='draft' and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) = '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
             other_sup=[x[0] for x in cr.fetchall()] 
                        
-#             if supplier_id:
-#                 cr.execute("select id from account_invoice where state='draft' and partner_id= '" + str(supplier_id) + "' and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
-#             else:
-#                 cr.execute("select id from account_invoice where state='draft' and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
-#             old_inv=[x[0] for x in cr.fetchall()] 
-#             if old_inv:
-#                  self.do_merge_old_inv(cr,uid,old_inv,context)                    
+            if supplier_id:
+                cr.execute("select id from account_invoice where state='draft' and partner_id= '" + str(supplier_id) + "' and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
+            else:
+                cr.execute("select id from account_invoice where state='draft' and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
+            old_inv=[x[0] for x in cr.fetchall()] 
+            if old_inv:
+                 self.do_merge_old_inv(cr,uid,old_inv,context)                    
 #         other_sup=self.search(cr,uid,[('id','in',partner_ids),('type','=','in_invoice'),('partner_id','in',partner_ids),('state','=','draft'),('origin','=',False)],order='partner_id desc')
 #         context.update({'other':1})
         print "no-other_sup-",len(other_sup)
-        
         for case in self.browse(cr, uid, other_sup):
             del_ord_in_ids=[]
             incoming_in_ids=[]
@@ -1244,17 +1148,11 @@ class account_invoice(osv.osv):
             print 'other_sup',case.id
             print "no-",len(other_sup)
             print "name-",case.partner_id.name
-            
-            group_ids=self.search(cr,uid,[('partner_id','=',case.partner_id.id),('handling_charges','=', True),('company_id','=',case.company_id.id),('state','=','draft'),('id','in',other_sup)],order='partner_id',)
-            group_in_ids=self.search(cr,uid,[('origin','=','IN'),('handling_charges','=', True),('partner_id','=',case.partner_id.id),('company_id','=',case.company_id.id),('state','=','draft'),('id','in',other_sup)],order='origin',)
+            group_ids=self.search(cr,uid,[('partner_id','=',case.partner_id.id),('company_id','=',case.company_id.id),('state','=','draft'),('id','in',other_sup)],order='partner_id',)
+            group_in_ids=self.search(cr,uid,[('origin','=','IN'),('partner_id','=',case.partner_id.id),('company_id','=',case.company_id.id),('state','=','draft'),('id','in',other_sup)],order='origin',)
             
             print 'group_ids',group_ids
-            cr.execute("select id from account_period where company_id='"+ str(case.company_id.id) +"'and date_start <= '" + shedular_date + "' and date_stop >='" + shedular_date + "'")
-            p_ids = cr.fetchone()   
-            if p_ids:
-                p_id=p_ids[0]
-#                 p_id = period_obj.browse(cr, uid, p_ids)      
-                      
+            
             if case.type=='in_invoice':
                     
                 cr.execute('select EXTRACT(month from date_invoice) from account_invoice where id=%s',(case.id,))
@@ -1304,7 +1202,7 @@ class account_invoice(osv.osv):
                                              
                     if del_ord_in_ids:
                         print "state",case.branch_state.id
-                        self.write(cr,uid,res.keys(),{'date_invoice': shedular_date,'period_id':p_id,'freight':case.freight,'origin':'DC-Handling Charges',
+                        self.write(cr,uid,res.keys(),{'date_invoice': shedular_date,'freight':case.freight,'origin':'DC-Handling Charges',
                                                       'branch_state':case.branch_state.id,'supp_delivery_orders_ids': [(6,0,del_ord_in_ids)],
                                                       },context=context)
 #                         self.invoice_validate(cr, uid, res.keys(), context)
@@ -1328,7 +1226,7 @@ class account_invoice(osv.osv):
             if len(group_in_ids)>1:
                 if case.type=='in_invoice' or case.partner_id.handling_charges:
                     if case.state=='draft' and case.origin!='Handling Charges': 
-                                 
+                        context.update({'other':1})                       
                         res1 = self.do_merge(cr, uid, group_in_ids, context= context)
                         for temp in self.browse(cr,uid,group_in_ids): 
                             cr.execute("select in_shipment_id from incoming_shipment_invoice_rel where invoice_id =%s",(temp.id,))
@@ -1338,7 +1236,7 @@ class account_invoice(osv.osv):
                                     incoming_in_ids.append(j[0])
                                     
                     if incoming_in_ids:
-                        self.write(cr,uid,res1.keys(),{'date_invoice': shedular_date,'period_id':p_id,'freight':case.freight,'origin':'IN-Handling Charges','branch_state':False,
+                        self.write(cr,uid,res1.keys(),{'date_invoice': shedular_date,'freight':case.freight,'origin':'IN-Handling Charges','branch_state':False,
                                                    'incoming_shipment_ids':[(6,0,incoming_in_ids)]},context=context)
                         if case.branch_state:
                             self.write(cr,uid,res1.keys(),{'branch_state':case.branch_state.id},context=context)                                                        
@@ -1354,11 +1252,9 @@ class account_invoice(osv.osv):
                     
             elif len(group_in_ids)==1:
 #                 self.invoice_validate(cr, uid, group_in_ids, context)
-                self.write(cr, uid, group_in_ids, {'period_id':p_id,'date_invoice':shedular_date}, context)
                 wf_service.trg_validate(uid, 'account.invoice', group_in_ids[0], 'invoice_open', cr)   
-            context.update({'other':1})               
-            partners.append([case.partner_id.name,case.company_id.name])
-            print [case.partner_id.name,case.company_id.name]
+                self.write(cr, uid, group_in_ids, {'date_invoice':shedular_date}, context)
+                       
         print res  
         print "============"                    
         return res,res1
@@ -1407,45 +1303,7 @@ class account_invoice(osv.osv):
             res = tools.ustr(f_month.strftime('%d'))            
         return res 
 
-    def account_update(self, cr, uid, ids, context=None):
-        if not context:
-            context = {}
-        del_ord_out_ids=[]
-        del_ord_in_ids=[]
-        shipment_ids=[]
-        origin=''
-        product=[]
-        product_copy=[]
-        product1=[]
-        product2=[]
-        user=[]
-        inv_ids = []
-        inv_month=[]
-        inv_m=False
-        temp_id = []
-        today = time.strftime('%Y-%m-%d %H:%M:%S')
-        schedular = context.get('schedular',False)
-        res = super(account_invoice,self).do_merge(cr, uid, ids, context= context)
-        s_parent_id = False
-        cr.execute("""select id from account_invoice where handling_charges=True and state!='cancel'
-                        and company_id = 3 and date_invoice::date>='2015-02-01'::date
-                        and account_id in (
-                        select id from account_account where company_id=1
-                        )
-                        order by date_invoice""")
-        temp_id=cr.fetchall()
-        for temp in temp_id:
-            for case in self.browse(cr, uid, [temp[0]]):
-                if case.company_id.id >1 :
-                    s_parent_id = case.partner_id.account_pay and case.partner_id.account_pay.id or False
-                else:
-                    s_parent_id = case.partner_id.property_account_payable and case.partner_id.property_account_payable.id or False
-                self.write(cr,uid,[case.id],{'account_id':s_parent_id}) 
-        
-    
-                
-        return True
-    
+
     
     def do_merge(self, cr, uid, ids, context=None):
         if not context:
@@ -1465,20 +1323,8 @@ class account_invoice(osv.osv):
         today = time.strftime('%Y-%m-%d %H:%M:%S')
         schedular = context.get('schedular',False)
         res = super(account_invoice,self).do_merge(cr, uid, ids, context= context)
-        s_parent_id = False
         if context.get('other','')!=1:
             for case in self.browse(cr, uid, ids):
-                cr.execute("update account_invoice set user_id ="+str(uid)+" where id = "+str(case.id))
-#                 if case.type == 'in_invoice':
-#                     if case.company_id.id >1 :
-#                         s_parent_id = case.partner_id.account_pay and case.partner_id.account_pay.id or False
-#                     else:
-#                         s_parent_id = case.partner_id.property_account_payable and case.partner_id.property_account_payable.id or False
-              
-                cr.execute("select id from account_period where company_id='"+ str(case.company_id.id) +"'and date_start <= '" + str(case.date_invoice) + "' and date_stop >='" + str(case.date_invoice) + "'")
-                p_ids = cr.fetchone()   
-                if p_ids:
-                    p_id = p_ids[0]  
                 
                 if case.type=='in_invoice':
                     cr.execute('select EXTRACT(month from date_invoice) from account_invoice where id=%s',(case.id,))
@@ -1499,16 +1345,14 @@ class account_invoice(osv.osv):
                 
                 if user:
                     if case.user_id.id not in user:
-                        cr.execute("update account_invoice set user_id = "+str(user[0])+" where id = "+str(case.id))
-                        self.write(cr,uid,[case.id],{'user_id':user[0]})
-                        self.write(cr,uid,res,{'user_id':user[0]})
+                        raise osv.except_osv(_('Warning!'), _("Cannot Merge Invoices with Different Salespersons"))
                 else:
                     user.append(case.user_id.id)
                     
                 origin=''
                 if case.partner_id.handling_charges:
                     origin='Handling Charges'
-                    self.write(cr,uid,res.keys(),{'date':today,'origin':'Handling Charges','period_id':p_id, },context=context)
+                    self.write(cr,uid,res.keys(),{'date':today,'origin':'Handling Charges'},context=context)
                 if case.type=='in_invoice' or case.type=='in_refund':
 
 #                     if product2:
@@ -1558,17 +1402,17 @@ class account_invoice(osv.osv):
                     
       
             if del_ord_out_ids:
-                self.write(cr,uid,res.keys(),{'date':today,'freight':case.freight,'branch_state':case.branch_state.id,'delivery_orders_ids': [(6,0,del_ord_out_ids)],'period_id':p_id, },context=context) 
+                self.write(cr,uid,res.keys(),{'date':today,'freight':case.freight,'branch_state':case.branch_state.id,'delivery_orders_ids': [(6,0,del_ord_out_ids)]},context=context) 
                                                            
             if del_ord_in_ids:
-                self.write(cr,uid,res.keys(),{'date':today,'freight':case.freight,'branch_state':case.branch_state.id,'supp_delivery_orders_ids': [(6,0,del_ord_in_ids)],'period_id':p_id, },context=context)  
+                self.write(cr,uid,res.keys(),{'date':today,'freight':case.freight,'branch_state':case.branch_state.id,'supp_delivery_orders_ids': [(6,0,del_ord_in_ids)]},context=context)  
                  
             if product and product_copy:
                 raise osv.except_osv(_('Warning!'), _("Cannot Merge Goods Invoice And Freight Invoice"))
             if shipment_ids:
                 if not origin:
                     origin='IN'
-                self.write(cr,uid,res.keys(),{'date':today,'incoming_shipment_ids': [(6,0,shipment_ids)],'origin':origin,'branch_state':case.branch_state.id,'period_id':p_id, },context=context)
+                self.write(cr,uid,res.keys(),{'date':today,'incoming_shipment_ids': [(6,0,shipment_ids)],'origin':origin,'branch_state':case.branch_state.id,},context=context)
             if res:
                 inv_ids =res.keys()   
             context.update({'inv_ids':inv_ids})                       
@@ -1586,8 +1430,8 @@ class account_invoice(osv.osv):
         if context is None:
             context = {}
         user_id = self.pool.get('res.users').browse(cr, uid,[uid])[0]
-#         if user_id:
-#             raise osv.except_osv(_('Warning!'), _("You Cannot Duplicate the record, You can only Create New Record "))
+        if user_id:
+            raise osv.except_osv(_('Warning!'), _("You Cannot Duplicate the record, You can only Create New Record "))
         return super(account_invoice, self).copy(cr, uid, id, default, context=context)
     
     def write_sequence(self, cr, uid, today, case, num,form,company,context):
@@ -1650,9 +1494,7 @@ class account_invoice(osv.osv):
         number=''
         if context is None:
             context = {}
-        stock_out=[]
-        stock_in = []  
-        invoice_in = []
+            
         
         cr.execute("select id from res_company where lower(name) like '%logistics%'")
         company=cr.fetchone()
@@ -1660,34 +1502,6 @@ class account_invoice(osv.osv):
             company=company[0]    
         
         for case in self.browse(cr,uid,ids):
-            if 'back_date' in vals:
-                cr.execute("""select rel.del_ord_id from supp_delivery_invoice_rel rel
-                                inner join account_invoice ai on ai.id = rel.invoice_id
-                                where ai.state != 'cancel' and rel.invoice_id = """+str(case.id))
-                
-                stock_out = [x for x in cr.fetchall()]
-                cr.execute("""select rel.in_shipment_id from incoming_shipment_invoice_rel rel
-                                inner join account_invoice ai on ai.id = rel.invoice_id
-                                where ai.state != 'cancel' and rel.invoice_id = """+str(case.id))
-                
-                stock_in = [x for x in cr.fetchall()]
-                
-                if stock_in:
-                    cr.execute("""select distinct invoice_id from incoming_shipment_invoice_rel rel
-                                inner join account_invoice ai on ai.id = rel.invoice_id
-                                where ai.state != 'cancel' and in_shipment_id in %s""",(tuple(stock_in),))
-                    invoice_in = [x for x in cr.fetchall()]
-
-                if stock_out:
-                    cr.execute("""select distinct invoice_id from supp_delivery_invoice_rel rel
-                                inner join account_invoice ai on ai.id = rel.invoice_id
-                                where ai.state != 'cancel' and del_ord_id in %s""",(tuple(stock_out),))
-                    invoice_in = [x for x in cr.fetchall()]                    
-                
-                if invoice_in:
-                    print 'invoice_in',invoice_in
-                    cr.execute("""update account_invoice set back_date = """+str(vals['back_date'])+""" where id in %s""",(tuple(invoice_in),))
-                         
             if case.type=='in_invoice':
                 vals.update({'handling_charges':case.partner_id.handling_charges})
             
@@ -1799,14 +1613,10 @@ class account_invoice(osv.osv):
         print "context-",context
         if not context:
             context={}
-            
-        if context.get('state','Karnataka'):
-            fac_state =  context.get('state','Karnataka')
-        in_fac_state = ''
-        partner_ids = []
+        partner = []
         date_day = time.strftime('%Y-%m-%d')
         context.update({'schedular':True})
-        today = context.get('shedular_date','2015-04-20')
+        today = context.get('shedular_date',False)
         state = context.get('state',False)
         stock_p = self.pool.get('stock.picking')
         wf_service = netsvc.LocalService('workflow')
@@ -1829,18 +1639,13 @@ class account_invoice(osv.osv):
         billing_obj = self.pool.get('billing.cycle') 
         partner_obj = self.pool.get('res.partner') 
         stock_ids = []
-        in_shipment_ids = []
         invoice_create_out = True
         invoice_create_in = True
         invoice_created_in = []
         invoice_created_out = []
         if not today:        
             today = time.strftime('%Y-%m-%d')
-        
-        # Added to cond to subtract the 2 days only if it comes from schedular
-        shedular_date = datetime.strptime(today, '%Y-%m-%d')
-        if not context.get('facilitator'):
-            shedular_date =  shedular_date - relativedelta(days=int(2))
+        shedular_date = datetime.strptime(today, '%Y-%m-%d') - relativedelta(days=int(2))
         shedular_date = shedular_date.strftime('%Y-%m-%d')
         
         day_to = self.get_month(cr,uid,[],date_day,{'day':1}) 
@@ -1851,7 +1656,7 @@ class account_invoice(osv.osv):
         
         cr.execute("select id from res_partner where lower(name) like 'dummy%'")
         dummy_ids=[y[0] for y in cr.fetchall()]
-#         print "Date-",shedular_date
+        print "Date-",shedular_date
         stock_ids_in = []
         stock_ids_out = []
         more_inv = []
@@ -1861,22 +1666,13 @@ class account_invoice(osv.osv):
         in_shedular_month_ids = {}
         order_id = []
         merged_invoice = []
-        sch_partner_id = self.pool.get('res.users').browse(cr, uid, uid).partner_id.id
 #         if state:
-
-        query_out = """select distinct sp.id from stock_picking sp 
+        cr.execute("""select distinct sp.id from stock_picking sp 
                         left outer join res_country_state rs on rs.id = sp.state_id
                         where sp.date::date >= '2014-12-01' and type = 'out' 
                         and sp.date::date <= '"""+str(shedular_date)+"""'::date and sup_invoice = False                        
-                        and sp.state in ('done','freight_paid') and sp.del_quantity>0
-                        and lower(rs.name) ilike '%"""+fac_state+"""%'"""
-                        
-        if context.get('facilitator'):
-            query_out += ' and sp.paying_agent_id ='+str(context.get('facilitator'))
-            
-        
-        cr.execute(query_out) 
- 
+                        and sp.state in ('done','freight_paid')
+                        and lower(rs.name) like 'karnataka%'""")  
 #                         and sp.id not in 
 #                         (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner 
 #                         join account_invoice ac on ac.id=dr.invoice_id WHERE dr.del_ord_id  IN %s and ac.state <>'cancel')""",(tuple(dummy_ids),tuple(dummy_ids),))
@@ -1885,39 +1681,30 @@ class account_invoice(osv.osv):
 #         date::date >= %s::date and state in ('done','freight_paid') and sup_invoice=False""",(str(shedular_date),)) 
         stock_ids_out=cr.fetchall()
         if stock_ids_out:
-            stock_ids_out=zip(*stock_ids_out)[0]
-            if isinstance(stock_ids_out, tuple):
-                stock_ids_out = list(stock_ids_out)
-            stock_obj.write(cr,uid,stock_ids_out,{'user_id':1})  
+            stock_ids_out=zip(*stock_ids_out)[0]       
 #         stock_ids_out = [x[0] for x in cr.fetchall()]
 #         stock_ids_out = stock_obj.search(cr,uid,[('id','in',stock_ids_out),('paying_agent_id','not in',dummy_ids)])
         
 
-        if fac_state.lower() == 'karnataka':
-           in_fac_state = 'KA'
-        else:
-           in_fac_state ='TN'
-           
-        
-        query_in = """select distinct sp.id from stock_picking sp 
+          
+        cr.execute("""select distinct sp.id from stock_picking sp 
                         left outer join res_country_state rs on rs.id = sp.state_id
                         where sp.date::date >= '2014-12-01' and type = 'in' 
                         and sp.date::date <= '"""+str(shedular_date)+"""'::date and sup_invoice = False                        
-                        and sp.state in ('done','freight_paid') and lower(sp.name) ilike '%"""+in_fac_state+"""%'"""
-        
-        if context.get('facilitator'):
-            query_in += ' and sp.partner_id ='+str(context.get('facilitator'))
-        
-        cr.execute(query_in)
+                        and sp.state in ('done','freight_paid') and lower(sp.name) like '%ka%'""")
  
         stock_ids_in=cr.fetchall()
         if stock_ids_in:
-            stock_ids_in=zip(*stock_ids_in)[0] 
-            
-            if isinstance(stock_ids_in, tuple):
-                stock_ids_in = list(stock_ids_in) 
-                         
-            stock_obj.write(cr,uid,stock_ids_in,{'user_id':1})
+            stock_ids_in=zip(*stock_ids_in)[0]           
+#         stock_ids_in = [x[0] for x in cr.fetchall()]
+         
+#         stock_ids_in = [75449, 75448, 75653, 75652, 75651, 75650, 75649, 75278, 75277, 75276, 75870, 75648, 75647, 75646, 75645, 75643, 75641, 75640, 75638, 75637]        
+        
+              
+#         stock_ids = stock_obj.search(cr,uid,[('sup_invoice','=',False),('type','=','out'),('state','in',('done','freight_paid')),('date','<=',str(shedular_date))],order='paying_agent_id,delivery_date_function')
+        print len(stock_ids_in),'-stock_ids_in',stock_ids_in
+        print len(stock_ids_out),'-stock_ids_out',stock_ids_out
+        print "Date-",shedular_date
         if stock_ids_out or stock_ids_in:
             if stock_ids_out:
                 cr.execute("""select sp.id from stock_picking sp where sp.date::date >= '2014-12-01'::date and sp.id not in (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner 
@@ -1928,7 +1715,9 @@ class account_invoice(osv.osv):
                     order_id=zip(*order_id)[0]
             
                  
-
+#                 for order in order_id:
+#                     if order[0] in stock_ids_out:
+#                         stock_ids_out.remove(order[0])
             if stock_ids_in:
                 cr.execute("""select sp.id from stock_picking sp where sp.date::date >= '2014-12-01'::date and sp.id not in 
                 (SELECT dr.in_shipment_id FROM incoming_shipment_invoice_rel dr inner
@@ -1936,13 +1725,35 @@ class account_invoice(osv.osv):
                 in_shipment_ids = cr.fetchall()
                 if in_shipment_ids:
                     in_shipment_ids=zip(*in_shipment_ids)[0]                   
+#                 for in_shipment_id in in_shipment_ids:
+#                     if in_shipment_id[0] in stock_ids_in:
+#                         stock_ids_in.remove(in_shipment_id[0])
+                                             
+#             for stock in stock_obj.browse(cr,uid,stock_ids):
+#                 print "DC-",str(stock.name),"state",stock.state_id.name
+#                 supp_key = stock.paying_agent_id.id,stock.delivery_date_function,stock.product_id.id
+#                 print supp_key
+#                 if supp_key not in st:
+#                     st_ids.append(stock.id)
+#                     st[supp_key]=st_ids
+#                 else:
+#                     st[supp_key].append(stock.id)    
+#                 st_ids = []
+#                   
+#                 
+#             print "DC-st",st
+#             for key in st:
+#                 st_id = st[key]
 
+                
             stock_ids_out = stock_obj.search(cr,uid,[('id','in',order_id),('paying_agent_id','not in',dummy_ids),('type','=','out')])
-
             stock_ids_in = stock_in_obj.search(cr,uid,[('id','in',in_shipment_ids),('partner_id','not in',dummy_ids),('type','=','in')]) 
             
+            print len(stock_ids_out),'-stock_ids_out',stock_ids_out
+
+            print len(stock_ids_out),'-stock_ids_out',stock_ids_out  
+#             stock_ids = [75603, 75602, 75599, 75598, 75597, 75596, 75594, 75593, 75582, 75581, 75575, 75573, 75572, 75571, 75569, 75566, 75564, 75563, 75561, 75559, 75550]
             invoice_rate_out = stock_obj.get_supplier_rate(cr,uid,stock_ids_out,False,context=context)
-            
             invoice_rate_in = stock_in_obj.get_supplier_rate(cr,uid,stock_ids_in,False,context=context)
             
             
@@ -1956,25 +1767,20 @@ class account_invoice(osv.osv):
                 cr.execute("""select id from stock_picking where EXTRACT(month from date)= '""" + str(shedular_month) + """'and id in %s""",(tuple(stock_ids_out),))
                 out_shedular_month = [x[0] for x in cr.fetchall()] 
                 out_shedular_month_ids[shedular_month] = out_shedular_month
-                print "out_shedular_month",out_shedular_month
-                
                 
                 if out_shedular_month: 
                     cr.execute("""select id from stock_picking where id not in %s and id in %s""",(tuple(out_shedular_month),tuple(stock_ids_out)))
-                # checking for old records
-                else:
-                    cr.execute("""select id from stock_picking where id in %s""",(tuple(stock_ids_out),))
-                
-                out_old_month = [y[0] for y in cr.fetchall()]
-                if out_old_month:
+                    out_old_month = [y[0] for y in cr.fetchall()]
+               
                     old_month = int(shedular_month) - 1
                     out_shedular_month_ids[old_month] = out_old_month  
-                         
+                           
+    #             stock_ids_in = []
 
                 
                 for sh_month in out_shedular_month_ids:
                     invoice_create_out = stock_obj.get_supplier_invoice(cr,uid,out_shedular_month_ids[sh_month],False,context=context) 
-                    if context.get('invoices',[]) not in invoice_created_out:
+                    if context.get('invoices',[]) not in invoice_created_in:
                         invoice_created_out.append(context.get('invoices',[]))
                         
             if stock_ids_in:               
@@ -2002,53 +1808,58 @@ class account_invoice(osv.osv):
                                                        
 #             invoice_create_in = stock_in_obj.get_invoice(cr,uid,stock_ids_in,False,context=context)
                 
-            #print 'context created',context
+            print 'context created',context
             invoice = invoice_created_out
             in_invoice = invoice_created_in
                        
-            #print 'no. in_invoice to merge', len(in_invoice)
+            print 'no. in_invoice to merge', len(in_invoice)
             for out in invoice:
                 if out and out not in invoice_id:
                     invoice_id.append(out)
-#             print 'out_invoices',invoice_id
-#             print 'no. invoice to merge', len(invoice_id)
+            print 'out_invoices',invoice_id
+            print 'no. invoice to merge', len(invoice_id)
             
             for in_id in in_invoice:
                  if in_id and in_id not in invoice_id:
                      invoice_id.append(in_id) 
                   
-#             print 'invoices',invoice_id
-#             print 'no. invoice to merge', len(invoice_id)   
+            print 'invoices',invoice_id
+            print 'no. invoice to merge', len(invoice_id)   
             
             
             for i_id in invoice_id:
-#                 print 'i_id',i_id
+                print 'i_id',i_id
                 cr.execute("""update account_invoice set back_date=True where id in %s """,(tuple(i_id),))
 #                 self.write(cr,uid,i_id,{'back_date':True})
                 for case in self.browse(cr,uid,i_id):
                     inv_date = shedular_date
-#                     print 'case',case
+                    print 'case',case
                     if case.date_invoice:
                         month_to=self.get_month(cr,uid,[],case.date_invoice,{'month':1})
                         
                     if last_date_to != month_to:
                         inv_date = last_date
                     self.write(cr,uid,[case.id],{'date_invoice':inv_date})
-                    if case.partner_id.id not in partner_ids:
-                        partner_ids.append(case.partner_id.id)
-                    
-                    key = (case.partner_id, case.company_id, case.type, case.origin, month_to)
-                    if key not in invoices :
-                        invoices[key] = [case.id]
-                    else:
-                        invoices[key].append(case.id)   
-           
+                    if case.partner_id.id not in partner:
+                        partner.append(case.partner_id)
+                    for lines in case.invoice_line:
+                        key = case.partner_id.id,lines.price_unit,month_to,case.type,case.company_id.id,case.origin,lines.product_id.id
+                        if key not in invoices:
+                            inv_ids.append(case.id)
+                            invoices[key] = inv_ids
+                        else:
+                            invoices[key].append(case.id)
+                        inv_ids = [] 
+                        
+                                
+            print 'invoice to merge', invoices 
+            print 'no. invoice to merge', len(invoices)   
             for merge_inv in invoices:
                 inv_date = shedular_date
                 invoices_ids = invoices[merge_inv]
                 if invoices_ids and len(invoices_ids)==1:
-#                     print "validate single",invoices_ids
-                    cr.execute("""update account_invoice set back_date=True,user_id=1 where id = %s """,(invoices_ids[0],))   
+                    print "validate single",invoices_ids
+                    cr.execute("""update account_invoice set back_date=True where id = %s """,(invoices_ids[0],))   
                     inv_done = self.browse(cr,uid,invoices_ids[0])
                     inv_done_to=self.get_month(cr,uid,[],inv_done.date_invoice,{'month':1})
                     if last_date_to != inv_done_to:
@@ -2057,25 +1868,33 @@ class account_invoice(osv.osv):
                     wf_service.trg_validate(uid, 'account.invoice', invoices_ids[0], 'invoice_open', cr) 
                     merged_invoice.append(invoices_ids[0])
                 else:
-                    inv_done_m = self.browse(cr,uid,invoices_ids[0])
-                    inv_done_to=self.get_month(cr,uid,[],inv_done_m.date_invoice,{'month':1}) #inv_done
+                    more_inv.append(invoices_ids)
+#                     invoices_ids.pop(merge_inv)
+                    
+            for merge_more in more_inv:
+                inv_date = shedular_date
+#                 invoices_ids = invoices[merge_inv]
+                if merge_more and len(merge_more)>1: 
+                    inv_done_m = self.browse(cr,uid,merge_more[0])
+                    inv_done_to=self.get_month(cr,uid,[],inv_done.date_invoice,{'month':1})
                     if last_date_to != inv_done_to:
                         inv_date = last_date                    
-                    self.do_merge(cr, uid, invoices_ids, context)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+                    self.do_merge(cr, uid, merge_more, context)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
                     merged_ids=context.get('inv_ids',[])
                     for merged_inv in merged_ids:
-#                         print 'before merged',merged_ids
+                        print 'before merged',merged_ids
                         cr.execute("""update account_invoice set back_date=True where id = %s """,(merged_inv,))                        
                         self.write(cr,uid,[merged_inv],{'date_invoice':inv_date,'back_date':True})
                         wf_service.trg_validate(uid, 'account.invoice', merged_inv, 'invoice_open', cr)
                         merged_invoice.append(merged_inv)
-#                         
+                        print 'after merged',merged_inv
+                    
                  
-#             print "Date-",shedular_date  
-            for partner_id in partner_ids:
-#                 print 'Facilitator', partner_id.name
+            print "Date-",shedular_date  
+            for partner_id in partner:
+                print 'Facilitator', partner_id.name
     #             context.update({'billing_ids':[{'partner_id':partner_id.id}]})
-                billing_list = billing_obj.search(cr,uid,[('partner_id','=',partner_id)],order='end_date desc',limit=1)
+                billing_list = billing_obj.search(cr,uid,[('partner_id','=',partner_id.id)],order='end_date desc',limit=1)
                 for i in billing_obj.browse(cr,uid,billing_list,context):
                     end_date = datetime.strptime(i.end_date, '%Y-%m-%d') + relativedelta(days=int(1))
                     
@@ -2088,7 +1907,7 @@ class account_invoice(osv.osv):
                                      
                             billing.update({'st_date':st_date,
                                             'end_date':today,
-                                            'partner_id':partner_id,
+                                            'partner_id':partner_id.id,
                                              
                                             })
                             billing_cycle=billing_obj.create(cr,uid,billing,context)
@@ -2105,7 +1924,7 @@ class account_invoice(osv.osv):
                         date_start = date_start and date_start[0] or ''                        
                         billing.update({'st_date': date_start,
                                         'end_date':today,
-                                        'partner_id':partner_id,
+                                        'partner_id':partner_id.id,
                                          
                                         })
                         billing_cycle=billing_obj.create(cr,uid,billing,context)
@@ -2123,14 +1942,11 @@ class account_invoice(osv.osv):
             
             
             merged_ids=self.search(cr,uid,[('state','=','draft'),('id','in',merged_invoice)]) 
+            print 'merged',merged_ids  
             for not_done in merged_ids:
                 wf_service.trg_validate(uid, 'account.invoice', not_done, 'invoice_open', cr)
-#                 print 'not-done',not_done
-                
-            # for sending mails
-            if partner_ids:
-                partner_obj.write(cr, uid, [sch_partner_id], {'list_of_cust' : partner_ids}, context)
-                self.send_billing_cycle_mail(cr, uid, [], context)
+                print 'not-done',not_done                                                               
+            print 'merged',merged_ids 
             return res
 
       
@@ -2140,8 +1956,11 @@ class account_invoice(osv.osv):
             context={}
         state_id1 = context.get(1,False) 
         state_id2 = context.get(2,False)
-
-#         print "Schedular",context
+#         if state_id1:
+#             context.update({'state':'karnataka'})
+#         if state_id2:
+#             context.update({'state':'tamil'})            
+        print "Schedular",context
         res = self.create_facilitator_inv(cr,uid,[uid],context)
         
         return res
@@ -2175,7 +1994,7 @@ class account_invoice(osv.osv):
                                 dr.del_ord_id = """+str(case.id))
                 invoice_ids = cr.fetchall() 
                 if invoice_ids: 
-#                     print  'invoice_ids',invoice_ids                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+                    print  'invoice_ids',invoice_ids                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
                     invoice_ids=zip(*invoice_ids)[0]  
                     cr.execute("""update account_invoice set date_invoice = '"""+str(date_invoice)+"""' where id in %s""",(tuple(invoice_ids),))
             invoice_ids = []
@@ -2187,41 +2006,129 @@ class account_invoice(osv.osv):
         return True
         
        
-
-    # Mail,after successful completion of facilitator invoice by schedular
-    def send_billing_cycle_mail(self,cr,uid,ids,context=None):
-        res={}
+# to validate the remaining invoices
+    def validate_facilitator_inv(self, cr, uid, ids, context=None):
+        print "context-",context
         if not context:
-            context = {}
-        partners = ''
-        mail_obj = self.pool.get('mail.mail')
-        partner_obj = self.pool.get('res.partner')
-        email_obj = self.pool.get('email.template')
-        prod_obj = self.pool.get('product.product')
-        user_obj = self.pool.get('res.users')
+            context={}
+        partner = []
+        context.update({'schedular':True})
+        today = context.get('shedular_date',False)
+        state = context.get('state',False)
+        stock_p = self.pool.get('stock.picking')
+        wf_service = netsvc.LocalService('workflow')
+        invoices_ids = []
+        invoice_id = []
+        inv_ids = []
+        merged_invoice_id = []
+        res={}
+        st={}
+        st_ids = []
+        invoices = {}
+        billing = {}
+        invoice_create = False
+        merged = False
+        merged_ids = []
+        month_to = 0
+        stock_obj = self.pool.get('stock.picking.out')
+        stock_in_obj = self.pool.get('stock.picking.in')
+        billing_obj = self.pool.get('billing.cycle') 
+        partner_obj = self.pool.get('res.partner') 
+        stock_ids = []
+        invoice_create_out = True
+        invoice_create_in = True
+        if not today:        
+            today = time.strftime('%Y-%m-%d')
+        shedular_date = datetime.strptime(today, '%Y-%m-%d') - relativedelta(days=int(4))
+        shedular_date = shedular_date.strftime('%Y-%m-%d')
+        cr.execute("select id from res_partner where lower(name) like 'dummy%'")
+        dummy_ids=[y[0] for y in cr.fetchall()]
+        print "Date-",shedular_date
+        stock_ids_in = []
+        stock_ids_out = []        
+        invoice_id = ids
+        print 'invoice_id',invoice_id
+        for case in self.browse(cr,uid,invoice_id):
+            self.write(cr,uid,[case.id],{'date_invoice':shedular_date,'back_date':True})
+            cr.execute("delete from billing_cycle where end_date = '2015-02-23'::date and partner_id ="+str(case.partner_id.id))
+            print case.back_date
+            if case.partner_id.id not in partner:
+                partner.append(case.partner_id)
+                if case.date_invoice:
+                    month_to=self.get_month(cr,uid,[],case.date_invoice,{'month':1})
+            for lines in case.invoice_line:
+                key = case.partner_id.id,lines.price_unit,month_to,case.type,case.company_id.id,case.origin
+                if key not in invoices:
+                    inv_ids.append(case.id)
+                    invoices[key] = inv_ids
+                else:
+                    invoices[key].append(case.id)
+                inv_ids = []                     
+                            
+        print 'invoice to merge', invoices 
+        print 'no. invoice to merge', len(invoices)   
+        for merge_inv in invoices:
+            invoices_ids = invoices[merge_inv]
+            if invoices_ids and len(invoices_ids)==1:
+                print "validate single",invoices_ids
+                self.write(cr,uid,[invoices_ids[0]],{'date_invoice':shedular_date,'back_date':True})
+                wf_service.trg_validate(uid, 'account.invoice', invoices_ids[0], 'invoice_open', cr) 
+                
+                
+        for merge_inv in invoices:
+            if invoices_ids and len(invoices_ids)>1: 
+                self.do_merge(cr, uid, invoices_ids, context)
+                merged_ids=context.get('inv_ids',[])
+                for merged_inv in merged_ids:
+                    print 'before merged',merged_ids
+                    self.write(cr,uid,[merged_inv],{'date_invoice':shedular_date,'back_date':True})
+                    wf_service.trg_validate(uid, 'account.invoice', merged_inv, 'invoice_open', cr)
+                    print 'after merged',merged_inv
+                
+             
+          
+        for partner_id in partner:
+            print 'Facilitator', partner_id.name
+#             context.update({'billing_ids':[{'partner_id':partner_id.id}]})
+            billing_list = billing_obj.search(cr,uid,[('partner_id','=',partner_id.id)],order='end_date desc',limit=1)
+            for i in billing_obj.browse(cr,uid,billing_list,context):
+                end_date = datetime.strptime(i.end_date, '%Y-%m-%d') + relativedelta(days=int(1))
+                
+                st_date = str(end_date)
+                end_date = end_date.strftime('%Y-%m-%d')
+                
+                if end_date < shedular_date:
+                    try:                                
+                                    
+                                 
+                        billing.update({'st_date':st_date,
+                                        'end_date':shedular_date,
+                                        'partner_id':partner_id.id,
+                                         
+                                        })
+                        billing_cycle=billing_obj.create(cr,uid,billing,context)
+                        billing_obj.generate_report(cr,uid,[billing_cycle],context)
+                    except:
+                         pass
+                else:
+                     billing_obj.generate_report(cr,uid,billing_list,context)  
        
-        template = self.pool.get('ir.model.data').get_object(cr, uid,'kingswood', 'billing_cycle_send_mail')
-        assert template._name == 'email.template'
-        
-        for case in user_obj.browse(cr,uid,[uid]):
-            
-            cr.execute(""" select distinct rp.email 
-                            from res_groups_users_rel gu 
-                            inner join res_groups g on g.id = gu.gid
-                            inner join res_users ru on ru.id = gu.uid
-                            inner join res_partner rp on rp.id = ru.partner_id  
-                            where g.name = 'KW_Admin' and rp.email is not null""")
-            for p in cr.fetchall():
-#                 p = partner_obj.browse(cr, uid,p[0])
-                partners += (p and p[0] or "") + ","
-            if partners:
-                email_obj.write(cr, uid, [template.id], {'email_to':partners[0:-1]})
-                        
-            mail_id = self.pool.get('email.template').send_mail(cr, uid, template.id, case.partner_id.id, True, context=context)
-            mail_state = mail_obj.read(cr, uid, mail_id, ['state'], context=context)
-            if mail_state and mail_state['state'] == 'exception':
-                raise osv.except_osv(_("Cannot send email(date): no outgoing email server configured.\nYou can configure it under Settings/General Settings."), case.partner_id.name)
-        return True 
+            if not billing_list:
+                    year_to=self.get_month(cr,uid,[],shedular_date,{'yesr':1})
+                    cr.execute("select date_start from account_fiscalyear where date_start <= '" + str(shedular_date) + "' and date_stop >='" + str(shedular_date) + "'")
+                    date_start = cr.fetchone()
+                    date_start = date_start and date_start[0] or ''                        
+                    billing.update({'st_date': date_start,
+                                    'end_date':shedular_date,
+                                    'partner_id':partner_id.id,
+                                     
+                                    })
+                    billing_cycle=billing_obj.create(cr,uid,billing,context)
+                    billing_obj.generate_report(cr,uid,[billing_cycle],context)
+                                                             
+        print 'merged',merged_ids 
+        return True
+         
            
 account_invoice()
 
@@ -2256,7 +2163,7 @@ class account_invoice_line(osv.osv):
             context = {}
             
         if context.get('type') in ('in_refund','in_invoice'):
-            cr.execute("select id from account_account where lower(name) ilike 'purchase of wood' and company_id = 1")
+            cr.execute("select id from account_account where lower(name) like 'purchase of wood%'")
             prop = [x[0] for x in cr.fetchall()]
             if prop:
                 return prop[0]
@@ -2284,94 +2191,7 @@ class account_invoice_line(osv.osv):
 #             res['value']['company_id']=company_id 
 #          
 #         print res
-#         return res 
-
-    #overidden to achieve multiple account for move line for I.T.C Limited
-    def move_line_get(self, cr, uid, invoice_id, context=None):
-        res = []
-        tax_obj = self.pool.get('account.tax')
-        cur_obj = self.pool.get('res.currency')
-        if context is None:
-            context = {}
-        inv = self.pool.get('account.invoice').browse(cr, uid, invoice_id, context=context)
-        company_currency = self.pool['res.company'].browse(cr, uid, inv.company_id.id).currency_id.id
-        for line in inv.invoice_line:
-            #context.update({'line1':{'account_id':2248,'price_unit':1,'price':line.quantity * 1},'line2':{'account_id':2248,'price_unit':1,'price':line.quantity * 1}})
-            
-            if inv.other_charges:
-                context.update({'line':{'account_id':inv.transport_acc_id.id,'price_unit':inv.transport_charges,'price_subtotal':line.quantity * inv.transport_charges}})
-                mres = self.move_line_get_item(cr, uid, line, context)
-                if not mres:
-                    continue
-                res.append(mres)
-                
-                context.update({'line':{'account_id':inv.loading_acc_id.id,'price_unit':inv.loading_charges,'price_subtotal':line.quantity * inv.loading_charges}})
-                mres = self.move_line_get_item(cr, uid, line, context)
-                if not mres:
-                    continue
-                res.append(mres)
-            
-            else:
-                mres = self.move_line_get_item(cr, uid, line, context)
-                if not mres:
-                    continue
-                res.append(mres)
-                
-            tax_code_found= False
-            for tax in tax_obj.compute_all(cr, uid, line.invoice_line_tax_id,
-                    (line.price_unit * (1.0 - (line['discount'] or 0.0) / 100.0)),
-                    line.quantity, line.product_id,
-                    inv.partner_id)['taxes']:
-
-                if inv.type in ('out_invoice', 'in_invoice'):
-                    tax_code_id = tax['base_code_id']
-                    tax_amount = line.price_subtotal * tax['base_sign']
-                else:
-                    tax_code_id = tax['ref_base_code_id']
-                    tax_amount = line.price_subtotal * tax['ref_base_sign']
-
-                if tax_code_found:
-                    if not tax_code_id:
-                        continue
-                    res.append(self.move_line_get_item(cr, uid, line, context))
-                    res[-1]['price'] = 0.0
-                    res[-1]['account_analytic_id'] = False
-                elif not tax_code_id:
-                    continue
-                tax_code_found = True
-
-                res[-1]['tax_code_id'] = tax_code_id
-                res[-1]['tax_amount'] = cur_obj.compute(cr, uid, inv.currency_id.id, company_currency, tax_amount, context={'date': inv.date_invoice})
-        return res
-
-    
-    #overidden to achieve multiple account for move line for I.T.C Limited
-    def move_line_get_item(self, cr, uid, line, context=None):
-        if context.get('line'):
-            return {
-                    'type':'src',
-                    'name': line.name.split('\n')[0][:64],
-                    'price_unit':context.get('line')['price_unit'],
-                    'quantity':line.quantity,
-                    'price':context.get('line')['price_subtotal'],
-                    'account_id':context.get('line')['account_id'],
-                    'product_id':line.product_id.id,
-                    'uos_id':line.uos_id.id,
-                    'account_analytic_id':line.account_analytic_id.id,
-                    'taxes':line.invoice_line_tax_id,
-                    }
-        return {
-            'type':'src',
-            'name': line.name.split('\n')[0][:64],
-            'price_unit':line.price_unit,
-            'quantity':line.quantity,
-            'price':line.price_subtotal,
-            'account_id':line.account_id.id,
-            'product_id':line.product_id.id,
-            'uos_id':line.uos_id.id,
-            'account_analytic_id':line.account_analytic_id.id,
-            'taxes':line.invoice_line_tax_id,
-        } 
+#         return res  
        
 account_invoice_line()
 
@@ -4136,17 +3956,8 @@ class account_voucher(osv.osv):
                          raise osv.except_osv(_('Warning!'), _("Amount Should Not Be Zero or Less Than Zero"))
                      
       
-          
+      
       for case in self.browse(cr,uid,ids):
-          if 'back_date' in vals:
-              voucher_id = self.search(cr,uid,[('voucher_id','=',case.id)])
-              for voucher in voucher_id:
-                  cr.execute("update account_voucher set back_date = "+str(vals['back_date'])+" where id = "+str(voucher))
-              if case.voucher_id:
-                  voucher_id = self.search(cr,uid,[('id','=',case.voucher_id.id)])
-              for voucher in voucher_id:
-                  cr.execute("update account_voucher set back_date = "+str(vals['back_date'])+" where id = "+str(voucher))
-                               
           if customer:
              bank_charge=vals.get('bank_charge',case.bank_charge)   
              reject=vals.get('reject',case.reject)       
@@ -4549,19 +4360,19 @@ class account_move_line(osv.osv):
     
 account_move_line()
 
-# class res_partner_bank(osv.osv):
-#     _inherit = 'res.partner.bank'
-#     # name '_bank_type_get' is not defined error occurs if not defined here
-# 
-#      
-#     _columns={
-#                
-#            'name': fields.char('Bank Account', size=100), # to be removed in v6.2 ?
-#             'bank_name': fields.char('Bank Name', size=100),
-#             'owner_name': fields.char('Owner Name', size=100),
-#               }
-#     
-# res_partner_bank()
+class res_partner_bank(osv.osv):
+    _inherit = 'res.partner.bank'
+    # name '_bank_type_get' is not defined error occurs if not defined here
+
+     
+    _columns={
+               
+           'name': fields.char('Bank Account', size=100), # to be removed in v6.2 ?
+            'bank_name': fields.char('Bank Name', size=100),
+            'owner_name': fields.char('Owner Name', size=100),
+              }
+    
+res_partner_bank()
 # hh
 #     def name_get(self, cr, uid, ids, context=None):
 #         if not ids:
