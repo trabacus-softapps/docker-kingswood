@@ -1806,7 +1806,7 @@ class account_invoice(osv.osv):
         partner_ids = []
         date_day = time.strftime('%Y-%m-%d')
         context.update({'schedular':True})
-        today = context.get('shedular_date','2015-04-20')
+        today = context.get('shedular_date',date_day)
         state = context.get('state',False)
         stock_p = self.pool.get('stock.picking')
         wf_service = netsvc.LocalService('workflow')
