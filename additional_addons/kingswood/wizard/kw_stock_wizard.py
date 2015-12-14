@@ -654,6 +654,36 @@ class facilitator_report(osv.osv_memory):
             }
 facilitator_report()
 
+class fac_billing_cyle(osv.osv_memory):
+    _name = 'fac.billing.cycle'
+    _columns = {
+                'partner_id'  : fields.many2one('res.partner','Facilitator'),
+                'date_to'     : fields.date('Date'),
+                
+                }
+    
+    def generate_invoice(self, cr, uid, ids, context=None):
+        context = dict(context or {})
+        invObj = self.pool.get('account.invoice')
+        billObj = self.pool.get('billing.cycle')
+        
+        for case in self.browse(cr, uid, ids):
+            context.update({
+                           'shedular_date' : case.date_to,
+                           'facilitator'   : case.partner_id.id,
+                           'state'         : case.partner_id.state_id and  case.partner_id.state_id.name or ''
+                           })
+            # need to check the cilling cycle already created for this date
+            billing_list = billObj.search(cr,uid,[('partner_id','=',case.partner_id.id),('end_date','=',case.date_to)],order='end_date desc',limit=1)
+            if billing_list:
+                raise osv.except_osv(_('Warning'),_("Billing Cycle already exists!. Please delete the billing cycle and generate again"))
+            
+            invObj.create_facilitator_inv(cr, uid, ids, context)
+            
+
+
+fac_billing_cyle()
+
     
     
     

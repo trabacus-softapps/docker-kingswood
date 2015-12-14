@@ -361,6 +361,43 @@
             <field name="view_id" ref="kw_view_cash_voucher"/>
             <field name="act_window_id" ref="action_kw_cash_voucher_wzd"/>
         </record> 
+        
+        
+        <!-- For generating the invoice for invidiaul facilitator -->
+        
+        
+        <record id="kw_generate_billing_cycle" model="ir.ui.view">
+            <field name="name">Generate Billing Cycle</field>
+            <field name="model">fac.billing.cycle</field>
+            <field name="arch" type="xml">
+                <form string="Generate Billing Cycle for Facilitator" version="7.0">
+                    <group col="4" colspan="2" domain="[('supplier','=',True)]">
+                        <field name="partner_id" required="1"/>
+                        <field name="date_to" required="1"/>
+                    </group>
+                    
+                    <footer>
+                        <button name="generate_invoice" type="object" string="Generate" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        
+        
+        <record model="ir.actions.act_window" id="kw_generate_billing_cycle_action_id">
+            <field name="name">Generate Billing Cycle</field>
+            <field name="res_model">fac.billing.cycle</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+        
+        <menuitem action="kw_generate_billing_cycle_action_id" icon="STOCK_JUSTIFY_FILL" sequence="15"
+            id="kw_menu_action_generate_billing_cycle"  parent="account.menu_finance_payables"
+            groups="base.group_no_one,kingswood.kw_admin_service"/>
 		  
     </data>
 </openerp>

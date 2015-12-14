@@ -615,7 +615,7 @@ class stock_picking_out(osv.osv):
         for case in self.browse(cr, uid, ids):
             res[case.id] = {'cust_invoice' : False, 'sup_invoice':False}
             cr.execute("""SELECT dr.invoice_id FROM delivery_invoice_rel dr inner 
-            join account_invoice ac on ac.id=dr.invoice_id WHERE dr.del_ord_id=%s and ac.state <>'cancel'""",(str(case.id),)) 
+                            join account_invoice ac on ac.id=dr.invoice_id WHERE dr.del_ord_id=%s and ac.type <> 'out_refund' and ac.state <>'cancel'""",(str(case.id),)) 
             cinv_ids = [x[0] for x in cr.fetchall()]
             if cinv_ids:
                 res[case.id]['cust_invoice'] = True
@@ -2748,7 +2748,7 @@ class stock_picking_out(osv.osv):
         
 #         cr.execute("SELECT del_ord_id FROM delivery_invoice_rel WHERE del_ord_id IN %s ",(tuple(ids),))
         cr.execute("""SELECT dr.invoice_id FROM delivery_invoice_rel dr inner 
-        join account_invoice ac on ac.id=dr.invoice_id WHERE dr.del_ord_id  IN %s and ac.state <>'cancel'""",(tuple(ids),))
+        join account_invoice ac on ac.id=dr.invoice_id WHERE dr.del_ord_id  IN %s and ac.type <> 'out_refund' and ac.state <>'cancel'""",(tuple(ids),))
                     
                         
         order_id = [x[0] for x in cr.fetchall()]
