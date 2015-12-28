@@ -2050,6 +2050,7 @@ class stock_picking_out(osv.osv):
         h_price={}
         order_id = []
         back_date = False
+        fre_company = False
         cr.execute("select id from res_company where lower(name) not like '%logistics%'")
         company1=cr.fetchone()
         if company1:
@@ -2059,6 +2060,7 @@ class stock_picking_out(osv.osv):
         company=cr.fetchone()
         if company:
             company=company[0]
+            fre_company = company
         hc_expense_sup = False
         freight_obj=self.pool.get('product.product')
         #to get all journal_ids
@@ -2640,7 +2642,12 @@ class stock_picking_out(osv.osv):
                         if freight_inv_group[freight_inv]['partner_id'] not in kw_paying_agent:
                             if freight_inv_group[freight_inv]['freight']:
                                 if company and sup_parent_id:
-                                    freight_inv_vals.update({'company_id':company,
+                                    #updating the freight company to invoice
+                                    freight_inv_vals.update({'company_id':company})
+                                    if fre_company:
+                                        freight_inv_vals.update({'company_id':fre_company})
+                                        
+                                    freight_inv_vals.update({
         #                                                       'account_id':sup_parent_id,
                                                               'journal_id' : journal_id_l,
                                                               'back_date': back_date
