@@ -1143,7 +1143,7 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_name('ctl00$MasterContent$txtQuantity').send_keys(str(qty))
             browser.find_element_by_name('ctl00$MasterContent$txtNetValue').send_keys(str(price * qty))
             #for taxes
-            browser.fill('ctl00$MasterContent$txtVatTaxValue',str(tax_amount))
+            #browser.fill('ctl00$MasterContent$txtVatTaxValue',str(tax_amount))
             
             browser.find_element_by_name('ctl00$MasterContent$txtVehicleOwner').send_keys(veh_owner)
             browser.find_element_by_name('ctl00$MasterContent$txtVehicleNO').send_keys(case.truck_no)
