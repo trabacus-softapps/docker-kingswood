@@ -1028,12 +1028,15 @@ class stock_picking_out(osv.osv):
         tax_amount = 0
         esugam = 0
         if case.partner_id.state_id.name == 'Karnataka':
-            taxes = product_id.taxes_id
+            for t in product_id.taxes_id:
+                if t.state_id.name == 'Karnataka':
+                    tax_amount += t.amount * price * qty
         else:
-            taxes = product_id.cst_taxes_id
-        for t in taxes:
-            if t.state_id.name == 'Karnataka':
+            # for CST Taxes
+            for t in product_id.cst_taxes_id:
                 tax_amount += t.amount * price * qty
+        
+        
         
         today = time.strftime('%Y-%m-%d %H:%M:%S')
         last_month_date = datetime.strptime(today, '%Y-%m-%d %H:%M:%S')
