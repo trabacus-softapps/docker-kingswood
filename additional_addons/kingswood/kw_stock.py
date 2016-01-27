@@ -3844,11 +3844,12 @@ class stock_picking_out(osv.osv):
         template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_send_mail')
         if summary:
            template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_send_monthly_mail')
-        
-        if facilitator:
-           template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_facilitator_daily_mail')
-           file_name = "daily_dc_facilitator.xls" 
-        assert template._name == 'email.template'
+
+# for non dispacth DC        
+#         if facilitator:
+#            template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_facilitator_daily_mail')
+#            file_name = "daily_dc_facilitator.xls" 
+#         assert template._name == 'email.template'
         
         cr.execute(""" select ru.partner_id 
                         from res_groups_users_rel gu 
