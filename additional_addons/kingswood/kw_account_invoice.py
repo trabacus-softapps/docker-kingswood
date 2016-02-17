@@ -1888,7 +1888,8 @@ class account_invoice(osv.osv):
             stock_ids_out=zip(*stock_ids_out)[0]
             if isinstance(stock_ids_out, tuple):
                 stock_ids_out = list(stock_ids_out)
-            stock_obj.write(cr,uid,stock_ids_out,{'user_id':1})  
+            #stock_obj.write(cr,uid,stock_ids_out,{'user_id':1})
+            #cr.execute("""update stock_picking set user_id = 1 where id in %s""",(tuple(stock_ids_out),))  
 #         stock_ids_out = [x[0] for x in cr.fetchall()]
 #         stock_ids_out = stock_obj.search(cr,uid,[('id','in',stock_ids_out),('paying_agent_id','not in',dummy_ids)])
         
@@ -1917,7 +1918,8 @@ class account_invoice(osv.osv):
             if isinstance(stock_ids_in, tuple):
                 stock_ids_in = list(stock_ids_in) 
                          
-            stock_obj.write(cr,uid,stock_ids_in,{'user_id':1})
+            #stock_obj.write(cr,uid,stock_ids_in,{'user_id':1})
+            #cr.execute("""update stock_picking set user_id = 1 where id in %s""",(tuple(stock_ids_in),))  
         if stock_ids_out or stock_ids_in:
             if stock_ids_out:
                 cr.execute("""select sp.id from stock_picking sp where sp.date::date >= '2014-12-01'::date and sp.id not in (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner 
