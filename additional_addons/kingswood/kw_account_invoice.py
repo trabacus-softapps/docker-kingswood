@@ -1869,7 +1869,7 @@ class account_invoice(osv.osv):
                         where sp.date::date >= '2014-12-01' and type = 'out' 
                         and sp.date::date <= '"""+str(shedular_date)+"""'::date and sup_invoice = False                        
                         and sp.state in ('done','freight_paid') and sp.del_quantity>0
-                        and lower(rs.name) ilike '%"""+fac_state+"""%' and sp.paying_agent_id = 1031"""
+                        and lower(rs.name) ilike '%"""+fac_state+"""%'"""
                         
         if context.get('facilitator'):
             query_out += ' and sp.paying_agent_id ='+str(context.get('facilitator'))
