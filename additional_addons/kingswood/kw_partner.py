@@ -179,7 +179,7 @@ class res_partner(osv.osv):
                 'show_esugam'           :   fields.boolean('Show Esugam',track_visibility='onchange'),
                 'show_freight'          :   fields.boolean('Show Freight',track_visibility='onchange'),
                 'billing_ids'           :   fields.one2many('billing.cycle','partner_id','Billing Cycle'),
-                'dealers_ids'           :   fields.one2many('goods.dealers','partner_id',''),
+                'dealers_ids'           :   fields.one2many('goods.dealers','partner_id','Dealer'),
 #                 'dealers'               :   fields.many2many('goods.dealers','dealers_list_rel','dealers_id','partner_id','Dealers'),
                 'pay_freight'           :   fields.boolean('Pay Freight By Customer'),
                 'representative_id'     :   fields.many2one('res.partner','Pay Freight Representative'),
