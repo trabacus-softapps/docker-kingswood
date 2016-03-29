@@ -1,0 +1,596 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<openerp>
+    <data>
+        <!--    *****************************************************************************
+                                Stock Picking  - > Form 
+       **************************************************************************** -->
+        
+        <record id="pr_view_picking_form" model="ir.ui.view">
+            <field name="name">pr.stock.picking.form</field>
+            <field name="model">stock.picking</field>
+            <field eval="12" name="priority"/>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                
+                <xpath expr="//button[@string='Print Picking List']" position="after">
+                    <button name="print_report" string="Print Reception Report" type="object" class="oe_highlight"
+                            attrs="{'invisible':[('picking_type_code','not in',('incoming'))]}"/>
+                    
+                    <button name="print_report" string="Print Delivery Challan" type="object" class="oe_highlight" 
+                        attrs="{'invisible':['|','|',('country_name','!=','India'),('picking_type_code','not in',('outgoing')),('origin_type','=','sample')]}"/>
+                    
+                    <button name="print_report" string="Print Proforma" type="object" class="oe_highlight"
+                        attrs="{'invisible':[('picking_type_code','not in',('outgoing'))]}" context="{'proforma':1}"/>
+                    
+                    <button name="print_delivery_order" string="Print Delivery Order" type="object" class="oe_highlight"
+                        attrs="{'invisible':[('picking_type_code','not in',('outgoing'))]}"/> 
+                    
+                    <field name="sale_type" invisible="1"/>
+                    
+                    <button name="print_report" string="Print Sample" type="object" class="oe_highlight" context="{'sample':1}" 
+                        attrs="{'invisible':['|','|',('sale_type','=',False),('sale_type','=','sale'),('origin_type','=','order')]}"/>
+                </xpath>
+                
+                <field name="origin" position="after">
+                    <field name="driver_name" />
+                    <field name="shipping_way" />
+                </field>
+                
+ 
+                
+                <xpath expr="//notebook/page[@string='Additional Info']//field[@name='picking_type_id']" position="after">
+                    <field name="sale_id" readonly="1" context="{'order_id':sale_id or False}"/>
+                    <field name="origin_type" readonly="1"/>
+                    <field name="account_move_id" readonly="1"/>
+                    <field name="is_mexico" invisible="1"/>
+                    
+                </xpath>
+                
+        <!--             TO Show 2 button Deliver and Transfer     -->
+                <button string="Transfer" position="replace">
+                    <button name="do_enter_transfer_details"  string="Deliver" groups="stock.group_stock_user" type="object" class="oe_highlight"
+                            attrs="{'invisible':['|',('state','not in', ('assigned','partially','available')),('picking_type_code','not in',('internal','outgoing'))]}"/>
+                    
+                    <button name="do_enter_transfer_details"  string="Receive" groups="stock.group_stock_user" type="object" class="oe_highlight"
+                        attrs="{'invisible':['|',('state','not in', ('assigned','partially','available')),('picking_type_code','in',('internal','outgoing'))]}"/>
+                </button>
+                
+                <xpath expr="//notebook/page[@string='Additional Info']//field[@name='picking_type_code']" position="attributes">
+                    <attribute name="invisible">0</attribute>
+                    <attribute name="readonly">1</attribute>
+                </xpath>
+                
+                <xpath expr="//field[@name='picking_type_code']" position="after">
+                    <field name="user_id" options="{'no_create':true}"/>
+                </xpath>
+                
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="carrier_id" options="{'no_create':true}"/>
+                    <field name="country_name"/>
+                    <field name="carrier_tracking_ref" attrs ="{'required':[('picking_type_code','=','outgoing')]}"/>
+                    <field name="cf1_amount" readonly="1"/>
+                    <field name="cf2_amount"/>
+                    <field name="cf_unit_price" invisible="1"/>
+                    <!--<label for="weight" string="Weight"/>
+                    <div>
+                        <field name="weight" class="oe_inline"/>
+                        <field name="weight_uom_id" nolabel="1" class="oe_inline"/>
+                    </div>
+                    <field name="weight_net" groups="base.group_no_one"/>
+                    <field name="number_of_packages"/>-->
+                </xpath>
+                
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                    <attribute name="options">{'no_create':true}</attribute>
+                </xpath>
+                
+                <xpath expr="//notebook/page[@string='Additional Info']/group/group/field[@name='picking_type_id']" position="attributes">
+                    <attribute name="options">{'no_create':true}</attribute>
+                </xpath>
+       
+       
+                <xpath expr="//page[@string='Additional Info']" position="after">
+                    <page string="Report Parameters" attrs="{'invisible':[('is_mexico','!=',True)]}">
+                        <gorup string="Parameters">
+                            <group col="4" colspan="2" string="Parameters">
+                                <field name="garbage_unit"/>
+                                <field name="garbage_unit_comments"/>
+                                <field name="aromas_odors"/>
+                                <field name="aromas_odors_comments"/>
+                                <field name="pest_vermin"/>
+                                <field name="pest_vermin_comments"/>
+                                <field name="stains_oil"/>
+                                <field name="stains_oil_comments"/>
+                                <field name="foreign_objects"/>
+                                <field name="foreign_objects_comments"/>
+                                <field name="humidity_leaks"/>
+                                <field name="humidity_leaks_comments"/>
+                                <field name="product_damaged"/>
+                                <field name="product_damaged_comments"/>
+                                <field name="material_exposed"/>
+                                <field name="material_exposed_comments"/>
+                                
+                                
+                            </group>
+                        </gorup>
+                        
+                        <group string="Result">
+                            <group  col="4" colspan="2">
+                                <field name="result"/>
+                                <field name="no_pedimiento"/>
+                                <field name="customs"/>
+                            </group>
+                        </group>
+                        
+                        <group string="Documents">
+                            <group  col="4" colspan="2">
+                                <field name="confirm_certificate"/>
+                                <field name="confirm_certificate_comments"/>
+                            </group>
+                        </group>
+                        
+                    </page>
+                </xpath>
+       
+       
+            </field> 
+        </record>
+        
+        <!--  Hiding Weight and net weight fields     -->
+        <record id="m_view_picking_withweight_internal_move_form" model="ir.ui.view">
+            <field name="name">m.stock.picking_withweight.internal.move.form.view</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="delivery.view_picking_withweight_internal_move_form"/>
+            <field name="arch" type="xml">
+                <field name="weight" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+                <field name="weight_net" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </field>
+            </field>
+        </record>
+        
+        
+        
+        <!--    *****************************************************************************
+                                Stock Picking  - > Tree 
+       **************************************************************************** -->        
+         <record id="pr_view_picking_tree" model="ir.ui.view">
+            <field name="name">pr.stock.picking.tree</field>
+            <field name="model">stock.picking</field>
+            <field eval="12" name="priority"/>
+            <field name="inherit_id" ref="stock.vpicktree"/>
+            <field name="arch" type="xml">
+                <field name="location_dest_id" position="attributes">
+                    <attribute name = "string">Destination Location</attribute>
+                </field>
+                <field name="location_dest_id" position="before">
+                    <field name = "location_id" string = "Source Location"/>
+                </field>
+                <field name="location_dest_id" position="after">
+                    <field name="is_mexico" invisible="1"/>
+                    </field>
+            </field>
+        </record>       
+        
+        <!--    *****************************************************************************
+                                Stock move  - > Form 
+       **************************************************************************** -->
+        <record id="pr_view_move_form" model="ir.ui.view">
+            <field name="name">pr.stock.move.form</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_form"/>
+            <field eval="1" name="priority"/>
+            <field name="arch" type="xml">
+                
+                <field name="date_expected" position="after">
+                    <field name="quality_visible" invisible="1"/>
+                    <field name="quality_id" readonly="1"/>
+                    <field name="no_quality" attrs="{'readonly':[('quality_id','!=',False)]}"/>
+                </field>
+                
+                <xpath expr="//group/group[@name='main_grp']/group[@name='main_grp_col2']/field[@name='company_id']" position="attributes">
+                    <attrubute name="on_change">onchange_company_id(company_id)</attrubute>
+                </xpath>
+                
+     
+                
+                <xpath expr="//group/group[@name='origin_grp']/field[@name='location_id']" position="attributes">
+                    <attribute name="domain">[('usage','!=','view'),('company_id','=',company_id)]</attribute>
+                </xpath>
+                
+                <xpath expr="//group/group[@name='destination_grp']/field[@name='location_dest_id']" position="attributes">
+                    <attribute name="domain">[('usage','!=','view'),('company_id','=',company_id)]</attribute>
+                </xpath>
+              
+                
+                <xpath expr="//group[@name='quants_grp']" position="before">
+                    <field name="excise_visible" invisible="1"/>
+                    <group col="4" colspan="2" string="Excise Details" attrs="{'invisible':[('excise_visible','!=',True)]}">
+                        <field name="tot_excise" string="Total assessable value" on_change="onchange_excise(product_uos_qty,tot_excise, duty_per, excise_per,cess_per,hcess_per,aed_per, context)"/>
+                        <field name="tariff_no"/>
+                        <field name="duty_per" on_change="onchange_excise(product_uos_qty, tot_excise, duty_per, excise_per,cess_per,hcess_per,aed_per, context)"/>
+                        <field name="duty_amount" readonly="1"/>
+                       
+                        <field name="excise_per" on_change="onchange_excise(product_uos_qty, tot_excise, duty_per, excise_per,cess_per,hcess_per,aed_per, context)"/>
+                        <field name="excise_amount"  readonly="1"/>
+                        <field name="eduty_per_unit" readonly="1"/>
+                        <newline/>
+                        <field name="cess_per" on_change="onchange_excise(product_uos_qty, tot_excise, duty_per, excise_per,cess_per,hcess_per,aed_per, context)"/>
+                        <field name="cess_amount" readonly="1"/>
+                        <field name="hcess_per" on_change="onchange_excise(product_uos_qty, tot_excise, duty_per, excise_per,cess_per,hcess_per,aed_per, context)"/>
+                        <field name="hcess_amount"  readonly="1"/>
+                        <field name="aed_per" on_change="onchange_excise(product_uos_qty,tot_excise, duty_per, excise_per,cess_per,hcess_per,aed_per, context)"/>
+                        <field name="aed_amount" readonly="1"/>
+                        <field name="aduty_per_unit" readonly="1"/>
+                        <field name="total_amount" readonly="1"/>
+                    </group>
+                    <group col="4" colspan="2" string="CF Details" attrs="{'invisible':[('excise_visible','!=',True)]}">
+                        <field name="cf_unit_price"/>
+                        <field name="cf_total_amount"/>
+                    </group>
+                </xpath>
+                
+                <xpath expr="//group[@name='quants_grp']" position="after">
+                    <group col="4" colspan="2">
+                        <group string="Supplier Weight">
+                            <field name="sup_weight"/>
+                            <field name="sup_net_weight" />
+                        </group>
+                        
+                        <group string="Company Weight">
+                            <field name="cmp_weight"/>
+                            <field name="cmp_net_weight" />                            
+                        </group>
+                    
+                    </group>
+                    
+                    <group name="quality" string="Quality Lines" colspan="4" groups="base.group_no_one, prova.pr_quality_control_user,prova.pr_quality_control_manager">
+                        <button name="but_create_quality" type="object" string="Quality Control" class="oe_highlight" 
+                            attrs="{'invisible':[('quality_visible','=',False)]}"/><newline/>
+                        <field name="quality_ids"  nolabel="1"/>
+                    </group>
+                </xpath>
+                
+                <xpath expr="//field[@name='product_id']" position="after">
+                    <field name="dilution_id"/>
+                </xpath>
+                
+       <!--         For Removing Quants     -->
+                <xpath expr="//group[@name='quants_grp']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                
+            </field>
+        </record>
+        
+        
+        <!--    *****************************************************************************
+                                Stock move Picking  - > Form 
+       **************************************************************************** -->
+        <record id="pr_view_move_picking_form" model="ir.ui.view">
+            <field name="name">stock.move.form</field>
+            <field name="model">stock.move</field>
+            <field eval="20" name="priority"/>
+            <field name="inherit_id" ref="stock.view_move_picking_form"/>
+            <field name="arch" type="xml">
+            
+                <field name="date_expected" position="after">
+                    <field name="quality_visible" invisible="1"/>
+                    <field name="quality_id" readonly="1"/>
+                    <field name="no_quality" attrs="{'readonly':[('quality_id','!=',False)]}"/>
+                </field>
+                
+    <!--        <xpath expr="//group/group[@name='main_grp']/group[@name='main_grp_col2']/field[@name='company_id']" position="attributes">
+                <attrubute name="on_change">onchange_company_id(company_id)</attrubute>
+            </xpath>-->
+                
+                
+                <xpath expr="//group/group[@string='Locations']/field[@name='location_id']" position="attributes">
+                    <attribute name="domain">[('usage','!=','view'),('company_id','=',parent.company_id)]</attribute>
+                </xpath>
+                
+                <xpath expr="//group/group[@string='Locations']/field[@name='location_dest_id']" position="attributes">
+                    <attribute name="domain">[('usage','!=','view'),('company_id','=',parent.company_id)]</attribute>
+                </xpath>
+                
+                
+                <field name='product_id' position="attributes">
+                    <attribute name="options">{'no_create':true}</attribute>
+                </field>
+                
+                <field name='product_uom' position="attributes">
+                    <attribute name="options">{'no_create':true}</attribute>
+                </field>
+                
+                <field name='product_uos' position="attributes">
+                    <attribute name="options">{'no_create':true}</attribute>
+                </field>
+                
+                <field name='product_packaging' position="attributes">
+                    <attribute name="options">{'no_create':true}</attribute>
+                </field>
+                
+                <field name='location_id' position="attributes">
+                    <attribute name="options">{'no_create':true}</attribute>
+                </field>
+                
+                <field name='location_dest_id' position="attributes">
+                    <attribute name="options">{'no_create':true}</attribute>
+                </field>
+                
+                <xpath expr="//group[@name='quants_grp']" position="before">
+                    <field name="excise_visible" invisible="1"/>
+                    <group col="4" colspan="2" string="Excise Details" attrs="{'invisible':[('excise_visible','!=',True)]}">
+                        <field name="tot_excise" string="Total assessable value" on_change="onchange_excise(product_uos_qty, tot_excise, duty_per, excise_per,cess_per,hcess_per,aed_per, context)"/>
+                        <field name="tariff_no"/>
+                        <field name="duty_per" on_change="onchange_excise(product_uos_qty, tot_excise, duty_per, excise_per,cess_per,hcess_per,aed_per, context)"/>
+                        <field name="duty_amount" readonly="1" />
+                        
+                        <field name="excise_per" on_change="onchange_excise(product_uos_qty, tot_excise, duty_per, excise_per,cess_per,hcess_per,aed_per, context)"/>
+                        <field name="excise_amount"  readonly="1"/>
+                        <field name="eduty_per_unit" readonly="1"/>
+                        <newline/>
+                        <field name="cess_per" on_change="onchange_excise(product_uos_qty, tot_excise, duty_per, excise_per,cess_per,hcess_per,aed_per, context)"/>
+                        <field name="cess_amount" readonly="1"/>
+                        <field name="hcess_per" on_change="onchange_excise(product_uos_qty, tot_excise, duty_per, excise_per,cess_per,hcess_per,aed_per, context)"/>
+                        <field name="hcess_amount"  readonly="1"/>
+                        <field name="aed_per" on_change="onchange_excise(product_uos_qty,tot_excise, duty_per, excise_per,cess_per,hcess_per,aed_per, context)"/>
+                        <field name="aed_amount" readonly="1"/>
+                        <field name="aduty_per_unit" readonly="1"/>
+                        <field name="total_amount" readonly="1"/>
+                    </group>
+                    <group col="4" colspan="2" string="CF Details" attrs="{'invisible':[('excise_visible','!=',True)]}">
+                        <field name="cf_unit_price"/>
+                        <field name="cf_total_amount"/>
+                    </group>
+                </xpath>
+                
+                <xpath expr="//group[@name='quants_grp']" position="after">
+                    <group col="4" colspan="2">
+                        <group string="Supplier Weight">
+                            <field name="sup_weight"/>
+                            <field name="sup_net_weight" />
+                        </group>
+                        
+                        <group string="Company Weight">
+                            <field name="cmp_weight"/>
+                            <field name="cmp_net_weight" />                            
+                        </group>
+                        
+                    </group>
+                    
+                    <group name="quality" string="Quality Lines" colspan="4" groups="base.group_no_one, prova.pr_quality_control_user,prova.pr_quality_control_manager" >
+                        <button name="but_create_quality" type="object" string="Quality Control" class="oe_highlight" 
+                            attrs="{'invisible':[('quality_visible','=',False)]}"/><newline/>
+                        <field name="quality_ids" readonly="0" nolabel="1" />
+                    </group>
+                   
+                </xpath>
+                
+                <!--     For Removing Quants     -->
+                <xpath expr="//group[@name='quants_grp']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                 
+                
+            </field>
+        </record>
+        
+        
+        <!--    *****************************************************************************
+                                Stock move  - > Tree
+       **************************************************************************** -->
+        <record id="pr_view_move_tree" model="ir.ui.view">
+            <field name="name">pr.stock.move.tree</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_tree"/>
+            <field eval="8" name="priority"/>
+            <field name="arch" type="xml">
+                <field name="state" position="before">
+                    <field name="quality_id"/>
+                    <field name="no_quality" attrs="{'readonly':[('quality_id','!=',False)]}"/>
+                </field>
+            </field>
+        </record>
+        
+        <!--    *****************************************************************************
+                                Stock picking move  - > Tree
+       **************************************************************************** -->
+        <record id="pr_view_move_picking_tree" model="ir.ui.view">
+            <field name="name">pr.stock.move.tree</field>
+            <field name="model">stock.move</field>
+            <field eval="4" name="priority"/>
+            <field name="inherit_id" ref="stock.view_move_picking_tree"/>
+            <field name="arch" type="xml">
+                <field name="state" position="before">
+                    <field name="quality_id"/>
+                    <field name="no_quality" attrs="{'readonly':[('quality_id','!=',False)]}"/>
+                </field>
+            </field>
+        </record>
+        
+        
+        
+        <!--    *****************************************************************************
+                                Stock move  - > Search
+       **************************************************************************** -->
+        <record id="pr_view_move_search" model="ir.ui.view">
+            <field name="name">pr.stock.move.search</field>
+            <field name="model">stock.move</field>
+            <field eval="3" name="priority"/>
+            <field name="inherit_id" ref="stock.view_move_search"/>
+            <field name="arch" type="xml">
+                <field name="origin" position="before">
+                    <field name="quality_id"/>
+                    <field name="no_quality" attrs="{'readonly':[('quality_id','!=',False)]}"/>
+                </field>
+            </field>
+        </record>
+        
+        
+        <!--    *****************************************************************************
+                                Delivery  
+       **************************************************************************** -->
+        
+        <record id="pr_view_picking_withcarrier_out_form_shipping" model="ir.ui.view">
+            <field name="name">pr.view.picking.withcarrier.out.form.shipping</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="delivery.view_picking_withcarrier_out_form_shipping"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='carrier_data']/field[@name='carrier_id']" position="replace"/>
+                <xpath expr="//group[@name='carrier_data']/div" position="replace"/>
+                <xpath expr="//group[@name='carrier_data']/label[@for='carrier_tracking_ref']" position="replace"/>
+                <xpath expr="//group[@name='carrier_data']/field[@name='carrier_price']" position="replace"/>
+                
+            </field>
+        </record>
+        
+        
+<!--        <record id="prova_view_picking_withcarrier_out_form" model="ir.ui.view">
+            <field name="name">prova.delivery.stock.picking_withcarrier.form.view</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="delivery.view_picking_withcarrier_out_form"/>
+            <field name="arch" type="xml">
+            </field>
+        </record>-->
+                
+        <!--    *****************************************************************************
+                               Stock Transfer Details 
+       **************************************************************************** -->
+        
+        <record id="pr_view_stock_enter_transfer_details" model="ir.ui.view">
+            <field name="name">Enter transfer details</field>
+            <field name="model">stock.transfer_details</field>
+            <field name="inherit_id" ref="stock.view_stock_enter_transfer_details"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='quantity']" position="attributes">
+                    <attribute name="readonly">0</attribute>
+                </xpath>
+            </field>
+        </record>
+        
+        <!--    *****************************************************************************
+                               Stock Picking IN Search
+       **************************************************************************** -->
+        
+         <record id="pr_view_picking_internal_search" model="ir.ui.view">
+            <field name="name">pr.stock.picking.search</field>
+            <field name="model">stock.picking</field>
+            <field eval="12" name="priority"/>
+            <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+            <field name="arch" type="xml">   
+				 <xpath expr="//field[@name='picking_type_id']" position="after">
+                    <field name="origin"/>
+                    <field name="move_lines" string="Barcode" domain="[('move_lines.code','ilike',self)]"/>
+                </xpath>
+                
+            </field>
+        </record>     
+        
+        
+        <!--    *****************************************************************************
+                               Stock Quant Tree View
+       **************************************************************************** -->
+        
+        <record model="ir.ui.view" id="pr_view_stock_quant_tree">
+            <field name="name">pr.stock.quant.tree</field>
+            <field name="model">stock.quant</field>
+            <field name="inherit_id" ref="stock.view_stock_quant_tree"/>
+            <field name="arch" type="xml">
+                <field name="inventory_value" position="after">
+                    <field name="cost_price" string=" Unit Cost ( € )"/>
+                </field>
+            </field>
+        </record>
+        
+        <!--    *****************************************************************************
+              Stock Form Inherit -> To hide create invoice button based on condition
+       **************************************************************************** -->
+        <record id="pr_view_picking_inherit_form2" model="ir.ui.view">
+            <field name="name">pr.stock.picking.form.inherit</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock_account.view_picking_inherit_form2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@string='Create Invoice']" position="attributes">
+                    <attribute name="attrs">{'invisible': ['|','|',('state','&lt;&gt;','done'),('origin_type','=','sample'),('invoice_state','&lt;&gt;','2binvoiced')]}</attribute>
+                </xpath> 
+         
+            </field>
+        </record>
+        
+        <!--    *****************************************************************************
+              Searial number Form Inherit -> Show History 
+       **************************************************************************** -->        
+
+        <record id="pr_view_production_lot_form" model="ir.ui.view">
+            <field name="name">pr.stock.production.lot.form</field>
+            <field name="model">stock.production.lot</field>
+             <field name="inherit_id" ref="stock.view_production_lot_form"/>    
+            <field name="arch" type="xml">
+                
+                <xpath expr="//field[@name='name']" position="attributes">
+                    <attribute name="on_change">onchange_name(name, context)</attribute>
+                    <attribute name="help">"Unique Lot / Serial Number, format : 'yymmdd'  for ex : if the date is 2015-05-01 then the number will be  150501"</attribute>
+                </xpath>
+                
+                <xpath expr="//notebook" position="after">
+                    <div class="oe_chatter">
+						<field name="message_ids" widget="mail_thread"/>
+						<!-- <field name="message_follower_ids" widget="mail_followers"/> -->
+					</div>
+                </xpath> 
+         
+            </field>
+        </record>
+
+        <!--    *****************************************************************************
+                     Picking Type - > Search View 
+       **************************************************************************** -->        
+    
+        <record id="pr_view_pickingtype_filter" model="ir.ui.view">
+            <field name="name">pr.stock.picking.type.filter</field>
+            <field name="model">stock.picking.type</field>
+            <field name="inherit_id" ref="stock.view_pickingtype_filter"/>
+            <field name="arch" type="xml">
+                <field name="warehouse_id" position="after">
+                    <group expand="0" string="Group By">
+                        <filter name="warehouse" string="Warehouse" icon="terp-accessories-archiver" domain="[]"  context="{'group_by':'warehouse_id'}"/>
+                    </group>
+                </field>
+            </field>
+        </record>
+        
+        <record id="stock.action_picking_type_form" model="ir.actions.act_window">
+            <field name="context">{'search_default_warehouse':1}</field>
+        </record>
+        
+        <!--    *****************************************************************************
+                             Stock Production Lot -> Action
+       **************************************************************************** -->     
+        <record id="stock.action_production_lot_form" model="ir.actions.act_window">
+            <field name="name">Lot / Serial Numbers</field>
+        </record>
+    
+        <!--    *****************************************************************************
+                             Stock Inventory -> Form
+       **************************************************************************** -->  
+
+        <record id="pr_view_inventory_form" model="ir.ui.view">
+            <field name="name">prova.stock.inventory.form</field>
+            <field name="model">stock.inventory</field>
+            <field name="inherit_id" ref="stock.view_inventory_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook/page[@string='Inventory Details']/field[@name='line_ids']/tree/field[@name='product_id']" position="before">
+                    <field name="prod_db_id" readonly="1"/>
+                </xpath>
+                
+                <xpath expr="//notebook/page[@string='Inventory Details']/field[@name='line_ids']/tree/field[@name='prod_lot_id']" position="after">
+                    <field name="barcode"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</openerp>
