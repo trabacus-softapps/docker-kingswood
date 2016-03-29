@@ -563,13 +563,14 @@ class stock_picking_out(osv.osv):
         return res
     
     def get_date_update(self,cr,uid,ids,context=None):
-        cr.execute("select sp.id from stock_picking sp inner join stock_move sm on sm.picking_id=sp.id where sp.type='out' and sp.delivery_date_function<>sm.delivery_date")
-        pick=[i[0] for i in cr.fetchall()]
-        for i in pick:
-            cr.execute("select delivery_date from stock_move where picking_id=%s",(i,))
-            date=cr.fetchone()
-            if date:
-                cr.execute("update stock_picking set delivery_date_function=%s where id=%s",(date[0],i,))
+        if uid !=1:
+            cr.execute("select sp.id from stock_picking sp inner join stock_move sm on sm.picking_id=sp.id where sp.type='out' and sp.delivery_date_function<>sm.delivery_date")
+            pick=[i[0] for i in cr.fetchall()]
+            for i in pick:
+                cr.execute("select delivery_date from stock_move where picking_id=%s",(i,))
+                date=cr.fetchone()
+                if date:
+                    cr.execute("update stock_picking set delivery_date_function=%s where id=%s",(date[0],i,))
         return True
     
     def get_day_date(self,cr,uid,ids,context=None):
@@ -643,7 +644,7 @@ class stock_picking_out(osv.osv):
     
     _columns={ 
 #               'customer_list'   : fields.function(_get_customer,type='text', string='Customers List' ,store=True),
-              'hide_fields'     : fields.function(_get_permission,type='boolean',method=True,string="Permission", store=True), 
+               
               'user_log'        : fields.function(_get_user,type='char',method=True,string="Permission", store=False,multi='user'),
               # Overriden:
 #                 'partner_id': fields.many2one('res.partner', 'Partner',  domain="[('id', 'in', [int(s) for s in customer_list.split(',')])] )]", states={'done':[('readonly', True)], 'cancel':[('readonly',True)]}),
@@ -741,7 +742,7 @@ class stock_picking_out(osv.osv):
                'report'        : fields.related('partner_id','report',type='boolean',store=True,string="DC-LR Report"),
                'wc_number'     :fields.char('W.C. Number',size=20),
                'wc_num'        : fields.related('partner_id','wc_num',type='boolean',store=True,string="WC Num"),
-               'attachment'   : fields.related('company_id','attachment',type='binary',store=False,string="APMC Attachmnet",readonly=True),
+               'attachment'   : fields.related('company_id','attachment',type='binary',store=False,string="APMC Attachment",readonly=True),
                'amc_attachment'        :   fields.related('partner_id','amc_attachment',type='boolean',store=False,string="APMC Attachment",readonly=True),     
                'filename'   :   fields.char('File Name',size=100),
                 'billing_cycle'        :   fields.related('partner_id','billing_cycle',type='boolean',store=False,string="Billing Cycle",readonly=True),
@@ -750,12 +751,16 @@ class stock_picking_out(osv.osv):
                 'dc_report'        : fields.related('partner_id','dc_report',type='boolean',store=True,string="DC Report"),
                 'partner'       :   fields.function(_get_user,type='char',method=True,string="Partner", store=False,multi='user'),
                  'dest_location_id'        : fields.many2one('stock.location','Location'),      
-                 'report_date'  :       fields.char('Date'),       
+                 'report_date'  :       fields.char('Date'),  
+                 'hide_fields'     : fields.function(_get_permission,type='boolean',method=True,string="Permission", store=True),
+                 'farmer_declaration' : fields.related('company_id','farmer_declaration', string="Farmer Declaration", type='binary', store=False),
+                 'is_farm_decl' : fields.related('partner_id','is_farm_decl',string="Is Farmer Declaration", type="boolean", store=False),
+                 'fd_filename'   :   fields.char('File Name',size=100),
               } 
     
     _order = 'date desc'
     
-    _defaults = { 'hide_fields' : _get_default_permission,
+    _defaults = { 
                  #'date_function': _get_default_new_date,
                   'user_log'     :_get_default_user,
                  'esugam_no'    :'0',
@@ -769,7 +774,9 @@ class stock_picking_out(osv.osv):
                     'delivery_date_function':lambda *a: time.strftime('%Y-%m-%d'),
                     'date_function': lambda *a: time.strftime('%Y-%m-%d'),
                     'filename'      :"APMC_CESS.pdf",
+                    'fd_filename'   : "Farmer Declaration.pdf",
                     'user_partner_id':_get_default_user_partner,
+                    'hide_fields' : _get_default_permission,
 #                  'customer_list' : _default_get_customer,
 #                  'hide_fields' : True 
 # cur_date=datetime.today().strftime("%Y-%m-%d")
@@ -958,6 +965,8 @@ class stock_picking_out(osv.osv):
             res['report'] = i.report or False
             res['attachment'] = i.company_id.attachment or False
             res['amc_attachment'] = i.amc_attachment or False
+            res['is_farm_decl'] = i.is_farm_decl or False
+            res['farmer_declaration'] = i.company_id.farmer_declaration or False
             res['billing_cycle'] = i.billing_cycle or False
             res['wc_num'] = i.wc_num or False
             res['w_report'] = i.w_report or False
@@ -4630,7 +4639,7 @@ class stock_picking(osv.osv):
               'freight_advance': fields.float('Freight Advance',digits=(0,2),states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
               'driver_name'    : fields.char('Driver Name',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
               'diver_contact'  : fields.char('Driver Contact',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
-              'hide_fields'    : fields.function(_get_permission,type='boolean',method=True,string="Permission", store=True),
+              
               
               'freight_total'    : fields.function(_get_freight_amount, type='float', string='Freight Total', store=True, multi="tot",track_visibility='onchange'),
               'freight_deduction': fields.function(_get_freight_amount, type='float', string='Freight Deduction', store=True, multi="tot",track_visibility='onchange'),                 
@@ -4719,12 +4728,15 @@ class stock_picking(osv.osv):
                'partner'       :   fields.function(_get_user,type='char',method=True,string="Partner", store=False,multi='user'),
                'dest_location_id'        : fields.many2one('stock.location','Location'),
                'report_date'  :       fields.char('Date'), 
+               'hide_fields'    : fields.function(_get_permission,type='boolean',method=True,string="Permission", store=True),
+               'farmer_declaration' : fields.related('company_id','farmer_declaration', string="Farmer Declaration", type='binary', store=False),
+               'is_farm_decl' : fields.related('partner_id','is_farm_decl',string="Is Farmer Declaration", type="boolean", store=False),
+               'fd_filename'   :   fields.char('File Name',size=100),
               }
     _order = 'date desc'
     _defaults={
                
                 'paying_agent_id':_get_default_paying_agent_id,
-               'hide_fields' : _get_default_permission,
                'esugam_no'    :'0',
 #                'purchase_id': False,
 #                'hide_fields' : True
@@ -4738,7 +4750,9 @@ class stock_picking(osv.osv):
                 'delivery_date_function':lambda *a: time.strftime('%Y-%m-%d'),
                 'date_function': lambda *a: time.strftime('%Y-%m-%d'),
                     'filename'      :"APMC_CESS.pdf" ,
-                    'user_partner_id':_get_default_user_partner,               
+                    'fd_filename'   : "Farmer Declaration.pdf",
+                    'user_partner_id':_get_default_user_partner, 
+                'hide_fields' : _get_default_permission,              
                }
     
 

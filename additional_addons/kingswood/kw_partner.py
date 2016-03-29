@@ -204,6 +204,7 @@ class res_partner(osv.osv):
                 'current_bill'         :  fields.function(get_billing, method=True, type="one2many", string="Current Bill", relation="billing.cycle"), 
 
                 'facilitator_ids'      :  fields.one2many('kw.facilitator','partner_id',"Faciltator"),
+                'is_farm_decl'         : fields.boolean('Farmer Declaration') 
               }
     _defaults={
                'customer':True,
@@ -324,7 +325,7 @@ class res_partner(osv.osv):
                         'name':vals['name'],
                         'type':'payable',
                         'user_type':type_account.id, 
-                        'parent_id':s_parent_id.id or False,
+                        'parent_id':s_parent_id and s_parent_id.id or False,
                         }
                 
                 if ls_parent_ids:
@@ -403,7 +404,9 @@ class res_company(osv.osv):
     _columns={
                 'tin'   :   fields.char('Tin Number',size=20),
                 'toll_free' : fields.char("Toll Free No.",size=15), 
-                'attachment': fields.binary("APMC Attachmnet"),
+                'attachment': fields.binary("APMC Attachment"),
+                'farmer_declaration' : fields.binary("Farmer Declaration")
+                
              }
     _defaults={
                

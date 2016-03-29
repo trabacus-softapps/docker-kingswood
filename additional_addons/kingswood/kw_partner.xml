@@ -30,7 +30,7 @@
 				</xpath>
 				
 				<xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']//field[@name='active']" position="attributes">
-				 	 <attribute name="invisible">1</attribute>
+				 	 <attribute name="invisible">0</attribute>
 				</xpath>
 				
 				<!--<xpath expr="//notebook/page[@string = 'Sales &amp; Purchases']//field[@name='opt_out']" position="attributes">
@@ -207,7 +207,8 @@
 				 					<field name='show_esugam' string="Show Esugam"
 				 						attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
 			
-				 					<field name="amc_attachment"/>	
+				 					<field name="amc_attachment"/>
+									<field name="is_farm_decl"/>
 				 				</group>                    	
                     	
 			                    <group name="Freight" string="Freight">
@@ -363,6 +364,7 @@
 						<field name='tin'/>
                			<field name='commodity'/>
                			<field name='attachment'/>
+               			<field name="farmer_declaration"/>
  						<field name='toll_free' />
  				</field>	
  				
