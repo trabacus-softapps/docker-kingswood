@@ -5994,7 +5994,7 @@ class stock_picking_in(osv.osv):
         # for creating the sequence code
          
                  
-        cr.execute("select code from account_fiscalyear where date_start < '"+today+"' and date_stop >'" +today+"'")
+        cr.execute("select code from account_fiscalyear where date_start <= '"+today+"' and date_stop >='" +today+"'")
         seq_code = cr.fetchone()
         if not seq_code:
             raise osv.except_osv(_('Warning'),_('Please Create Fiscal Year For "%s"')%(today))
