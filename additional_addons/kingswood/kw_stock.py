@@ -1073,8 +1073,9 @@ class stock_picking_out(osv.osv):
                 except:
                         url_status3 = browser.get(url3)
         try:
-            browser.find_element_by_id('UserName')
-            url_status1 = False
+            if not url_status1 and not url_status2:
+                browser.find_element_by_id('UserName')
+                url_status1 = False
         
         except:
             try:
@@ -1126,7 +1127,11 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_id('ctl00_MasterContent_btnContinue').click()
                     browser.find_element_by_id('LinkButton1').click()
                 except:
-                    browser.find_element_by_id('LinkButton1').click()
+                    #browser.find_element_by_id('LinkButton1').click()
+                    browser.find_element_by_css_selector('.Menu1_3').click()
+                    browser.find_element_by_css_selector('.Menu1_3').send_keys(Keys.RIGHT)
+                    browser.find_element_by_css_selector('.Menu1_5').click()
+                    pass
             elif url_status1:
                 try:
                     browser.find_element_by_id('ctl00_MasterContent_btnContinue').click()
