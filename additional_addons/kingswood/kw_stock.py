@@ -34,7 +34,7 @@ import time
 
 import openerp
 import operator
-# from . import Command
+## from . import Command
 # import common
 #delete
 import base64
