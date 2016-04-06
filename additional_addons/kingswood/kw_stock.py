@@ -1059,6 +1059,7 @@ class stock_picking_out(osv.osv):
         url_status1 = browser.get(url1)
         
         try:
+            # check URL1
             try:
                 url_status1 = browser.find_element_by_id('Button2')
                 browser.find_element_by_id('Button2').click()
@@ -1067,12 +1068,16 @@ class stock_picking_out(osv.osv):
                 url_status1 = browser.find_element_by_id('UserName')
         except:
             if not url_status1:
+                # check URL2
                 url_status2 = browser.get(url2)
                 try:
                     url_status2 = browser.find_element_by_id('UserName')
                 except:
-                        url_status3 = browser.get(url3)
+                    # check URL3
+                    url_status3 = browser.get(url3)
+                    url_status3 = browser.find_element_by_id('UserName')
         try:
+            # check URL3
             if not url_status1 and not url_status2:
                 browser.find_element_by_id('UserName')
                 url_status1 = False
@@ -1122,15 +1127,15 @@ class stock_picking_out(osv.osv):
                 
 
             
-            if not url_status1:
+            if not url_status1 and (url_status2 or url_status3):
                 try:
                     browser.find_element_by_id('ctl00_MasterContent_btnContinue').click()
                     browser.find_element_by_id('LinkButton1').click()
                 except:
-                    #browser.find_element_by_id('LinkButton1').click()
-                    browser.find_element_by_css_selector('.Menu1_3').click()
-                    browser.find_element_by_css_selector('.Menu1_3').send_keys(Keys.RIGHT)
-                    browser.find_element_by_css_selector('.Menu1_5').click()
+                    browser.find_element_by_id('LinkButton1').click()
+#                     browser.find_element_by_css_selector('.Menu1_3').click()
+#                     browser.find_element_by_css_selector('.Menu1_3').send_keys(Keys.RIGHT)
+#                     browser.find_element_by_css_selector('.Menu1_5').click()
                     pass
             elif url_status1:
                 try:
@@ -1154,7 +1159,7 @@ class stock_picking_out(osv.osv):
                 browser.find_element_by_id('ctl00_MasterContent_rdoStatCat_0').click()
             else:
                 browser.find_element_by_id('ctl00_MasterContent_rdoStatCat_1').click()
-            time.sleep(5)
+            time.sleep(2)
             browser.find_element_by_name('ctl00$MasterContent$txtFromAddrs').send_keys(case.city_id.name)
             browser.find_element_by_name('ctl00$MasterContent$txtToAddrs').send_keys(case.partner_id.city)
             browser.find_element_by_name('ctl00$MasterContent$txt_commodityname').send_keys(desc)
@@ -1172,7 +1177,7 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_name('ctl00$MasterContent$txtDeliveryDate').send_keys(del_date)
             browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click() # for pdfprint
             browser.find_element_by_id('ctl00_MasterContent_rdoListGoods_9').click()
-            time.sleep(5)
+            time.sleep(2)
             browser.find_element_by_name('ctl00$MasterContent$txtOthCat').send_keys('DC')
             browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_5').click()
             if case.partner_id.state_id.name == 'Karnataka':
@@ -1180,12 +1185,12 @@ class stock_picking_out(osv.osv):
             else:
                 browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(case.partner_id.tin_no)
                 browser.find_element_by_name('ctl00$MasterContent$txtVehicleOwner').send_keys(veh_owner)
-                time.sleep(5)
+                time.sleep(2)
                 browser.find_element_by_name('ctl00$MasterContent$txtNameAddrs').send_keys(case.partner_id.name)
             #browser.find_element_by_id('ctl00_MasterContent_btnSave').click()
             browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click()
             browser.find_element_by_id('ctl00_MasterContent_btn_savecumsubmit').click()
-            time.sleep(10)
+            time.sleep(5)
             #esugam = browser.find_element_by_id('ctl00_MasterContent_lbl_serialno').text
             all_cookies = browser.get_cookies()
             URL = browser.current_url.replace('Vat505_Etrans.aspx?mode=new','e_trans_pdf.aspx?mode=ack')
