@@ -1227,7 +1227,7 @@ class stock_picking_out(osv.osv):
             os.remove(current_file)
         
         except Exception as e:
-            _logger.info('error %s',e)
+            _logger.info('Error reason %s',e)
             raise osv.except_osv(_('Esugam Site Is Down'),_('Please Try After Some Time'))
         
         return esugam
