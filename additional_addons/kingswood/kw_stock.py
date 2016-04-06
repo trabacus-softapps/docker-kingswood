@@ -1185,12 +1185,12 @@ class stock_picking_out(osv.osv):
             else:
                 browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(case.partner_id.tin_no)
                 browser.find_element_by_name('ctl00$MasterContent$txtVehicleOwner').send_keys(veh_owner)
-                time.sleep(2)
+                time.sleep(5)
                 browser.find_element_by_name('ctl00$MasterContent$txtNameAddrs').send_keys(case.partner_id.name)
             #browser.find_element_by_id('ctl00_MasterContent_btnSave').click()
             browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click()
             browser.find_element_by_id('ctl00_MasterContent_btn_savecumsubmit').click()
-            time.sleep(5)
+            time.sleep(12)
             #esugam = browser.find_element_by_id('ctl00_MasterContent_lbl_serialno').text
             all_cookies = browser.get_cookies()
             URL = browser.current_url.replace('Vat505_Etrans.aspx?mode=new','e_trans_pdf.aspx?mode=ack')
