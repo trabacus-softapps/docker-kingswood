@@ -677,6 +677,10 @@
 			<field name="model">account.voucher</field>
 			<field name="arch" type="xml" >
 				
+				
+				
+				
+				
 			<!--	<xpath expr="//field[@name='company_id']" position="attributes">
 					<attribute name='on_change'>onchange_company_id(company_id,partner_id,journal_id,type)</attribute>
 				</xpath>-->
