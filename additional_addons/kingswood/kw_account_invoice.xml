@@ -558,10 +558,10 @@
             	
             	
             	
-            	<xpath expr="//group/group/field[@name='company_id']" position="attributes">
+<!--            	<xpath expr="//group/group/field[@name='company_id']" position="attributes">
             		
             	    <attribute name="on_change">onchange_company_id(company_id,partner_id,journal_id,type)</attribute>
-            	</xpath>
+            	</xpath>-->
             	
             	<xpath expr="//field[@name='journal_id']" position="attributes">
             	    <attribute name="domain">[('type','in',['bank', 'cash']),('company_id','=',company_id)]</attribute>

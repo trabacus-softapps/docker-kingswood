@@ -6,7 +6,7 @@
     'description'   :   """kingswood """,
     'author'        :   'softappsit',
     'website'       :   'http://www.softappsit.com',
-    'depends'       :   ['base','sale','product','stock','purchase','account','account_invoice_merge'],
+    'depends'       :   ['base','sale','product','stock','purchase','account','account_voucher','account_invoice_merge'],
     'data'          :   [
                           'security/security.xml',
                           'wizard/kw_product_rate.xml', 
