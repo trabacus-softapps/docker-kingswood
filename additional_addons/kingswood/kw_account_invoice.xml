@@ -328,11 +328,19 @@
 <!--                FOr adding Handling and transport details-->
                 <xpath expr="//page[@string='Other Info']" position="after">
                     <page string="Transport / Handling Information" attrs="{'invisible':[('other_charges','!=',True)]}">
-                        <group col="4" colspan="2">
-                            <field name="transport_charges" attrs="{'required':[('other_charges','=',True)],'readonly':[('state','not in','draft')]}"/> 
-                            <field name="transport_acc_id" domain="[('company_id','=',company_id)]" attrs="{'required':[('other_charges','=',True)],'readonly':[('state','not in','draft')]}"/>
-                            <field name="loading_charges" attrs="{'required':[('other_charges','=',True)],'readonly':[('state','not in','draft')]}"/> 
-                            <field name="loading_acc_id" domain="[('company_id','=',company_id)]" attrs="{'required':[('other_charges','=',True)],'readonly':[('state','not in','draft')]}"/> 
+                        <group col="6" colspan="2">
+                            <group>
+                                <field name="transport_charges" attrs="{'required':[('other_charges','=',True)],'readonly':[('state','not in','draft')]}"/>
+                                <field name="loading_charges" attrs="{'required':[('other_charges','=',True)],'readonly':[('state','not in','draft')]}"/>
+                            </group>
+                            <group>    
+                                <field name="transport_acc_id" domain="[('company_id','=',company_id)]" attrs="{'required':[('other_charges','=',True)],'readonly':[('state','not in','draft')]}"/>
+                                <field name="loading_acc_id" domain="[('company_id','=',company_id)]" attrs="{'required':[('other_charges','=',True)],'readonly':[('state','not in','draft')]}"/>
+                            </group>
+                            <group>                                
+                                <field name="transport_ref" attrs="{'readonly':[('state','not in','draft')]}"/>
+                                <field name="loading_ref" attrs="{'readonly':[('state','not in','draft')]}"/>
+                            </group>
                         </group>
                     </page>
                 </xpath>

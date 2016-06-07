@@ -356,6 +356,8 @@
             				<button name="%(kingswood.action_weighment_slip)d" string="Weightment Slip" 
             					type="action" class="oe_highlight" attrs="{'invisible':[('report','!=',True)]}" />
             				
+            				<button name="open_tax_link" string="Transit Pass" type="object" class="oe_highlight"
+            					attrs="{'invisible': [('transit_pass','=','False')]}"/>
             				
 			                
             				<field name="state" widget="statusbar" statusbar_visible="draft,in_transit,done,freight_paid" statusbar_invisible='confirmed'/>
@@ -370,6 +372,7 @@
 		                    </h1>
 		                    <group col='6' colspan='2'>
 		                        <group>
+		                        	<field name="transit_pass" invisible="1"/>
 		                        	<!-- <field name="test" invisible="0"/> -->
 		                        	<field name="billing_cycle" invisible="1"/>
 		                        	<field name='user_log' invisible="1" on_change="onchange_user_in(user_log)"/>

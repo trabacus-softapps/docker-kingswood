@@ -756,6 +756,9 @@ class stock_picking_out(osv.osv):
                  'farmer_declaration' : fields.related('company_id','farmer_declaration', string="Farmer Declaration", type='binary', store=False),
                  'is_farm_decl' : fields.related('partner_id','is_farm_decl',string="Is Farmer Declaration", type="boolean", store=False),
                  'fd_filename'   :   fields.char('File Name',size=100),
+                 
+                 'transit_pass'     : fields.related('partner_id','transit_pass',type='boolean',store=True,string="Transit Pass"),
+#                  'tax_link'         : fields.related('partner_id','tax_link',type='char',store=True,string="Tax Link"),
               } 
     
     _order = 'date desc'
@@ -777,11 +780,32 @@ class stock_picking_out(osv.osv):
                     'fd_filename'   : "Farmer Declaration.pdf",
                     'user_partner_id':_get_default_user_partner,
                     'hide_fields' : _get_default_permission,
+                    'transit_pass' : False
 #                  'customer_list' : _default_get_customer,
 #                  'hide_fields' : True 
 # cur_date=datetime.today().strftime("%Y-%m-%d")
 #                 'date': lambda *a: time.strftime('%Y-%m-%d %H:%M:%S'),
                  }
+
+
+    # Actions
+
+    def open_tax_link(self, cr, uid, ids, context=None):
+        ''' Open the website page with the Tax form '''
+        trail = ""
+        context = dict(context or {}, relative_url=True)
+#         if 'survey_token' in context:
+#             trail = "/" + context['survey_token']
+        case = self.browse(cr, uid, ids[0])
+#         if case.partner_id.tax_link:
+        print "case.partner_id.tax_link",case.partner_id.id
+        return {
+            'type': 'ir.actions.act_url',
+            'name': "Transit Pass",
+            'target': 'new',
+            'url': case.partner_id.tax_link#self.read(cr, uid, ids, ['public_url'], context=context)[0]['public_url'] + trail
+        }
+
     
     
     #to check Freight Rate/MT Should not exceeds four digits before decimal point 
@@ -4743,6 +4767,7 @@ class stock_picking(osv.osv):
                'farmer_declaration' : fields.related('company_id','farmer_declaration', string="Farmer Declaration", type='binary', store=False),
                'is_farm_decl' : fields.related('partner_id','is_farm_decl',string="Is Farmer Declaration", type="boolean", store=False),
                'fd_filename'   :   fields.char('File Name',size=100),
+               'transit_pass'     : fields.related('partner_id','transit_pass',type='boolean',store=True,string="Transit Pass"),
               }
     _order = 'date desc'
     _defaults={
@@ -4763,9 +4788,28 @@ class stock_picking(osv.osv):
                     'filename'      :"APMC_CESS.pdf" ,
                     'fd_filename'   : "Farmer Declaration.pdf",
                     'user_partner_id':_get_default_user_partner, 
-                'hide_fields' : _get_default_permission,              
+                'hide_fields' : _get_default_permission,   
+                'transit_pass' : False           
                }
-    
+
+    # Actions
+
+    def open_tax_link(self, cr, uid, ids, context=None):
+        ''' Open the website page with the Tax form '''
+        trail = ""
+        context = dict(context or {}, relative_url=True)
+#         if 'survey_token' in context:
+#             trail = "/" + context['survey_token']
+        case = self.browse(cr, uid, ids)
+#         if case.partner_id.tax_link:
+        print "Link..........",case.partner_id.tax_link
+            
+        return {
+            'type': 'ir.actions.act_url',
+            'name': "Start Survey",
+            'target': 'self',
+            'url': case.partner_id.tax_link#self.read(cr, uid, ids, ['public_url'], context=context)[0]['public_url'] + trail
+        }    
 
     def onchange_partner_in(self, cr, uid, ids, partner_id=None, context=None):
 #         res=super(stock_picking,self).onchange_partner_in(cr, uid, ids,partner_id=False,context=None)

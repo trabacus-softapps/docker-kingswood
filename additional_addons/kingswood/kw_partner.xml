@@ -209,6 +209,8 @@
 			
 				 					<field name="amc_attachment"/>
 									<field name="is_farm_decl"/>
+									<field name="transit_pass" attrs="{'invisible': [('customer','=', False)]}"/>
+									<field name="tax_link" attrs="{'invisible': [('transit_pass','=', False)],'required':[('transit_pass','=', True)]}"/>
 				 				</group>                    	
                     	
 			                    <group name="Freight" string="Freight">
@@ -218,6 +220,7 @@
 			 						<field name='show_freight'  attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
 			 						<field name="pay_freight" 	attrs="{'invisible': [('customer','=', False)]}" />
 			 						<field name='representative_id'  domain="[('supplier','=',True),('representative','=',True)]" attrs="{'required':[('pay_freight','=',False),('customer','=',True)],'invisible':['|',('pay_freight','=',True),('customer','=',False)]}"/>
+			                    	
 			 				 </group>     
 			 				 <group name="Report" string="Report">
 				 					<field name="product_change" 

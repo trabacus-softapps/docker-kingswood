@@ -204,7 +204,11 @@ class res_partner(osv.osv):
                 'current_bill'         :  fields.function(get_billing, method=True, type="one2many", string="Current Bill", relation="billing.cycle"), 
 
                 'facilitator_ids'      :  fields.one2many('kw.facilitator','partner_id',"Faciltator"),
-                'is_farm_decl'         : fields.boolean('Farmer Declaration') 
+                'is_farm_decl'         : fields.boolean('Farmer Declaration') ,
+                
+                # For AP Tax Link
+                'transit_pass'         : fields.boolean("Transit Pass"), 
+                'tax_link'             : fields.char("Tax Link", size=500),
               }
     _defaults={
                'customer':True,
