@@ -110,6 +110,30 @@ class kw_invoice(osv.osv_memory):
                 'handling_order'            : fields.char('HANDLING & OTHER CHARGES BILL No.'),                
                 }
     
+#     def default_get(self, cr, uid, fields, context=None):
+#         if context is None: context = {}
+#         cust=False
+#         sup=False
+#         inv_obj = self.pool.get('account.invoice')
+#         move=self.pool.get('stock.move')
+#         res = super(kw_invoice, self).default_get(cr, uid, fields, context=context)
+#         move_ids = context.get('active_ids', [])
+#         active_model = context.get('active_model')
+#         prod = self.pool.get('account.invoice')
+#         for inv in inv_obj.browse(cr, uid, move_ids, context=context):
+#             if inv.type=='out_invoice':
+#                 res.update(freight_rate=inv.freight_rate)
+#                 res.update(product_rate=inv.product_rate)
+#                 if inv.product_order:
+#                     res.update(product_order=inv.product_order)
+#                 if inv.handling_order:
+#                     res.update(handling_order=inv.handling_order)                    
+#                 for lines in inv.invoice_line: 
+#                     res.update(unit_price=lines.price_unit)
+#   
+#         return res
+    
+
     def default_get(self, cr, uid, fields, context=None):
         if context is None: context = {}
         cust=False
@@ -122,8 +146,10 @@ class kw_invoice(osv.osv_memory):
         prod = self.pool.get('account.invoice')
         for inv in inv_obj.browse(cr, uid, move_ids, context=context):
             if inv.type=='out_invoice':
-                res.update(freight_rate=inv.freight_rate)
-                res.update(product_rate=inv.product_rate)
+                res.update(freight_rate=inv.loading_charges)
+                res.update(product_rate=inv.transport_charges)
+                res.update(handling_order=inv.loading_ref)
+                res.update(product_order=inv.transport_ref)
                 if inv.product_order:
                     res.update(product_order=inv.product_order)
                 if inv.handling_order:
@@ -132,6 +158,10 @@ class kw_invoice(osv.osv_memory):
                     res.update(unit_price=lines.price_unit)
   
         return res
+    
+    
+    
+    
     
     def print_invoice(self, cr, uid, ids, context =None ):
         inv_vals = {}
