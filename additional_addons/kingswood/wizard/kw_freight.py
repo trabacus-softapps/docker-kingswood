@@ -101,10 +101,14 @@ class kw_freight(osv.osv_memory):
 #             if stock_ids:
 #                 res = rep_obj.pentaho_report_action(cr, uid, 'Freight Charge Details', stock_ids,None,None)
         
-        data['variables'] = { 'from_date' : from_date , 'to_date' : to_date,
-                             'inv_company': company_id,'state_id':state_id,
-                             'customer_id':customer_id,'facilitator_id':facilitator_id,
-                             'product_id' : product_id,'pick_type' : pick_type
+        data['variables'] = { 'from_date' : from_date , 
+                             'to_date' : to_date,
+                             'inv_company': company_id,
+                             'state_id':state_id,
+                             'customer_id':customer_id,
+                             'facilitator_id':facilitator_id,
+                             'product_id' : product_id,
+                              #'pick_type' : pick_type
                              }
         print "date",data['variables']
         data['ids'] = stock_ids
