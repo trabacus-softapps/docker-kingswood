@@ -1013,7 +1013,7 @@ class account_invoice(osv.osv):
         for case in self.browse(cr, uid, ids):
             month_to=self.get_month(cr,uid,[],case.date_invoice,{'month':1})
             day_to=self.get_month(cr,uid,[],case.date_invoice,{'day':1}) 
-            
+            year_to=self.get_month(cr,uid,[],case.date_invoice,{'year':1}) 
             shedular_date = datetime.strptime(case.date_invoice, '%Y-%m-%d') - relativedelta(days=int(day_to))
             shedular_date = shedular_date.strftime('%Y-%m-%d')         
             cr.execute("select id from account_invoice where state='draft' and handling_charges = True and company_id = "+str(case.company_id.id)+" and partner_id= '" + str(case.partner_id.id) + "'and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) = '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
@@ -1029,6 +1029,7 @@ class account_invoice(osv.osv):
             print "name-",case.partner_id.name
             group_ids=self.search(cr,uid,[('partner_id','=',case.partner_id.id),('handling_charges','=', True),('company_id','=',case.company_id.id),('state','=','draft'),('id','in',other_sup)],order='partner_id',)
             group_in_ids=self.search(cr,uid,[('origin','=','IN'),('handling_charges','=', True),('partner_id','=',case.partner_id.id),('company_id','=',case.company_id.id),('state','=','draft'),('id','in',other_sup)],order='origin',)
+            print "group_ids.....",group_ids
             
             if group_in_ids:
                 for in_ship in group_in_ids:
@@ -1067,11 +1068,14 @@ class account_invoice(osv.osv):
                                                       'branch_state':case.branch_state.id,'supp_delivery_orders_ids': [(6,0,del_ord_in_ids)],
                                                       },context=context)
                         if res:
+                            print "invoice_val",i
 #                             self.invoice_validate(cr, uid, res.keys(), context)
                             inv_validate1=res.keys()
-                            for j in inv_validate1:
-                                wf_service.trg_validate(uid, 'account.invoice', j, 'invoice_open', cr) 
-                             
+                            try:
+                                for j in inv_validate1:
+                                    wf_service.trg_validate(uid, 'account.invoice', j, 'invoice_open', cr)
+                            except:
+                                pass 
                         
                         for dc in group_ids:
                             if dc in other_sup:
@@ -1104,7 +1108,12 @@ class account_invoice(osv.osv):
 #                             self.invoice_validate(cr, uid, res1.keys(), context)
                             inv_validate=res1.keys()
                             for i in inv_validate:
-                                wf_service.trg_validate(uid, 'account.invoice', i, 'invoice_open', cr)    
+                                try:
+                                    print "invoice_val",i
+                                    wf_service.trg_validate(uid, 'account.invoice', i, 'invoice_open', cr)    
+                                except:
+                                    pass
+           
            
                         for k in group_in_ids:
                             if k in other_sup:
@@ -1142,6 +1151,7 @@ class account_invoice(osv.osv):
         partner_ids=partner_obj.search(cr,uid,[('handling_charges','=',True)])
         month_to=self.get_month(cr,uid,[],today,{'month':1}) 
         print 'month_to',month_to
+        
         year_to=self.get_month(cr,uid,[],today,{'year':1}) 
         
         sup_comp = 1
@@ -1156,12 +1166,15 @@ class account_invoice(osv.osv):
                 sup_comp=cr.fetchone()     
         if sup_comp: 
             sup_comp=sup_comp[0]  
-                       
+            
+        print 'sup_comp',sup_comp
         if supplier_id:
             cr.execute("select id from account_invoice where state='draft' and handling_charges = True and company_id ="+str(sup_comp)+" and partner_id= '" + str(supplier_id) + "' and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
         else:
-            cr.execute("select id from account_invoice where state='draft' and handling_charges = True and company_id ="+str(sup_comp)+" and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
+            cr.execute("select id from account_invoice where state='draft' and handling_charges = True and company_id = "+str(sup_comp)+" and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and date_invoice >= '2015-04-01' and date_invoice <= '2016-05-31' order by date_invoice ")
+            #cr.execute("select id from account_invoice where state='draft' and handling_charges = True and company_id ="+str(sup_comp)+" and partner_id in (select id from res_partner where handling_charges = True) and type='in_invoice' and EXTRACT(month from date_invoice) < '" + str(month_to) + "' and EXTRACT(year from date_invoice) ='" + str(year_to) + "'")
         old_inv=[x[0] for x in cr.fetchall()] 
+        print "old_inv.......",len(old_inv)
         if old_inv:
              res = self.do_merge_old_inv(cr,uid,old_inv,context)         
         
