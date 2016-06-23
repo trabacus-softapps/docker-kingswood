@@ -2722,9 +2722,10 @@ class stock_picking_out(osv.osv):
                       
                  
                     if s_parent_id:
-                           
+                         company = company1
                          if handling_group[handling_inv]['freight']==True and company:                  
-                             handling_invoices.update({'company_id':company}) 
+                             company = fre_company
+                         handling_invoices.update({'company_id':company}) 
                          #to create HC invoice for supplier
                          inv_hc=inv_obj.create(cr, uid, handling_invoices,context=context) 
                      
