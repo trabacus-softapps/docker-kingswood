@@ -209,6 +209,9 @@ class res_partner(osv.osv):
                 # For AP Tax Link
                 'transit_pass'         : fields.boolean("Transit Pass"), 
                 'tax_link'             : fields.char("Tax Link", size=500),
+                
+                # Daily Dispatch Report IN and OUT
+                'contract_ids'      :   fields.one2many("customer.contracts", 'partner_id', "Customer Contracts"),
               }
     _defaults={
                'customer':True,
@@ -402,6 +405,49 @@ class res_partner(osv.osv):
 res_partner()
 
 
+
+class customer_contracts(osv.osv):
+    _name = "customer.contracts"
+    
+    def _get_pending_qty(self, cr, uid, ids, field_name, args, context=None):
+        context = dict(context or {})
+        res = {}
+        qty_pending = 0.00
+        
+        for case in self.browse(cr, uid, ids):
+            sold_qty = 0.00
+            cr.execute(""" 
+                    select sum(sp.del_quantity) 
+    
+                    from stock_picking sp
+                    where sp.product_id ="""+str(case.product_id.id)+""" and sp.partner_id = """+str(case.partner_id.id)+"""
+                    and sp.date >='"""+str(case.from_date)+"""' and sp.date <= '"""+str(case.to_date)+"""' 
+                    and sp.state in ('done','freight_paid')           
+                    """)
+            sold_qty = [x[0] for x in cr.fetchall()]
+            if sold_qty:
+                sold_qty = sold_qty[0]
+                if sold_qty is None:
+                   sold_qty = 0.00
+        res[case.id] = case.qty_ordered - sold_qty
+        return res
+    
+    _columns={
+              'name'        :   fields.char("Customer Contracts"),
+              'partner_id'  :   fields.many2one("res.partner", "Partner"),
+              'from_date'   :   fields.date("From Date"),
+              'to_date'     :   fields.date("To Date"),
+              'product_id'  :   fields.many2one('product.product', "Specie"),
+              'qty_ordered' :   fields.float("Qty Ordered", digits=(16,2)),
+              'qty_pending' :   fields.function(_get_pending_qty, string="Qty Pending", type='float', store=True),
+              'is_active'   :   fields.boolean("Active"),
+              
+              }
+    _defaults ={
+                'is_active' : False
+                }
+
+customer_contracts()
 
 class res_company(osv.osv):
     _inherit='res.company'

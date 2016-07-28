@@ -1716,9 +1716,26 @@ class stock_picking_out(osv.osv):
                 partner=cr.fetchall()
                 if (case.partner_id.id in partner or case.partner_id.wc_num) and not case.wc_number:
                     raise osv.except_osv(_('Warning'),_('Please Enter WC Number'))
-                                    
+            
+            # Pending Qty Functionality                        
+            if case.partner_id.contract_ids:
+                qty_pending = 0.00
+                from_date = False
+                to_date = False
+                pick_date = False
+                for cntrt in case.partner_id.contract_ids:
+                    from_date = cntrt.from_date + ' 00:00:00'
+                    from_date = datetime.strptime(from_date, '%Y-%m-%d %H:%M:%S')
+                    to_date = cntrt.to_date + ' 23:59:59'
+                    to_date = datetime.strptime(to_date, '%Y-%m-%d %H:%M:%S')
+                    pick_date = datetime.strptime(case.date, '%Y-%m-%d %H:%M:%S')
+                    if case.product_id.id == cntrt.product_id.id and pick_date >= from_date and pick_date <= to_date:
+                        qty_pending = cntrt.qty_pending - case.del_quantity
+                        cr.execute("update customer_contracts set qty_pending ="+str(qty_pending)+" where partner_id="+str(case.partner_id.id))
                 
         move_obj.action_done(cr, uid, move_ids, context=None)
+        
+        
             
         return self.write(cr, uid, ids, {'state':'done','freight_balance':freight_balance,'state_id':state_id}, context=context)
     
@@ -3801,6 +3818,16 @@ class stock_picking_out(osv.osv):
         print 'dc_facilitator_daily_mail'      
         return print_report
 
+#     def send_daily_dispatch_in_out_mail(self, cr, uid, ids, context=None):
+    def send_daily_dispatch_in_out_mail(self, cr, uid, automatic=False, use_new_cursor=False, context=None):
+        if not context:
+            context= {}
+        context.update({'daily_dispatch': True})
+        if 'type' in context:
+            context.pop('type')
+        print_report = self.send_dispatch_mail(cr,uid,[uid],context)        
+        return print_report 
+        
 
     def invoice_facilitator_mail(self, cr, uid, ids,context=None):
         if not context:
@@ -3890,6 +3917,7 @@ class stock_picking_out(osv.osv):
         if summary:
            template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_send_monthly_mail')
 
+            
 # for non dispacth DC        
 #         if facilitator:
 #            template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_facilitator_daily_mail')
@@ -3906,12 +3934,22 @@ class stock_picking_out(osv.osv):
             p = partner_obj.browse(cr, uid,p[0])
             if p.email and p.email not in partners:
                 partners += (p.email and p.email or "") + ","
-        if partners:
-            email_obj.write(cr, uid, [template.id], {'email_to':partners[0:-1]})        
+                
+                
         
         pick = self.search(cr,uid,[('date','<',today),('type','=','out')],order='id desc',limit=1)        
         
+        if context.get('daily_dispatch', False):
+            template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_daily_dispatch_in_out')
+            file_name = "daily_dispatch_in_out_report.xls"
+        
+        print "partners.....",partners[0:-1]
+        if partners:
+            email_obj.write(cr, uid, [template.id], {'email_to':partners[0:-1]})
+            
         wzd_id=wzd_obj.create(cr,uid,{'from_date':today,'summary':False,},context)
+        
+        
         if not facilitator:
             if summary:
                 file_name = "monthly_dispatch_report.xls"  
@@ -3931,13 +3969,24 @@ class stock_picking_out(osv.osv):
                 ids = pick
             if 'variables' in report:
                 variables = report['variables']
+                ids = pick
         print variables 
-        if not facilitator:       
+        if not facilitator and not context.get('daily_dispatch'):       
             report_service = "report." + 'dispatches'
             if summary:
                 report_service = "report." + 'monthly_dispatch'
+        elif context.get('daily_dispatch'):
+            report_service = "report." + 'daily_dispatch_in_out'
+#             prev_date = datetime.strptime('2016-06-01', '%Y-%m-%d') - relativedelta(days=int(1))
+#             
+#             data['variables'] = {
+#                                  'from_date':   prev_date,
+#                                  'to_date'  :   prev_date,
+#                                 }
+            
         else:
             report_service = "report." + 'dc_facilitator_daily_mail'
+        
         service = netsvc.LocalService(report_service)
         (result, format) = service.create(cr, uid, ids, {'model': 'stock.picking.out','variables':variables}, context)        
         result = base64.b64encode(result)
@@ -3959,6 +4008,7 @@ class stock_picking_out(osv.osv):
         
                            
                 temp_obj.dispatch_mail(cr,uid,[template.id],attach_ids,context)
+            print "template ......",template.id
             mail_id = self.pool.get('email.template').send_mail(cr, uid, template.id, case.id, True, context=context)
             mail_state = mail_obj.read(cr, uid, mail_id, ['state'], context=context)
             try:
@@ -3966,6 +4016,7 @@ class stock_picking_out(osv.osv):
                     mail_state=mail_state
             except:
                 pass                 
+            print "..................................."
         cr.execute("delete from email_template_attachment_rel where email_template_id="+str(template.id))  
         cr.execute("delete from ir_attachment where lower(datas_fname) like '%dispatch%'")        
 #         attachment_ids = [(4, attach_ids)]

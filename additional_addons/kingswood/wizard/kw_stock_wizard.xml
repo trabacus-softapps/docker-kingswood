@@ -84,6 +84,7 @@
                     <group>
                         <field name="from_date" required="1"/>
                        
+                        
                         <field name="partner_id" domain="[('customer','=',True)]" string='Customer' required="1"/>
                         
                          <field name="type" invisible="1"/>
@@ -257,27 +258,30 @@
             <field name="name">Daily/Monthly Dispatches</field>
             <field name="model">invoice.group.report</field>
             <field name="arch" type="xml">
-               <form string="Daily/Monthly Dispatches" version="7.0">
-                     <group> 
-                     	<group col="4" colspan="2"> 
-	                     <label for="from_date" string="Date " class="oe_edit_only" attrs="{'invisible': [('summary','=',True)]}"/> 
-	                     <label for="from_date" string="Month " class="oe_edit_only" attrs="{'invisible': [('summary','!=',True)]}"/> 
-	                     <field name="from_date" required="1" nolabel="1"/> 
-	                     </group> 
-	                    <group col="4" colspan="2"> 
-	                    	 
-	                    	<field name="partner_id" options='{"no_open":True}'
-	                    		domain="[('customer','=',True)]" string="Customer" attrs="{'invisible': [('summary','=',True)]}"/>
-	                    	<field name="summary" invisible="0" attrs="{'readonly': [('partner_id','!=',False)]}"/>
-	                     </group> 
-	                  </group>
+                <form string="Daily/Monthly Dispatches" version="7.0">
+                    <group> 
+                        <group col="4" colspan="2"> 
+                            <label for="from_date" string="Date " class="oe_edit_only" attrs="{'invisible': [('summary','=',True)]}"/> 
+                            <label for="from_date" string="Month " class="oe_edit_only" attrs="{'invisible': [('summary','!=',True)]}"/> 
+                            <field name="from_date" required="1" nolabel="1"/> 
+                        </group> 
+                        <group>
+                            <group>
+                                <field name='is_inout' attrs="{'invisible': [('summary','=',True)],'readonly': [('partner_id','!=',False)]}"/>                              
+                            </group>
+                            <group col="4" colspan="2"> 
+                                
+                                <field name="partner_id" options='{"no_open":True}'
+                                    domain="[('customer','=',True)]" string="Customer" attrs="{'invisible': ['|',('summary','=',True),('is_inout','=',True)]}"/>
+                                <field name="summary" invisible="0" attrs="{'readonly': [('partner_id','!=',False)], 'invisible':[('is_inout','=',True)]}"/>
+                            </group> 
+                        </group>
+                    </group>
                     
                     <footer>
-                        <button name="print_monthly_dispatch_report" string="Daily Dispatch Report" type="object" 
-                        	attrs="{'invisible': [('summary','=',True)]}" class="oe_highlight"/>
-                        	
-                        <button name="print_monthly_dispatch_report" string="Monthly Dispatches Report" type="object" 
-                        	attrs="{'invisible': [('summary','=',False)]}" class="oe_highlight"/>                        	
+                        <button name="print_monthly_dispatch_report" string="Daily Dispatch Report" type="object" attrs="{'invisible': [('summary','=',True)]}" class="oe_highlight"/>
+                        
+                        <button name="print_monthly_dispatch_report" string="Monthly Dispatches Report" type="object" attrs="{'invisible': [('summary','=',False)]}" class="oe_highlight"/>                        	
                         
                         or
                         <button string="Cancel" class="oe_link" special="cancel"/>

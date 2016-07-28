@@ -7,6 +7,7 @@ from openerp.tools.safe_eval import safe_eval as eval
 import calendar
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
+from dateutil import parser
 
 class stock_wizard(osv.osv_memory):
     _name = 'stock.wizard'
@@ -84,6 +85,7 @@ class invoice_group_report(osv.osv_memory):
               'state_id'      :   fields.many2one('res.country.state','State'),
               'product_ids'   :   fields.many2many('product.product','product_cust_mis_rel', 'mis_id', 'product_id', 'Products'),
               'state_report'  :   fields.boolean('State'),
+              'is_inout'      :   fields.boolean("Daily Dispatch (Incoming & Delivery)"),       
               
               }
             
@@ -110,6 +112,29 @@ class invoice_group_report(osv.osv_memory):
         res['report_type']='pdf'
         print type
         return res
+        
+#     def print_daily_dispatch(self, cr, uid, ids, context=None):
+#         if not context:
+#             context = {}
+#         for case in self.browse(cr, uid, ids, context=context):
+#             report_name = 'daily_dispatch_in_out' 
+#             data = {}
+#             data['ids'] = ids
+#             data['model'] = context.get('active_model', 'ir.ui.menu')
+#       
+#             data['output_type'] = 'xls'
+#             data['variables'] = {
+#                                  'from_date'    : '2016-06-18',
+#                                  'to_date'      : '2016-06-20', 
+#                                    
+#                                 }
+#                   
+#         return {
+#         'type': 'ir.actions.report.xml',
+#         'report_name': report_name,
+#         'name' : 'daily_dispatch_in_out',
+#         'datas': data,
+#             } 
         
     def print_inv_report(self,cr,uid,ids,context=None):
         rep_obj = self.pool.get('ir.actions.report.xml')
@@ -434,6 +459,9 @@ class invoice_group_report(osv.osv_memory):
                 pick_ids = [x[0] for x in cr.fetchall()]
                 print "pick=",len(pick_ids)
                 print "pick=",pick_ids
+            if case.is_inout:
+                context.update({'daily_dispatch':1, 'ddio_wiz':1})
+            
             res=self.invoice_print(cr, uid, pick_ids,case,False,False,context)
                     
         return res    
@@ -522,6 +550,8 @@ class invoice_group_report(osv.osv_memory):
 #         context.update({'xls_export': 1,'width':'0.67"','height':'0.21"'}) 
         data['context']=context
         end_date='' 
+        today = time.strftime('%Y-%m-%d')
+        
         summary = context.get('summary',case.summary)
         if partner:
             report_name = 'MIS Facilitator Report' 
@@ -558,6 +588,7 @@ class invoice_group_report(osv.osv_memory):
             else:
                 report_name=  'dispatches'    
 #                 data['output_type'] = 'pdf'                  
+        
         else:
             report_name=  'MIS Invoice Report'
             if product_id:
@@ -575,6 +606,7 @@ class invoice_group_report(osv.osv_memory):
         print "Total Quantity",qty_del
         print "Total Amount",total_price
         
+        
         data['variables'] = {
                              'partner_id': case.partner_id.id,
                              'from_date':from_date,
@@ -588,6 +620,25 @@ class invoice_group_report(osv.osv_memory):
                              'product_id':product_id,
                              'id':id,
                             }
+
+        if context.get('daily_dispatch') and not context.get('ddio_wiz'):
+            report_name = 'daily_dispatch_in_out'
+            data['output_type'] = 'xls'
+            prev_date = (datetime.strptime(today, '%Y-%m-%d') - relativedelta(days=int(1))).strftime('%Y-%m-%d')
+            print "prev_date...........",prev_date
+            data['ids'] = []
+            data['variables'] = {
+                                 'from_date':   prev_date,
+                                }
+             
+        if context.get('ddio_wiz'):
+
+            report_name = 'daily_dispatch_in_out'
+            data['output_type'] = 'xls'
+            data['ids'] = []
+            data['variables'] = {
+                                 'from_date':   case.from_date,
+                                }
                  
         return {
         'type': 'ir.actions.report.xml',
@@ -686,9 +737,35 @@ fac_billing_cyle()
 
     
     
-    
-    
-    
-    
+# class stock_partial_picking(osv.osv):
+#     _inherit = 'stock.partial.picking'
+#     
+#     def do_partial(self, cr, uid, ids, context=None):
+#         if not context:
+#             context={}
+#         stock_obj=self.pool.get('stock.picking.out')
+#         pick_ids=context.get('active_ids',[])
+#         type=context.get( 'default_type','')
+#         res= {}
+#         res=super(stock_partial_picking,self).do_partial(cr, uid, ids,context)
+#         
+#         for pick in stock_obj.browse(cr, uid, pick_ids):
+#             if pick.partner_id.contract_ids:
+#                 qty_pending = 0.00
+#                 from_date = False
+#                 to_date = False
+#                 pick_date = False
+#                 for cntrt in pick.partner_id.contract_ids:
+#                     from_date = cntrt.from_date + ' 00:00:00'
+#                     from_date = datetime.strptime(from_date, '%Y-%m-%d %H:%M:%S')
+#                     to_date = cntrt.to_date + ' 23:59:59'
+#                     to_date = datetime.strptime(to_date, '%Y-%m-%d %H:%M:%S')
+#                     pick_date = datetime.strptime(pick.date, '%Y-%m-%d %H:%M:%S')
+#                     if pick.product_id.id == cntrt.product_id.id and pick_date >= from_date and pick_date <= to_date:
+#                         qty_pending = cntrt.qty_pending
+# #                         cr.execute("update customer_contracts set qty_pending ="+str(qty_pending)+" where partner_id="+str(pick.partner_id.id))
+#     
+#         return res
+# stock_partial_picking()
     
     

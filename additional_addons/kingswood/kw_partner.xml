@@ -148,7 +148,23 @@
 							</tree>
 						</field>
 					</page>
-										
+
+
+					<page string="Customer Contracts" attrs="{'invisible': [('customer','=', False)]}">
+						<field name="contract_ids" attrs="{'invisible': [('customer','=', False)]}" groups="kingswood.kw_admin_service,base.group_no_one">
+							<tree version="7.0" editable="top">
+								<field name="from_date" required="1"/>
+								<field name="to_date" required="1"/>
+								<field name="product_id" required="1"/>
+								<field name="qty_ordered" required="1" attrs="{'readonly' : [('is_active','=',True)]}"/>
+								<field name="qty_pending"/>
+								<field name="is_active"/>
+								
+								
+							</tree>
+						</field>
+					</page>
+
 				</xpath>
 				
  				
