@@ -85,7 +85,7 @@ class invoice_group_report(osv.osv_memory):
               'state_id'      :   fields.many2one('res.country.state','State'),
               'product_ids'   :   fields.many2many('product.product','product_cust_mis_rel', 'mis_id', 'product_id', 'Products'),
               'state_report'  :   fields.boolean('State'),
-              'is_inout'      :   fields.boolean("Daily Dispatch (Incoming & Delivery)"),       
+              'is_inout'      :   fields.boolean("Daily Incoming & Delivery"),       
               
               }
             

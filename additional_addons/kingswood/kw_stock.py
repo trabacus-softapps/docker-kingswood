@@ -3801,6 +3801,7 @@ class stock_picking_out(osv.osv):
         print_report = self.send_dispatch_mail(cr,uid,[uid],context)
         return print_report
     
+#     def send_daily_dispatch_mail(self, cr, uid, ids, context=None):
     def send_daily_dispatch_mail(self, cr, uid, automatic=False, use_new_cursor=False, context=None):
         if not context:
             context= {}
@@ -3907,6 +3908,10 @@ class stock_picking_out(osv.osv):
         summary = False
         partners = ''
 #         context.update({'date':today,'pdf':True})
+
+        if context.get('type'):
+            context.pop('type')
+        
         summary = context.get('summary',False)
         if today:
             today = datetime.strptime(today, '%Y-%m-%d') - relativedelta(days=int(1))
@@ -3939,6 +3944,7 @@ class stock_picking_out(osv.osv):
         
         pick = self.search(cr,uid,[('date','<',today),('type','=','out')],order='id desc',limit=1)        
         
+        print "DC...................",pick
         if context.get('daily_dispatch', False):
             template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_daily_dispatch_in_out')
             file_name = "daily_dispatch_in_out_report.xls"
@@ -3969,6 +3975,7 @@ class stock_picking_out(osv.osv):
                 ids = pick
             if 'variables' in report:
                 variables = report['variables']
+            if context.get('daily_dispatch'):
                 ids = pick
         print variables 
         if not facilitator and not context.get('daily_dispatch'):       
