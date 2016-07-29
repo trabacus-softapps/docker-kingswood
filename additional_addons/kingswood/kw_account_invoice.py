@@ -1867,7 +1867,7 @@ class account_invoice(osv.osv):
         cr.execute("select id from res_partner where lower(name) like 'dummy%'")
         dummy_ids=[y[0] for y in cr.fetchall()]
         # removing the S-Ramakrishnappa - T
-        dummy_ids.append(2054)
+        dummy_ids.append(2323)
 #         print "Date-",shedular_date
         stock_ids_in = []
         stock_ids_out = []
@@ -2160,7 +2160,7 @@ class account_invoice(osv.osv):
         state_id1 = context.get(1,False) 
         state_id2 = context.get(2,False)
         
-        context.update({'shedular_date':'2016-04-13'})
+        context.update({'shedular_date':'2016-07-28'})
 
 #         print "Schedular",context
         res = self.create_facilitator_inv(cr,uid,[uid],context)
