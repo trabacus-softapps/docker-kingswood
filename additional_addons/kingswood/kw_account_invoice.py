@@ -2160,7 +2160,7 @@ class account_invoice(osv.osv):
         state_id1 = context.get(1,False) 
         state_id2 = context.get(2,False)
         
-        context.update({'shedular_date':'2016-07-28'})
+        context.update({'shedular_date':'2016-07-30'})
 
 #         print "Schedular",context
         res = self.create_facilitator_inv(cr,uid,[uid],context)
