@@ -1200,9 +1200,9 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_name('ctl00$MasterContent$txtInvoiceDate').send_keys(inv_date)
             browser.find_element_by_name('ctl00$MasterContent$txtDeliveryDate').send_keys(del_date)
             browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click() # for pdfprint
-            browser.find_element_by_id('ctl00_MasterContent_rdoListGoods_0').click()
+            browser.find_element_by_id('ctl00_MasterContent_rdoListGoods_9').click()
             time.sleep(2)
-#            browser.find_element_by_name('ctl00$MasterContent$txtOthCat').send_keys('DC')
+            browser.find_element_by_name('ctl00$MasterContent$txtOthCat').send_keys('DC')
             browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_5').click()
             if case.partner_id.state_id.name == 'Karnataka':
                 browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(case.partner_id.tin_no)
