@@ -2313,10 +2313,10 @@ class account_invoice(osv.osv):
             # create one move line for the total and possibly adjust the other lines amount
             total = 0
             total_currency = 0
-            print "iml Before..........",iml
+            #print "iml Before..........",iml
             total, total_currency, iml = self.compute_invoice_totals(cr, uid, inv, company_currency, ref, iml, context=ctx)
             acc_id = inv.account_id.id
-            print "iml After..........",iml
+            #print "iml After..........",iml
 
             name = inv['name'] or inv['supplier_invoice_number'] or '/'
             totlines = False
