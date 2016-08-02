@@ -1879,6 +1879,12 @@ class stock_picking_out(osv.osv):
         context.update({
                        'acc_id':refund_ln_vals['value']['account_id']
                        })
+
+        # print "refund_vals...",refund_vals
+        # print "Refund Linessss", refund_ln_vals
+        if not refund_ln_vals.get('account_id'):
+            refund_ln_vals.update({'account_id': refund_ln_vals['value']['account_id']})
+            #print "Refund Linessss1111", refund_ln_vals
         refund_vals.update({'invoice_line':[(0, 0, refund_ln_vals)]})
         if type =='in_refund':
             refund_vals.update({'supp_delivery_orders_ids': [(6, 0, [case.id])]}),

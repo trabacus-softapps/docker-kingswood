@@ -46,3 +46,5 @@ Examples:
   Run the v7 image and enforce a database `mydb` update, then remove the container
 
 	$ docker run -ti --rm  xyz/kingswooddemo:7.0 start --update=all --workers=0 --max-cron-threads=0 --no-xmlrpc --database=mydb --stop-after-init
+
+Kingswood
