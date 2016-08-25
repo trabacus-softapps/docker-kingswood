@@ -2896,6 +2896,11 @@ class stock_picking_out(osv.osv):
                               account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of FW-Interstate-TN')])
                            if case.paying_agent_id.state_id.code == "AP":
                               account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of FW-Interstate-AP')]) 
+                           if case.paying_agent_id.state_id.code == "KL":
+                              account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of FW-Interstate-KL')])
+
+
+
                        else:
                            #Karnataka
                            if case.paying_agent_id.state_id.code == "KA":
@@ -2909,13 +2914,21 @@ class stock_picking_out(osv.osv):
                                   account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Local-TN')])
                               if case.partner_id.state_id.id != case.paying_agent_id.state_id.id:
                                   account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Interstate-TN')]) 
-
+                           #Andhra Pradesh
                            if case.paying_agent_id.state_id.code == "AP":
                               if case.partner_id.state_id.id == case.paying_agent_id.state_id.id:
                                   account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Local-AP')])
                               if case.partner_id.state_id.id != case.paying_agent_id.state_id.id:
                                   account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Interstate-AP')])
-                                                                                                    
+
+                           #Kerala
+                           if case.paying_agent_id.state_id.code == "KL":
+                              if case.partner_id.state_id.id == case.paying_agent_id.state_id.id:
+                                  account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Local-KL')])
+                              if case.partner_id.state_id.id != case.paying_agent_id.state_id.id:
+                                  account_expense = c_account_parent.search(cr,uid,[('company_id','=',case.company_id.id),('name','=','Sale of Wood-Interstate-KL')])
+
+
                        if account_expense:
                            val['account_id'] = account_expense[0]     
                        else:
