@@ -327,3 +327,51 @@ class invoice_merge_wiz(osv.osv_memory):
 invoice_merge_wiz()
 
 
+class gross_profit_wiz(osv.osv):
+    _name = 'gross.profit.wiz'
+
+    _columns = {
+                'from_date'     :   fields.date("From Date"),
+                'to_date'       :   fields.date("To Date"),
+                'partner_id'    :   fields.many2one("res.partner", "Customer"),
+                'product_id'    :   fields.many2one("product.product", "Product"),
+
+                }
+
+
+    def gp_report(self, cr, uid, ids, context=None):
+        if not context:
+            cntext={}
+        report_data = []
+        partner_obj = self.pool.get("res.partner")
+        prod_obj = self.pool.get("product.product")
+        for case in self.browse(cr, uid, ids):
+            report_name = 'Gross Profit Report'
+            data={}
+            data['ids'] = ids
+            data['model'] = context.get('active_model','ir.ui.menu')
+            data['output_type'] = 'pdf'
+            if not case.partner_id:
+                partner_id = partner_obj.search(cr, uid, [('customer','=',True)])
+            else:
+                partner_id = case.partner_id.id
+            if not case.product_id:
+                product_id = prod_obj.search(cr, uid, [])
+            else:
+                product_id = case.product_id.id
+            data['variables'] = {
+                                 'from_date'    : case.from_date,
+                                 'to_date'      : case.to_date,
+                                 'partner_id'   : partner_id,
+                                 'product_id'   : product_id,
+
+                                 }
+
+
+        return {
+        'type': 'ir.actions.report.xml',
+        'report_name': report_name,
+        'datas': data,
+            }
+
+gross_profit_wiz()

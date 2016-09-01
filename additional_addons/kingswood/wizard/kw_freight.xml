@@ -508,7 +508,62 @@
             <field eval="'res.partner'" name="model"/>
             <field name="name">Update Latest Billig Cycle</field>
 			<field eval="'ir.actions.server,%d'%action_lastbilling_server" name="value"/>
-        </record>  
+        </record>
+
+       <!-- **************************** Status Reason Complete Report Wizard  ******************************** -->
+
+        <record id="kw_gp_report" model="ir.ui.view">
+            <field name ="name">Gross Profit Report</field>
+            <field name ="model">gross.profit.wiz</field>
+            <field name ="arch" type ="xml">
+                <form string="Gross Profit Report" version="7.0">
+                    <group col="4" colspan="2">
+                        <field name="from_date" required="1"/>
+                        <field name="to_date" required="1"/>
+                        <field name="partner_id" options='{"no_open":True,"create": false, "create_edit": false}'/>
+                        <field name="product_id" options='{"no_open":True,"create": false, "create_edit": false}'/>
+
+                    </group>
+
+                    <group></group>
+                    <group></group>
+                    <group></group><group></group><group></group>
+
+                    <group></group>
+                    <group></group><group></group>
+                    <group></group>
+                    <group></group>
+                    <group></group><group></group><group></group>
+
+                    <group></group>
+                    <group></group><group></group>
+
+
+                    <footer>
+                        <button name="gp_report" string="Print" type="object" class="oe_highlight" />
+                        <button string="Cancel" special="cancel" type="object" class="oe_highlight"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="action_kw_gp_report" model="ir.actions.act_window">
+            <field name="name">Gross Profit Report</field>
+            <field name="res_model">gross.profit.wiz</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="target">new</field>
+
+        </record>
+
+
+        <menuitem action="action_kw_gp_report" id="kw_gp_report_id" name="Gross Profit Report"
+            parent="account.menu_finance_reports" sequence="103" />
+
     </data>  
 </openerp>
     
