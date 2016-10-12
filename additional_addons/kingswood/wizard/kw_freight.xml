@@ -523,7 +523,6 @@
                         <field name="partner_id" domain="[('customer','=',True)]" options='{"no_open":True,"create": false, "create_edit": false}'/>
                         <!-- attrs="{'invisible':[('is_customer','=',False)],'required':[('is_customer','=',True)]}" -->
                         <field name="product_id" options='{"no_open":True,"create": false, "create_edit": false}'/>
-                        <field name="is_customer" invisible="1"/>
                     </group>
 
                     <group></group>
