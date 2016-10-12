@@ -335,8 +335,11 @@ class gross_profit_wiz(osv.osv):
                 'to_date'       :   fields.date("To Date"),
                 'partner_id'    :   fields.many2one("res.partner", "Customer"),
                 'product_id'    :   fields.many2one("product.product", "Product"),
-
+                'is_customer'   :   fields.boolean("Select Customer")
                 }
+    _defaults = {'is_customer'   : True,
+
+    }
 
 
     def gp_report(self, cr, uid, ids, context=None):
@@ -345,6 +348,7 @@ class gross_profit_wiz(osv.osv):
         report_data = []
         partner_obj = self.pool.get("res.partner")
         prod_obj = self.pool.get("product.product")
+        is_customer = False
         for case in self.browse(cr, uid, ids):
             report_name = 'Gross Profit Report'
             data={}
@@ -355,6 +359,7 @@ class gross_profit_wiz(osv.osv):
                 partner_id = partner_obj.search(cr, uid, [('customer','=',True)])
             else:
                 partner_id = case.partner_id.id
+                is_customer = True
             if not case.product_id:
                 product_id = prod_obj.search(cr, uid, [])
             else:
@@ -364,9 +369,9 @@ class gross_profit_wiz(osv.osv):
                                  'to_date'      : case.to_date,
                                  'partner_id'   : partner_id,
                                  'product_id'   : product_id,
+                                 'is_customer'  : is_customer,
 
                                  }
-
 
         return {
         'type': 'ir.actions.report.xml',
