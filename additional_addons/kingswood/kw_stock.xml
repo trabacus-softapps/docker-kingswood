@@ -805,11 +805,14 @@
 					            			<field name="cft2" attrs="{'readonly': ['|',('hide_fields', '=', False),('cft','!=',True)]}"/>
 					            			<field name="cft" invisible='1'/>		                            	 		
 		                            	 		
-		                            	 	<field name="unloaded_qty" string="Delivered Quantity (MT)" attrs="{'readonly': [('cft','=',True)]}"/>
-		                            	 		<field name="rejected_qty" string='Rejected Quantity (MT)' />
-		                            	 	   <field name="deduction_amt"/>
+		                            	 	<field name="unloaded_qty" string="Delivered Quantity (MT)" attrs="{'readonly': ['|',('state', 'in', ('done')),('cft','=',True)]}"/>
+
+		                            	 		<field name="rejected_qty" string="Rejected Quantity (MT)"
+														attrs="{'readonly': [('state', 'in', ('done'))]}"/>
+
+		                            	 	   <field name="deduction_amt" attrs="{'readonly': [('state', 'in', ('done'))]}"/>
 							                      <field name="state" invisible="1"/>
-							                      
+
 							                      <field name="product_uom" context="{'default_product_uom':product_uom'}" string="Unit of Measure" groups="product.group_uom" readonly="1"/>
 		               					 </tree>
                					 
