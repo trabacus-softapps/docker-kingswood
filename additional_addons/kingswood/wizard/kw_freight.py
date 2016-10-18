@@ -335,7 +335,6 @@ class gross_profit_wiz(osv.osv):
                 'to_date'       :   fields.date("To Date"),
                 'partner_id'    :   fields.many2one("res.partner", "Customer"),
                 'product_id'    :   fields.many2one("product.product", "Product"),
-
                 }
 
 
@@ -366,7 +365,6 @@ class gross_profit_wiz(osv.osv):
                                  'product_id'   : product_id,
 
                                  }
-
 
         return {
         'type': 'ir.actions.report.xml',
