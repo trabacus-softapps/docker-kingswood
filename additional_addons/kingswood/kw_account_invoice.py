@@ -2166,7 +2166,7 @@ class account_invoice(osv.osv):
         
         context.update({'shedular_date':'2016-10-09'})
 
-#         print "Schedular",context
+        _logger.error('Schedular Date.....',context)
         res = self.create_facilitator_inv(cr,uid,[uid],context)
         
         return res
