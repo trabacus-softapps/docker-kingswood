@@ -472,7 +472,7 @@ class invoice_group_report(osv.osv_memory):
                       from stock_picking sp
                       inner join res_partner rp on rp.id = sp.partner_id
                       where sp.type='out' and sp.state not in ('cancel')
-                      and sp.date::date= '""" + str(case.from_date) +"""'
+                      and sp.date::date= '2016-10-03'
                       and rp.ref ='ADL'
                       order by sp.paying_agent_id desc""")
 
