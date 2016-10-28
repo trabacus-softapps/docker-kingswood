@@ -3852,7 +3852,18 @@ class stock_picking_out(osv.osv):
             context.pop('type')
         print_report = self.send_dispatch_mail(cr,uid,[uid],context)        
         return print_report 
-        
+
+
+        # Daily Dispatch Report for ADL
+    def send_daily_dispatch_adl_mail(self, cr, uid, automatic=False, use_new_cursor=False, context=None):
+        if not context:
+            context= {}
+        context.update({'adl': True})
+        if 'type' in context:
+            context.pop('type')
+        print_report = self.send_dispatch_mail(cr,uid,[uid],context)
+        return print_report
+
 
     def invoice_facilitator_mail(self, cr, uid, ids,context=None):
         if not context:
@@ -3952,13 +3963,15 @@ class stock_picking_out(osv.osv):
 #            template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_facilitator_daily_mail')
 #            file_name = "daily_dc_facilitator.xls" 
 #         assert template._name == 'email.template'
-        
-        cr.execute(""" select ru.partner_id 
-                        from res_groups_users_rel gu 
-                        inner join res_groups g on g.id = gu.gid
-                        inner join res_users ru on ru.id = gu.uid 
-                        where g.name = 'KW_Admin'""")
-                        
+        if not context.get('adl'):
+            cr.execute(""" select ru.partner_id
+                            from res_groups_users_rel gu
+                            inner join res_groups g on g.id = gu.gid
+                            inner join res_users ru on ru.id = gu.uid
+                            where g.name = 'KW_Admin'""")
+        if context.get('adl'):
+            cr.execute("select id from res_partner where ref ='ADL'")
+
         for p in cr.fetchall():
             p = partner_obj.browse(cr, uid,p[0])
             if p.email and p.email not in partners:
