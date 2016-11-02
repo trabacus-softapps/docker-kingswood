@@ -173,7 +173,25 @@
 				<field eval="'()'" name="args" />
 			</record>			
 							
-			
+
+
+		<!--	*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.
+							Scheduler to Send Daily Dispatch Mail For ADL
+			*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. *.*.*.*.*.*.*.*.*.*.*.*.*.*.* .*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*. -->
+
+		  <record forcecreate="True" id="daily_dispatch_mail" model="ir.cron">
+				<field name="name">Send Daily Dispatch ADL Mail</field>
+				<field eval="True" name="active" />
+				<field name="user_id" ref="base.user_root" />
+				<field name="interval_number">1</field>
+				<field name="interval_type">days</field>
+				<field name="numbercall">-1</field>
+				<field eval="True" name="doall" />
+				<field eval="'stock.picking.out'" name="model" />
+				<field eval="'send_daily_dispatch_adl_mail'" name="function" />
+				<field eval="'()'" name="args" />
+			</record>
+
 		
 	</data>
 </openerp>
