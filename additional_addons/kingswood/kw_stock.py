@@ -3977,8 +3977,7 @@ class stock_picking_out(osv.osv):
             if p.email and p.email not in partners:
                 partners += (p.email and p.email or "") + ","
                 
-                
-        
+
         pick = self.search(cr,uid,[('date','<',today),('type','=','out')],order='id desc',limit=1)        
         
         print "DC...................",pick
@@ -3989,7 +3988,7 @@ class stock_picking_out(osv.osv):
         print "partners.....",partners[0:-1]
         if partners:
             email_obj.write(cr, uid, [template.id], {'email_to':partners[0:-1]})
-            
+
         wzd_id=wzd_obj.create(cr,uid,{'from_date':today,'summary':False,},context)
         
         
