@@ -754,8 +754,8 @@ create type est_bal_type as (
 		  
 	  ); 
 
-drop function if exists facilitator_estimate(date, integer, integer);
-CREATE OR REPLACE FUNCTION facilitator_estimate(start_dt date, part_state integer, part_id integer)
+drop function if exists facilitator_estimate(date, integer, integer, date);
+CREATE OR REPLACE FUNCTION facilitator_estimate(start_dt date, part_state integer, part_id integer, edate date)
   RETURNS SETOF est_bal_type AS
   $BODY$
     DECLARE
@@ -1146,7 +1146,7 @@ select
 				inner join res_partner rp on
 				rp.id = sp.paying_agent_id
 				inner join tmp_cycle tc on tc.partner_id = rp.id
-				where sp.create_date::date <=now()::date
+				where sp.create_date::date <= edate::date
 				and sp.create_date::date >= (select date_start from account_fiscalyear where date_start <= now()::date and date_stop >=now()::date order by id desc limit 1)
 				and sp.state not in ('draft','cancel') 
 				and invoice_line_id is null 
@@ -1187,7 +1187,7 @@ select
 			inner join res_partner rp on
 			rp.id = sp.partner_id
 			inner join tmp_cycle tc on tc.partner_id = rp.id
-			where sp.create_date::date <=now()::date
+			where sp.create_date::date <= edate::date
 			and sp.create_date::date >= (select date_start from account_fiscalyear where date_start <= now()::date and date_stop >=now()::date order by id desc limit 1)
 			and sp.state in ('done')
 			and sp.type = 'in' 
@@ -1220,7 +1220,7 @@ select
 				where v1.type in ('payment','sale')
 				and v1.freight =false 
 				and amount >0 
-				and v1.date > tc.end_date::date and v1.date <=now()::date
+				and v1.date > tc.end_date::date and v1.date <= edate::date
 		)
 
 	union all
@@ -1238,7 +1238,7 @@ select
 				where v1.type in ('purchase','receipt')
 				and v1.freight =false 
 				and amount >0 
-				and v1.date > tc.end_date::date and v1.date <=now()::date	
+				and v1.date > tc.end_date::date and v1.date <= edate::date
 		)
 	)ab
 	group by ab.supp_name, ab.partner_id

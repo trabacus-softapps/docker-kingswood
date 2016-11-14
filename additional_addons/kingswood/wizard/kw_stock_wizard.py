@@ -687,6 +687,10 @@ class facilitator_report(osv.osv_memory):
                 'state_id'     : fields.many2one('res.country.state','State'),
                  'partner_id'  : fields.many2one('res.partner',"Facilitator"),
                 'report_type'  : fields.selection([('balance','Facilitator Outstanding Balance'),('estimate','Facilitator Estimate Balance')],'Report Type'),
+                'date'         : fields.date("Date"),
+                }
+    _defaults = {
+                'date'  : lambda *a: time.strftime('%Y-%m-%d')
                 }
     def print_report(self, cr, uid, ids, context = None):
         part_obj = self.pool.get('res.partner')
@@ -711,7 +715,8 @@ class facilitator_report(osv.osv_memory):
         data['variables'] = {
                              'st_id'  : case.state_id and case.state_id.id or 0,
                              'p_id'   : case.partner_id and case.partner_id.id or 0,
-                             'st_date': st_date and st_date[0] or False
+                             'st_date': st_date and st_date[0] or False,
+                             'edate'  : case.date,
                              }
         print "variables", data['variables']
         data['ids'] = ids

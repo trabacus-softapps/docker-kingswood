@@ -225,6 +225,7 @@
                             <field name="partner_id" attrs="{'invisible':[('partner_id','=',True)]}"
                                 domain="[('name','not ilike','Kingswood'),('supplier','=',True),('handling_charges','!=',True),('state_id','=',state_id)]"/>
                             <field name="report_type" required="1"/>
+                            <field name="date" attrs="{'invisible':[('report_type','=',False)], 'required':[('report_type','!=', False)]}"/>
                         </group>
                         
                     </group>
