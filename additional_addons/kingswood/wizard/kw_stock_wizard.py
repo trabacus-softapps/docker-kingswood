@@ -454,7 +454,7 @@ class invoice_group_report(osv.osv_memory):
             if not case.summary:
                 if case.partner_id:
                     cr.execute("select id from stock_picking where type='out' and state not in ('cancel') and partner_id= '" + str(case.partner_id.id) + "'and date::date = '" + str(case.from_date) + "'order by paying_agent_id desc")
-                if not context.get('adl') and not case.partner_id:
+                if not case.partner_id:
                     cr.execute("""
                       select sp.id
 
@@ -462,19 +462,18 @@ class invoice_group_report(osv.osv_memory):
                       inner join res_partner rp on rp.id = sp.partner_id
                       where sp.type='out' and sp.state not in ('cancel')
                       and sp.date::date= '""" + str(case.from_date) +"""'
-                      and rp.ref !='ADL'
                       order by sp.paying_agent_id desc""")
 
-                if context.get('adl'):
-                    cr.execute("""
-                      select sp.id
-
-                      from stock_picking sp
-                      inner join res_partner rp on rp.id = sp.partner_id
-                      where sp.type='out' and sp.state not in ('cancel')
-                      and sp.date::date= '""" + str(case.from_date) +"""'
-                      and rp.ref ='ADL'
-                      order by sp.paying_agent_id desc""")
+                # if context.get('adl'):
+                #     cr.execute("""
+                #       select sp.id
+                #
+                #       from stock_picking sp
+                #       inner join res_partner rp on rp.id = sp.partner_id
+                #       where sp.type='out' and sp.state not in ('cancel')
+                #       and sp.date::date= '""" + str(case.from_date) +"""'
+                #       and rp.ref ='ADL'
+                #       order by sp.paying_agent_id desc""")
 
                 pick_ids = [x[0] for x in cr.fetchall()]
                 print "pick=",len(pick_ids)
