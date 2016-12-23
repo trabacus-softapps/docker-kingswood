@@ -509,7 +509,25 @@
 		                            	             	
                             <field name="note" placeholder="Add an internal note..." class="oe_inline"/>
                         </page>
-                        
+								<page string="Bank Details">
+									<group>
+										<group col="4" colspan="8">
+											<field name="bank_name" required="1"/>
+											<field name="ifsc_code" required="1"/>
+											<field name="ac_holder" required="1"/>
+											<field name="ac_number" required="1"/>
+											<field name="bank_addr" />
+											<field name="ac_holder_mob" />
+										</group>
+
+										<group>
+
+										</group>
+
+									</group>
+								</page>
+
+
                     </notebook>
                 </sheet>
 				<div class="oe_chatter">
@@ -1032,7 +1050,29 @@
 				<xpath expr="//button[@string='Return Products']" position="attributes">
 					<attribute name="invisible">1</attribute>
 				</xpath>
-				
+
+				<xpath expr="//notebook/page[@string='Additional Info']" position="after">
+					<page string="Bank Details">
+						<group>
+							<group col="4" colspan="8">
+								<field name="bank_name" required="1"/>
+								<field name="ifsc_code" required="1"/>
+								<field name="ac_holder" required="1"/>
+								<field name="ac_number" required="1"/>
+								<field name="bank_addr" />
+								<field name="ac_holder_mob" />
+							</group>
+
+							<group>
+
+							</group>
+
+						</group>
+					</page>
+				</xpath>
+
+
+
 			</field>
 		</record>
 		
@@ -1102,7 +1142,6 @@
                 <field name="origin" position="after">
                     <field name="freight_balance" attrs="{'invisible':[('state','not in', ('done','freight_paid'))],'readonly':[('state','in',('freight_paid'))]}" groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service"/>
                 </field>
-                
 
  			</field>	
 	</record> 
