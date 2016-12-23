@@ -759,7 +759,17 @@ class stock_picking_out(osv.osv):
                  
                  'transit_pass'     : fields.related('partner_id','transit_pass',type='boolean',store=True,string="Transit Pass"),
 #                  'tax_link'         : fields.related('partner_id','tax_link',type='char',store=True,string="Tax Link"),
-              } 
+
+              # Bank details
+                'bank_name'     :   fields.char("Bank Name", size=100),
+                'ifsc_code'     :   fields.char("IFSC Cde", size=11),
+                'ac_holder'     :   fields.char("Account Holder Name", size=100),
+                'ac_number'     :   fields.char("Account Number", size=30),
+                'bank_addr'     :   fields.text("Bank Address"),
+                'ac_holder_mob' :   fields.char("Mobile Number", size=10),
+
+
+              }
     
     _order = 'date desc'
     
@@ -4865,6 +4875,15 @@ class stock_picking(osv.osv):
                'is_farm_decl' : fields.related('partner_id','is_farm_decl',string="Is Farmer Declaration", type="boolean", store=False),
                'fd_filename'   :   fields.char('File Name',size=100),
                'transit_pass'     : fields.related('partner_id','transit_pass',type='boolean',store=True,string="Transit Pass"),
+
+              # Bank details
+                'bank_name'     :   fields.char("Bank Name", size=100),
+                'ifsc_code'     :   fields.char("IFSC Cde", size=11),
+                'ac_holder'     :   fields.char("Account Holder Name", size=100),
+                'ac_number'     :   fields.char("Account Number", size=30),
+                'bank_addr'     :   fields.text("Bank Address"),
+                'ac_holder_mob' :   fields.char("Mobile Number", size=10),
+
               }
     _order = 'date desc'
     _defaults={
@@ -5614,6 +5633,16 @@ class stock_picking_in(osv.osv):
                                                       ('done', 'Delivered'),
                                                       ('cancel', 'Cancelled'),('freight_paid','Freight Paid')],'Status', readonly=True, select=True,), 
                    
+               # Bank details
+                'bank_name'     :   fields.char("Bank Name", size=100),
+                'ifsc_code'     :   fields.char("IFSC Cde", size=11),
+                'ac_holder'     :   fields.char("Account Holder Name", size=100),
+                'ac_number'     :   fields.char("Account Number", size=30),
+                'bank_addr'     :   fields.text("Bank Address"),
+                'ac_holder_mob' :   fields.char("Mobile Number", size=10),
+
+
+
               }
     
     _order = 'date desc'
