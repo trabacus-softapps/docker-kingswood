@@ -512,10 +512,10 @@
 								<page string="Bank Details">
 									<group>
 										<group col="4" colspan="8">
-											<field name="bank_name" required="1"/>
-											<field name="ifsc_code" required="1"/>
-											<field name="ac_holder" required="1"/>
-											<field name="ac_number" required="1"/>
+											<field name="bank_name" />
+											<field name="ifsc_code" />
+											<field name="ac_holder" />
+											<field name="ac_number" />
 											<field name="bank_addr" />
 											<field name="ac_holder_mob" />
 										</group>
@@ -1055,10 +1055,10 @@
 					<page string="Bank Details">
 						<group>
 							<group col="4" colspan="8">
-								<field name="bank_name" required="1"/>
-								<field name="ifsc_code" required="1"/>
-								<field name="ac_holder" required="1"/>
-								<field name="ac_number" required="1"/>
+								<field name="bank_name" />
+								<field name="ifsc_code" />
+								<field name="ac_holder" />
+								<field name="ac_number" />
 								<field name="bank_addr" />
 								<field name="ac_holder_mob" />
 							</group>

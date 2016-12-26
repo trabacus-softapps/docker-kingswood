@@ -1330,7 +1330,19 @@ class stock_picking_out(osv.osv):
                 vid = voucher_obj.create(cr, uid, voucher_vals1, context= context)
                 ctxt.update({'freight_advance':True,'dc_reference':case.name})
                 voucher_obj.proforma_voucher(cr, uid,[vid],context=ctxt)
-                    
+
+            # if (case.partner_id.gen_esugam == True or case.gen_esugam) and case.state_id.code == 'TN':
+            #     esugam_ids = esugam_obj.search(cr, uid, [('state_id','=',case.partner_id.state_id.id)])
+            #     for e in case.company_id.esugam_ids:
+            #         if e.state_id.id == case.state_id.id:
+            #             username = e.username
+            #             password = e.password
+            #             url = e.url1
+            #             url2 = e.url2
+            #             url3 = e.url3
+            #             tnvat = self.generate_tnvat(cr, uid,  username, password, url, url2, url2, case, context)
+
+
             if (case.partner_id.gen_esugam == True or case.gen_esugam) and user_id.partner_id.state_id.name =='Karnataka' and case.state_id.name == 'Karnataka':
                 for e in case.company_id.esugam_ids:
                     if e.state_id.id == user_id.partner_id.state_id.id:
@@ -1357,6 +1369,162 @@ class stock_picking_out(osv.osv):
                                       }) 
 #             move_obj.action_done(cr, uid, move_ids, context=None)
             return True
+
+
+    # def generate_tnvat(cr, uid,  desc, qty, price, product_id, username, password, url, url2, url2, case, context=None):
+    #     if not context:
+    #         context = {}
+    #     #for calulating taxes
+    #     tax_amount = 0
+    #     esugam = 0
+    #     comp_tin = ''
+    #     if case.state_id.code == 'TN':
+    #         for t in product_id.taxes_id:
+    #             if t.state_id.code == 'TN':
+    #                 tax_amount += t.amount * price * qty
+    #
+    #             else:
+    #                 tax_amount += 0.02000 * price * qty
+    #
+    #     cr.execute("""
+    #                 select
+    #                     rp.tin_no
+    #
+    #                     from res_partner rp
+    #                     inner join res_country_state rcs on rcs.id = rp.state_id
+    #                     where rp.parent_id is not null and rcs.code = 'TN' """)
+    #     comp_tin = [x[0] for x in cr.fetchall()]
+    #
+    #
+    #
+    #     today = time.strftime('%Y-%m-%d %H:%M:%S')
+    #     last_month_date = datetime.strptime(today, '%Y-%m-%d %H:%M:%S')
+    #     veh_owner = case.driver_name and case.driver_name or ''
+    #     inv_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%d/%m/%Y')
+    #     # del_date = parser.parse(''.join((re.compile('\d')).findall(str(last_month_date)))).strftime('%d/%m/%Y')
+    #
+    #
+    #     browser = webdriver.PhantomJS()
+    #     # browser = webdriver.Chrome()
+    #     # url = 'https://tnvat.gov.in'
+    #     browser.get(url)
+    #     browser.find_element_by_xpath("//a[contains(.,'Go to New Portal ')]").click()
+    #
+    #     time.sleep(2)
+    #     browser.window_handles
+    #     if len(browser.window_handles):
+    #         browser.switch_to_window(browser.window_handles[-1])
+    #     browser.find_element_by_xpath('//a[@href="/e-services"]').click()
+    #
+    #     time.sleep(2)
+    #     browser.window_handles
+    #     print "Current Window", browser.window_handles
+    #     if len(browser.window_handles):
+    #         browser.switch_to_window(browser.window_handles[-1])
+    #     data = ''
+    #     data= get_captcha(browser)
+    #     print ".............",data
+    #     browser.find_element_by_id('userName').send_keys(username)
+    #     browser.find_element_by_id('xxZTT9p2wQ').send_keys(password)
+    #     browser.find_element_by_id('captcahText').send_keys(data)
+    #     browser.find_element_by_id('loginSubmit').click()
+    #     time.sleep(2)
+    #     browser.find_element_by_id('menuId_351').click()
+    #     browser.find_element_by_id('taxType').send_keys('Value Added Tax/Central Sales Tax')
+    #     browser.find_element_by_id('transPassword').send_keys('KWSPL@305')
+    #     time.sleep(2)
+    #     browser.find_element_by_name('loginBtn').click()
+    #     time.sleep(2)
+    #     browser.find_element_by_link_text("e-Forms").click()
+    #     time.sleep(1)
+    #     browser.find_element_by_link_text("Online Forms(JJ/KK/LL/MM)").click()
+    #     browser.find_element_by_id('menuId_452').click()
+    #     browser.find_element_by_id('formType').send_keys('Form JJ')
+    #     browser.find_element_by_id('trnsType').send_keys('Outgoing Declaration')
+    #     time.sleep(1)
+    #     browser.find_element_by_id('submitBtn').click()
+    #     time.sleep(3)
+    #     browser.switch_to.alert.accept()
+    #     browser.find_element_by_name('purOfConsignment').send_keys('Purchase/Sales')
+    #     if case.partner_id and case.partner_id.tin_no:
+    #         browser.find_element_by_name('dealerTinIfAny').send_keys(case.partner_id.tin_no)
+    #     else:
+    #         raise osv.except_osv(_('Warning'),_('Please enter the Consignee Tin Number.'))
+    #
+    #     browser.find_element_by_name('dealerName').send_keys(case.partner_id and case.partner_id.name or '')
+    #     browser.find_element_by_name('dealerCity').send_keys(case.city_id and case.city_id.name or '')
+    #     time.sleep(1)
+    #     #browser.find_element_by_name('dealerState').send_keys('Tamil Nadu ')
+    #     browser.find_element_by_name('jobTinIfAny').send_keys(comp_tin)
+    #     browser.find_element_by_name('shipCity').send_keys(case.city_id and case.city_id.name or '')
+    #     time.sleep(1)
+    #     browser.find_element_by_name('shipPinCode').send_keys('600001')
+    #     browser.find_element_by_name('invoiceNo').send_keys('DC/16-17/KA/12160')
+    #     browser.find_element_by_name('invoiceDt').send_keys('26/12/2016')
+    #     time.sleep(1)
+    #     browser.find_element_by_name('goodsDesc').send_keys('FIREWOOD, EXCLUDING CASURINA AND EUCALYPTUS TIMBER')
+    #     browser.find_element_by_name('cmdtyDesc').send_keys('EDCP')
+    #     browser.find_element_by_name('quantity').send_keys('1')
+    #     time.sleep(1)
+    #     browser.find_element_by_name('unit').send_keys('Metric Ton')
+    #     browser.find_element_by_name('basicPrice').send_keys('1')
+    #     time.sleep(1)
+    #     browser.find_element_by_name('taxrate').send_keys('2.0')
+    #     browser.find_element_by_name('vatCstCharges').send_keys('0.2')
+    #     time.sleep(1)
+    #     browser.find_element_by_name('transportMode').send_keys('By Road')
+    #     browser.find_element_by_name('vehRegNoIfAny').send_keys('TN01AB1234')
+    #     browser.find_element_by_name('lspName').send_keys('Kingswood Logistics Pvt. Ltd')
+    #     time.sleep(1)
+    #     browser.find_element_by_id('a_gisInvoiceVehicleDtls').click()
+    #     time.sleep(5)
+    #     browser.find_element_by_id('save').click()
+    #
+    #     return True
+
+    # def get_captcha(self, cr, uid, ids, browser, context=None):
+    #         """ Captcha TN Image Reading using PIL
+    #         """
+    #
+    #     time.sleep(5)
+    #     img = browser.find_element_by_name('captchaImage')
+    #     location = img.location
+    #     size = img.size
+    #     browser.save_screenshot('/home/serveradmin/Desktop/captcha.jpg')
+    #
+    #     image = Image.open('/home/serveradmin/Desktop/captcha.jpg')
+    #     left = location['x']
+    #     top = location['y']
+    #     right = location['x'] + size['width']
+    #     bottom = location['y'] + size['height']
+    #     image = image.crop((left, top, right, bottom))  # defines crop points
+    #     image.save('/home/serveradmin/Desktop/captcha1.jpeg', 'jpeg')
+    #
+    #     #src = img.get_attribute('src')
+    #     #context = ssl._create_unverified_context()
+    #     #urllib.urlretrieve(src, '/home/serveradmin/Desktop/captcha.jpg')
+    #
+    #     img = Image.open('/home/serveradmin/Desktop/captcha1.jpeg')
+    #     img = img.convert("RGBA")
+    #     pixdata = img.load()
+    #     print "pixdata[x, y]",pixdata
+    #
+    #     for y in xrange(img.size[1]):
+    #      for x in xrange(img.size[0]):
+    #          if pixdata[x, y][1] < 50: #136
+    #             pixdata[x, y] = (0, 0, 0, 255)
+    #
+    #     img.save("/home/serveradmin/Desktop/captcha1.jpeg")
+    #
+    #     #   Make the image bigger (needed for OCR)
+    #     #img = img.resize((1000, 500))
+    #     #img.save("/home/serveradmin/Desktop/esugam/new_"+case.driver_name+".jpeg")
+    #     time.sleep(5)
+    #     data = pytesseract.image_to_string(Image.open('/home/serveradmin/Desktop/captcha1.jpeg'))
+    #     print data
+    #     return data.replace(' ', '')
+    #     return True
+
     
     
     
