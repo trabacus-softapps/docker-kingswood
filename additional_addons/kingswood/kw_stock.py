@@ -1333,15 +1333,22 @@ class stock_picking_out(osv.osv):
 
             # Tamilnadu Vat
             if (case.partner_id.gen_esugam == True or case.gen_esugam) and case.state_id.code == 'TN':
-                esugam_ids = esugam_obj.search(cr, uid, [('state_id','=',case.partner_id.state_id.id)])
-                for e in case.company_id.esugam_ids:
-                    if e.state_id.id == case.state_id.id:
-                        username = e.username
-                        password = e.password
-                        url = e.url1
-                        url2 = e.url2
-                        url3 = e.url3
-                        tnvat = self.generate_tnvat(cr, uid,  username, password, url, url2, url3, case, context)
+                esugam_ids = []
+                cr.execute(""" select e.id
+                   from esugam_master e
+                   inner join res_country_state rcs on rcs.id = e.state_id
+                    where rcs.code = 'TN' order by e.id desc limit 1
+                           """)
+                esugam_ids = [x[0] for x in cr.fetchall()]
+                if esugam_ids:
+                    for e in esugam_obj.browse(cr, uid, esugam_ids):
+                        if e.state_id.id == case.state_id.id:
+                            username = e.username
+                            password = e.password
+                            url = e.url1
+                            url2 = e.url2
+                            url3 = e.url3
+                            tnvat = self.generate_tnvat(cr, uid, desc, qty, price, product_id, username, password, url, url2, url3, case, context)
 
 
             if (case.partner_id.gen_esugam == True or case.gen_esugam) and user_id.partner_id.state_id.name =='Karnataka' and case.state_id.name == 'Karnataka':
@@ -1414,23 +1421,29 @@ class stock_picking_out(osv.osv):
         # del_date = parser.parse(''.join((re.compile('\d')).findall(str(last_month_date)))).strftime('%d/%m/%Y')
 
 
-        browser = webdriver.PhantomJS()
+        browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
         # browser = webdriver.Chrome()
         # url = 'https://tnvat.gov.in'
+        time.sleep(2)
         browser.get(url)
+        print "................",url,browser,browser.window_handles
         browser.find_element_by_xpath("//a[contains(.,'Go to New Portal ')]").click()
 
         time.sleep(2)
-        browser.window_handles
+        #browser.window_handles
+
+        #print "Current Window", browser.window_handles, browser.window_handles[-1]
         if len(browser.window_handles):
-            browser.switch_to_window(browser.window_handles[-1])
-        browser.find_element_by_xpath('//a[@href="/e-services"]').click()
+            browser.switch_to.window(browser.window_handles[-1])
+        time.sleep(2)
+        browser.find_element_by_link_text('e-Registration').click()
+        print "......",browser.find_element_by_link_text('e-Registration')
 
         time.sleep(2)
         browser.window_handles
         print "Current Window", browser.window_handles
         if len(browser.window_handles):
-            browser.switch_to_window(browser.window_handles[-1])
+            browser.switch_to.window(browser.window_handles[-1])
         data = ''
         data= self.get_tn_captcha(cr, uid, [case.id], browser, context)
         print ".............",data
@@ -1439,7 +1452,8 @@ class stock_picking_out(osv.osv):
         browser.find_element_by_id('captcahText').send_keys(data)
         browser.find_element_by_id('loginSubmit').click()
         time.sleep(2)
-        browser.find_element_by_id('menuId_351').click()
+        browser.find_element_by_link_text('Authenticate for e-Services').click()
+        time.sleep(1)
         browser.find_element_by_id('taxType').send_keys('Value Added Tax/Central Sales Tax')
         browser.find_element_by_id('transPassword').send_keys('KWSPL@305')
         time.sleep(2)
@@ -1448,13 +1462,15 @@ class stock_picking_out(osv.osv):
         browser.find_element_by_link_text("e-Forms").click()
         time.sleep(1)
         browser.find_element_by_link_text("Online Forms(JJ/KK/LL/MM)").click()
+        time.sleep(1)
         browser.find_element_by_id('menuId_452').click()
         browser.find_element_by_id('formType').send_keys('Form JJ')
         browser.find_element_by_id('trnsType').send_keys('Outgoing Declaration')
         time.sleep(1)
         browser.find_element_by_id('submitBtn').click()
-        time.sleep(3)
+        time.sleep(1)
         browser.switch_to.alert.accept()
+        time.sleep(1)
         browser.find_element_by_name('purOfConsignment').send_keys('Purchase/Sales')
         if case.partner_id and case.partner_id.tin_no:
             browser.find_element_by_name('dealerTinIfAny').send_keys(case.partner_id.tin_no)
