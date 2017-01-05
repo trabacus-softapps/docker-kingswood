@@ -1388,6 +1388,7 @@ class stock_picking_out(osv.osv):
         comp_tin = ''
         zip = ''
         pincode = ''
+        tot_price = qty * price
         if case.state_id.code == 'TN':
             for t in product_id.taxes_id:
                 if t.state_id.code == 'TN':
@@ -1418,93 +1419,173 @@ class stock_picking_out(osv.osv):
         last_month_date = datetime.strptime(today, '%Y-%m-%d %H:%M:%S')
         veh_owner = case.driver_name and case.driver_name or ''
         inv_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%d/%m/%Y')
-        # del_date = parser.parse(''.join((re.compile('\d')).findall(str(last_month_date)))).strftime('%d/%m/%Y')
 
-
-        browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
-        # browser = webdriver.Chrome()
-        # url = 'https://tnvat.gov.in'
+        browser = webdriver.Chrome()
+        # browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
         time.sleep(2)
         browser.get(url)
         print "................",url,browser,browser.window_handles
         browser.find_element_by_xpath("//a[contains(.,'Go to New Portal ')]").click()
 
         time.sleep(2)
-        #browser.window_handles
 
-        #print "Current Window", browser.window_handles, browser.window_handles[-1]
         if len(browser.window_handles):
             browser.switch_to.window(browser.window_handles[-1])
         time.sleep(2)
-        browser.find_element_by_link_text('e-Registration').click()
-        print "......",browser.find_element_by_link_text('e-Registration')
+        try:
+            browser.find_element_by_link_text('e-Registration').click()
+        except:
+            browser.find_element_by_link_text('Home').click()
+            browser.find_element_by_link_text('e-Registration').click()
+
 
         time.sleep(2)
         browser.window_handles
         print "Current Window", browser.window_handles
         if len(browser.window_handles):
             browser.switch_to.window(browser.window_handles[-1])
-        data = ''
-        data= self.get_tn_captcha(cr, uid, [case.id], browser, context)
-        print ".............",data
-        browser.find_element_by_id('userName').send_keys(username)
-        browser.find_element_by_id('xxZTT9p2wQ').send_keys(password)
-        browser.find_element_by_id('captcahText').send_keys(data)
-        browser.find_element_by_id('loginSubmit').click()
-        time.sleep(2)
-        browser.find_element_by_link_text('Authenticate for e-Services').click()
-        time.sleep(1)
-        browser.find_element_by_id('taxType').send_keys('Value Added Tax/Central Sales Tax')
-        browser.find_element_by_id('transPassword').send_keys('KWSPL@305')
-        time.sleep(2)
-        browser.find_element_by_name('loginBtn').click()
-        time.sleep(2)
-        browser.find_element_by_link_text("e-Forms").click()
-        time.sleep(1)
-        browser.find_element_by_link_text("Online Forms(JJ/KK/LL/MM)").click()
-        time.sleep(1)
-        browser.find_element_by_id('menuId_452').click()
-        browser.find_element_by_id('formType').send_keys('Form JJ')
-        browser.find_element_by_id('trnsType').send_keys('Outgoing Declaration')
-        time.sleep(1)
-        browser.find_element_by_id('submitBtn').click()
-        time.sleep(1)
-        browser.switch_to.alert.accept()
-        time.sleep(1)
-        browser.find_element_by_name('purOfConsignment').send_keys('Purchase/Sales')
-        if case.partner_id and case.partner_id.tin_no:
-            browser.find_element_by_name('dealerTinIfAny').send_keys(case.partner_id.tin_no)
-        else:
-            raise osv.except_osv(_('Warning'),_('Please enter the Consignee Tin Number.'))
 
-        browser.find_element_by_name('dealerName').send_keys(case.partner_id and case.partner_id.name or '')
-        browser.find_element_by_name('dealerCity').send_keys(case.city_id and case.city_id.name or '')
-        time.sleep(1)
-        #browser.find_element_by_name('dealerState').send_keys('Tamil Nadu ')
-        browser.find_element_by_name('jobTinIfAny').send_keys(comp_tin)
-        browser.find_element_by_name('shipCity').send_keys(case.city_id and case.city_id.name or '')
-        time.sleep(1)
-        browser.find_element_by_name('shipPinCode').send_keys(pincode or zip)
-        browser.find_element_by_name('invoiceNo').send_keys(case.name)
-        browser.find_element_by_name('invoiceDt').send_keys(inv_date)
-        time.sleep(1)
-        browser.find_element_by_name('goodsDesc').send_keys('FIREWOOD, EXCLUDING CASURINA AND EUCALYPTUS TIMBER')
-        browser.find_element_by_name('cmdtyDesc').send_keys(case.product_id and case.product_id.name or '')
-        browser.find_element_by_name('quantity').send_keys(qty)
-        time.sleep(1)
-        browser.find_element_by_name('unit').send_keys('Metric Ton')
-        browser.find_element_by_name('basicPrice').send_keys(price)
-        time.sleep(1)
-        browser.find_element_by_name('taxrate').send_keys('2.0')
-        browser.find_element_by_name('vatCstCharges').send_keys(tax_amount or '0.2')
-        time.sleep(1)
-        browser.find_element_by_name('transportMode').send_keys('By Road')
-        browser.find_element_by_name('vehRegNoIfAny').send_keys(case.truck_no)
-        browser.find_element_by_name('lspName').send_keys(case.transporter_id and case.transporter_id.name or '')
-        time.sleep(1)
-        browser.find_element_by_id('a_gisInvoiceVehicleDtls').click()
-        time.sleep(5)
-        browser.find_element_by_id('save').click()
+
+        try:
+            error = "Invalid Captcha."
+
+            while error:
+                time.sleep(2)
+                browser.find_element_by_id('userName')
+                browser.find_element_by_id('xxZTT9p2wQ')
+
+                captcha= self.get_tn_captcha(cr, uid, [case.id], browser, context)
+                print ".............",captcha
+                browser.find_element_by_id('userName').clear()
+
+                browser.find_element_by_id('userName').send_keys(username)
+                browser.find_element_by_id('xxZTT9p2wQ').send_keys(password)
+                browser.find_element_by_id('captcahText')
+                browser.find_element_by_id('captcahText').send_keys(captcha)
+                time.sleep(2)
+
+                browser.find_element_by_id('loginSubmit')
+                browser.find_element_by_id('loginSubmit').click()
+                time.sleep(2)
+                try:
+                    browser.find_element_by_class_name('alert-error')
+                    error = browser.find_element_by_class_name('alert-error').text
+                    _logger.info('Captcha Error %s',error)
+                except:
+                    error = ''
+
+            time.sleep(3)
+            browser.find_element_by_link_text('Authenticate for e-Services').click()
+            time.sleep(2)
+            browser.find_element_by_id('taxType').send_keys('Value Added Tax/Central Sales Tax')
+            browser.find_element_by_id('transPassword').send_keys('KWSPL@305')
+            time.sleep(2)
+            browser.find_element_by_name('loginBtn').click()
+            time.sleep(4)
+            browser.find_element_by_link_text("e-Forms").click()
+            time.sleep(2)
+            browser.find_element_by_link_text("Online Forms(JJ/KK/LL/MM)").click()
+            time.sleep(2)
+            browser.find_element_by_id('menuId_452').click()
+            browser.find_element_by_id('formType').send_keys('Form JJ')
+            browser.find_element_by_id('trnsType').send_keys('Outgoing Declaration')
+            time.sleep(2)
+            browser.find_element_by_id('submitBtn').click()
+            time.sleep(5)
+            # to confirm the alert pop up
+            browser.switch_to_alert().accept()
+            # browser.execute_script("window.confirm = function(msg) { return true; }");
+            time.sleep(2)
+            browser.find_element_by_name('purOfConsignment').send_keys('Purchase/Sales')
+            if case.partner_id and case.partner_id.tin_no:
+                browser.find_element_by_name('dealerTinIfAny').send_keys(case.partner_id.tin_no)
+            else:
+                raise osv.except_osv(_('Warning'),_('Please enter the Consignee Tin Number.'))
+
+            browser.find_element_by_name('dealerName').send_keys(case.partner_id and case.partner_id.name or '')
+            browser.find_element_by_name('dealerCity').send_keys(case.city_id and case.city_id.name or '')
+            time.sleep(1)
+            if case.company_id and case.company_id.partner_id.tin_no:
+                browser.find_element_by_name('jobTinIfAny').send_keys(comp_tin)
+            else:
+                raise osv.except_osv(_('Warning'),_('Please enter the Company Tin Number.'))
+
+            browser.find_element_by_name('shipCity').send_keys(case.city_id and case.city_id.name or '')
+            time.sleep(1)
+            browser.find_element_by_name('shipPinCode').send_keys(pincode or zip)
+            browser.find_element_by_name('invoiceNo').send_keys(case.name)
+            browser.find_element_by_name('invoiceDt').send_keys(inv_date)
+            time.sleep(1)
+            browser.find_element_by_name('goodsDesc').send_keys('FIREWOOD, EXCLUDING CASURINA AND EUCALYPTUS TIMBER')
+            browser.find_element_by_name('cmdtyDesc').send_keys(case.product_id and case.product_id.name or '')
+            time.sleep(2)
+            browser.find_element_by_name('quantity').send_keys(int(round(qty)))
+            time.sleep(1)
+            browser.find_element_by_name('unit').send_keys('Metric Ton')
+            browser.find_element_by_name('basicPrice').send_keys(int(round(tot_price)))
+            time.sleep(3)
+            browser.find_element_by_name('taxrate').send_keys('2.0')
+            browser.find_element_by_name('vatCstCharges').send_keys(int(round(tax_amount)))
+            time.sleep(1)
+            browser.find_element_by_name('transportMode').send_keys('By Road')
+            browser.find_element_by_name('vehRegNoIfAny').send_keys(case.truck_no)
+            browser.find_element_by_name('lspName').send_keys(case.transporter_id and case.transporter_id.name or '')
+            time.sleep(1)
+            browser.find_element_by_id('a_gisInvoiceVehicleDtls').click()
+            time.sleep(5)
+            browser.find_element_by_id('save').click()
+            time.sleep(2)
+            dnld_url = 'https://ctd.tn.gov.in/Portal/popUpPDFController.htm?actionCode=gisDownloadForm&refId='
+            pdf_lnk = browser.find_element_by_xpath("//a[contains(.,'FJJ')]")
+            print "pdf_lnk............",pdf_lnk.get_attribute('href')
+            dnld_url = dnld_url + pdf_lnk.get_attribute('href').split("'")[1]
+            print "pdf_lnk_txt............",pdf_lnk.text
+            print "dnld_url............",dnld_url
+            esugam = pdf_lnk.text
+
+            time.sleep(3)
+            pdf_lnk.click()
+            all_cookies = browser.get_cookies()
+
+            cookies = {}
+            s = requests.Session()
+            for s_cookie in all_cookies:
+                c_name = s_cookie["name"]
+                c_value = s_cookie["value"]
+                cookies[c_name] = c_value
+                response = requests.get(dnld_url, cookies=cookies,verify=False)
+
+            #response = requests.get(dnld_url, cookies=cookies,verify=False)
+            f = open('/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf','wb')
+            print "respone...",response
+            f.write(response.content)
+            f.close()
+
+
+
+            #for creating file
+            current_file = '/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf'
+            pdf_data = self.convert_pdf(current_file)
+            fp = open(current_file,'rb')
+            result = base64.b64encode(fp.read())
+            file_name = 'esugam_' + esugam
+            file_name += ".pdf"
+            self.pool.get('ir.attachment').create(cr, uid,
+                                                  {
+                                                   'name': file_name,
+                                                   'datas': result,
+                                                   'datas_fname': file_name,
+                                                   'res_model': self._name,
+                                                   'res_id': case.id,
+                                                   'type': 'binary'
+                                                  },
+                                                  context=context)
+            os.remove(current_file)
+            browser.find_element_by_id('done').click()
+
+        except Exception as e:
+            _logger.info('Error reason %s',e)
+            raise osv.except_osv(_('Error'),_(e))
 
         return True
 
