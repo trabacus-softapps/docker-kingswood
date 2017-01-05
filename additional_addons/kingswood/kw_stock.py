@@ -1348,7 +1348,7 @@ class stock_picking_out(osv.osv):
                             url = e.url1
                             url2 = e.url2
                             url3 = e.url3
-                            tnvat = self.generate_tnvat(cr, uid, desc, qty, price, product_id, username, password, url, url2, url3, case, context)
+                            jjform = self.generate_tnvat(cr, uid, desc, qty, price, product_id, username, password, url, url2, url3, case, context)
 
 
             if (case.partner_id.gen_esugam == True or case.gen_esugam) and user_id.partner_id.state_id.name =='Karnataka' and case.state_id.name == 'Karnataka':
@@ -1374,6 +1374,7 @@ class stock_picking_out(osv.osv):
                                       'state'           :'in_transit',
                                       'esugam_no'       : esugam,
                                       'transit_date'    : today,
+                                      'jjform_no'       : jjform
                                       }) 
 #             move_obj.action_done(cr, uid, move_ids, context=None)
             return True
@@ -1420,8 +1421,8 @@ class stock_picking_out(osv.osv):
         veh_owner = case.driver_name and case.driver_name or ''
         inv_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%d/%m/%Y')
 
-        browser = webdriver.Chrome()
-        # browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
+        # browser = webdriver.Chrome()
+        browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
         time.sleep(2)
         browser.get(url)
         print "................",url,browser,browser.window_handles
@@ -1493,8 +1494,8 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_id('submitBtn').click()
             time.sleep(5)
             # to confirm the alert pop up
-            browser.switch_to_alert().accept()
-            # browser.execute_script("window.confirm = function(msg) { return true; }");
+            # browser.switch_to_alert().accept()
+            browser.execute_script("window.confirm = function(msg) { return true; }");
             time.sleep(2)
             browser.find_element_by_name('purOfConsignment').send_keys('Purchase/Sales')
             if case.partner_id and case.partner_id.tin_no:
@@ -1541,10 +1542,10 @@ class stock_picking_out(osv.osv):
             dnld_url = dnld_url + pdf_lnk.get_attribute('href').split("'")[1]
             print "pdf_lnk_txt............",pdf_lnk.text
             print "dnld_url............",dnld_url
-            esugam = pdf_lnk.text
+            jjform = pdf_lnk.text
 
             time.sleep(3)
-            pdf_lnk.click()
+            #pdf_lnk.click()
             all_cookies = browser.get_cookies()
 
             cookies = {}
@@ -1553,11 +1554,10 @@ class stock_picking_out(osv.osv):
                 c_name = s_cookie["name"]
                 c_value = s_cookie["value"]
                 cookies[c_name] = c_value
-                response = requests.get(dnld_url, cookies=cookies,verify=False)
+                #response = s.post(dnld_url, cookies=cookies,verify=False)
 
-            #response = requests.get(dnld_url, cookies=cookies,verify=False)
+            response = s.post(dnld_url, cookies=cookies,verify=False)
             f = open('/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf','wb')
-            print "respone...",response
             f.write(response.content)
             f.close()
 
@@ -1568,7 +1568,7 @@ class stock_picking_out(osv.osv):
             pdf_data = self.convert_pdf(current_file)
             fp = open(current_file,'rb')
             result = base64.b64encode(fp.read())
-            file_name = 'esugam_' + esugam
+            file_name = 'jjform_' + jjform
             file_name += ".pdf"
             self.pool.get('ir.attachment').create(cr, uid,
                                                   {
@@ -1581,7 +1581,7 @@ class stock_picking_out(osv.osv):
                                                   },
                                                   context=context)
             os.remove(current_file)
-            browser.find_element_by_id('done').click()
+            return jjform
 
         except Exception as e:
             _logger.info('Error reason %s',e)
