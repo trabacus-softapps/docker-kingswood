@@ -211,7 +211,10 @@ class res_partner(osv.osv):
                 'tax_link'             : fields.char("Tax Link", size=500),
                 
                 # Daily Dispatch Report IN and OUT
-                'contract_ids'      :   fields.one2many("customer.contracts", 'partner_id', "Customer Contracts"),
+                'contract_ids'         :   fields.one2many("customer.contracts", 'partner_id', "Customer Contracts"),
+
+                'show_jjform'          :   fields.boolean('Show JJform',track_visibility='onchange'),
+                'gen_jjform'           :   fields.boolean('Generate JJform.',track_visibility='onchange'),
               }
     _defaults={
                'customer':True,
@@ -221,8 +224,8 @@ class res_partner(osv.osv):
                'show_esugam' : False,
                'show_freight':False,
                'handling_charges':False,
-                'user_log'     :_get_default_user,  
-                       
+                'user_log'     :_get_default_user,
+
                }
     
     def onchange_pay_freight(self, cr, uid, ids, pay_freight=False,context=None):

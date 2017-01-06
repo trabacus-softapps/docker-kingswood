@@ -768,6 +768,11 @@ class stock_picking_out(osv.osv):
                 'bank_addr'     :   fields.text("Bank Address"),
                 'ac_holder_mob' :   fields.char("Mobile Number", size=10),
 
+                #esugam, for specific users
+                'gen_jjform'   : fields.boolean("Generate JJform"),
+                'show_jjform'  : fields.related('partner_id','show_jjform',type='boolean',store=False),
+                'jjform_no'    : fields.char("JJform Number", size=50),
+
 
               }
     
@@ -790,7 +795,9 @@ class stock_picking_out(osv.osv):
                     'fd_filename'   : "Farmer Declaration.pdf",
                     'user_partner_id':_get_default_user_partner,
                     'hide_fields' : _get_default_permission,
-                    'transit_pass' : False
+                    'transit_pass' : False,
+                    'jjform_no' : '0',
+
 #                  'customer_list' : _default_get_customer,
 #                  'hide_fields' : True 
 # cur_date=datetime.today().strftime("%Y-%m-%d")
@@ -1005,6 +1012,7 @@ class stock_picking_out(osv.osv):
             res['wc_num'] = i.wc_num or False
             res['w_report'] = i.w_report or False
             res['dc_report'] = i.dc_report or False
+            res['show_jjform'] = i.gen_jjform or False
             if freight:
                 res['freight']=freight
             else:
@@ -5159,6 +5167,11 @@ class stock_picking(osv.osv):
                 'bank_addr'     :   fields.text("Bank Address"),
                 'ac_holder_mob' :   fields.char("Mobile Number", size=10),
 
+                #esugam, for specific users
+                'gen_jjform'   : fields.boolean("Generate JJform"),
+                'show_jjform'  : fields.related('partner_id','show_jjform',type='boolean',store=False),
+                'jjform_no'    : fields.char("JJform Number", size=50),
+
               }
     _order = 'date desc'
     _defaults={
@@ -5180,7 +5193,8 @@ class stock_picking(osv.osv):
                     'fd_filename'   : "Farmer Declaration.pdf",
                     'user_partner_id':_get_default_user_partner, 
                 'hide_fields' : _get_default_permission,   
-                'transit_pass' : False           
+                'transit_pass' : False,
+                'jjform_no'  : '0',
                }
 
     # Actions
