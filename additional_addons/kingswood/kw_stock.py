@@ -1394,6 +1394,7 @@ class stock_picking_out(osv.osv):
         #for calulating taxes
         tax_amount = 0
         esugam = 0
+        jjform = 0
         comp_tin = ''
         zip = ''
         pincode = ''
