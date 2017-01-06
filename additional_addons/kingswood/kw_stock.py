@@ -1299,6 +1299,7 @@ class stock_picking_out(osv.osv):
         product_id = False
         tax_amount = 0.0
         esugam = '0'
+        jjform = '0'
         move_ids = []
         ctxt={}
         move_obj = self.pool.get('stock.move')
