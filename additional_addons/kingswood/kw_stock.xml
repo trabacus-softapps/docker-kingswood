@@ -406,6 +406,15 @@
 		                            <field name="gen_esugam" attrs="{'readonly':[('state', 'in', ('in_transit','done','freight_paid','cancel'))],'invisible':[('show_esugam','!=',True)]}"
 		                                groups="kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service"/>
 		                            <field name="esugam_no" string="E-SUGAM Number" required='1'  readonly="1"/>
+
+									<field name="show_jjform" string="Show JJform" invisible="1"/>
+		                            <field name="gen_jjform" attrs="{'readonly':[('state', 'in', ('in_transit','done','freight_paid','cancel'))],'invisible':[('show_jjform','!=',True)]}"
+		                                groups="kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service"/>
+		                            <field name="jjform_no" string="JJform Number" readonly="1"/>
+
+
+
+
 		                            	<!-- attrs="{'readonly':[('state', 'in', ('in_transit','done','balance_paid','freight_paid','cancel'))]}"/> -->
 		                        	
 		                        	
@@ -512,10 +521,10 @@
 								<page string="Bank Details">
 									<group>
 										<group col="4" colspan="8">
-											<field name="bank_name" required="1"/>
-											<field name="ifsc_code" required="1"/>
-											<field name="ac_holder" required="1"/>
-											<field name="ac_number" required="1"/>
+											<field name="bank_name" />
+											<field name="ifsc_code" />
+											<field name="ac_holder" />
+											<field name="ac_number" />
 											<field name="bank_addr" />
 											<field name="ac_holder_mob" />
 										</group>
@@ -713,7 +722,9 @@
 		                            <field name="esugam_no" string="E-SUGAM Number" readonly="1"/>
 									<field name="wc_num" invisible='1'/>
 		                     		<field name="wc_number" attrs="{'invisible':['|',('wc_num','!=',True),('state','in',('draft'))],'readonly': [('state','not in',('in_transit'))]}"/>		                             
-		                        	<!-- <field name="paying_agent_id" 
+		                            <field name="jjform_no" string="JJform Number" readonly="1"/>
+
+		                        	   	   	   	<!-- <field name="paying_agent_id"
 		                        		groups="kingswood.kw_admin_service,kingswood.kw_depot_service"/> -->
 		                        </group>
 		                        
@@ -1055,10 +1066,10 @@
 					<page string="Bank Details">
 						<group>
 							<group col="4" colspan="8">
-								<field name="bank_name" required="1"/>
-								<field name="ifsc_code" required="1"/>
-								<field name="ac_holder" required="1"/>
-								<field name="ac_number" required="1"/>
+								<field name="bank_name" />
+								<field name="ifsc_code" />
+								<field name="ac_holder" />
+								<field name="ac_number" />
 								<field name="bank_addr" />
 								<field name="ac_holder_mob" />
 							</group>

@@ -9,7 +9,7 @@
             <search string="City">
                 <field name="name"/>
                 <field name='state_id'/>
-                
+                <field name="pincode"/>
             </search>
         </field>
     </record>	
@@ -20,6 +20,7 @@
             <tree string="City">
                 <field name="name"/>
                 <field name='state_id'/>
+                <field name="pincode"/>
                 
             </tree>
         </field>
@@ -31,8 +32,9 @@
             <field name="arch" type="xml">
                 <form string="City">
                     <group col="2">
-                    <field name="name" required='1'/>
-                    <field name='state_id' required='1'/>
+                        <field name="name" required='1'/>
+                        <field name='state_id' required='1'/>
+                        <field name="pincode"/>
                     <newline/>
                     
                     </group>

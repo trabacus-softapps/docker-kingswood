@@ -768,6 +768,11 @@ class stock_picking_out(osv.osv):
                 'bank_addr'     :   fields.text("Bank Address"),
                 'ac_holder_mob' :   fields.char("Mobile Number", size=10),
 
+                #esugam, for specific users
+                'gen_jjform'   : fields.boolean("Generate JJform"),
+                'show_jjform'  : fields.related('partner_id','show_jjform',type='boolean',store=False),
+                'jjform_no'    : fields.char("JJform Number", size=50),
+
 
               }
     
@@ -790,7 +795,9 @@ class stock_picking_out(osv.osv):
                     'fd_filename'   : "Farmer Declaration.pdf",
                     'user_partner_id':_get_default_user_partner,
                     'hide_fields' : _get_default_permission,
-                    'transit_pass' : False
+                    'transit_pass' : False,
+                    'jjform_no' : '0',
+
 #                  'customer_list' : _default_get_customer,
 #                  'hide_fields' : True 
 # cur_date=datetime.today().strftime("%Y-%m-%d")
@@ -1005,6 +1012,7 @@ class stock_picking_out(osv.osv):
             res['wc_num'] = i.wc_num or False
             res['w_report'] = i.w_report or False
             res['dc_report'] = i.dc_report or False
+            res['show_jjform'] = i.gen_jjform or False
             if freight:
                 res['freight']=freight
             else:
@@ -1330,7 +1338,27 @@ class stock_picking_out(osv.osv):
                 vid = voucher_obj.create(cr, uid, voucher_vals1, context= context)
                 ctxt.update({'freight_advance':True,'dc_reference':case.name})
                 voucher_obj.proforma_voucher(cr, uid,[vid],context=ctxt)
-                    
+
+            # Tamilnadu Vat
+            if (case.partner_id.gen_esugam == True or case.gen_esugam) and case.state_id.code == 'TN':
+                esugam_ids = []
+                cr.execute(""" select e.id
+                   from esugam_master e
+                   inner join res_country_state rcs on rcs.id = e.state_id
+                    where rcs.code = 'TN' order by e.id desc limit 1
+                           """)
+                esugam_ids = [x[0] for x in cr.fetchall()]
+                if esugam_ids:
+                    for e in esugam_obj.browse(cr, uid, esugam_ids):
+                        if e.state_id.id == case.state_id.id:
+                            username = e.username
+                            password = e.password
+                            url = e.url1
+                            url2 = e.url2
+                            url3 = e.url3
+                            jjform = self.generate_tnvat(cr, uid, desc, qty, price, product_id, username, password, url, url2, url3, case, context)
+
+
             if (case.partner_id.gen_esugam == True or case.gen_esugam) and user_id.partner_id.state_id.name =='Karnataka' and case.state_id.name == 'Karnataka':
                 for e in case.company_id.esugam_ids:
                     if e.state_id.id == user_id.partner_id.state_id.id:
@@ -1354,9 +1382,264 @@ class stock_picking_out(osv.osv):
                                       'state'           :'in_transit',
                                       'esugam_no'       : esugam,
                                       'transit_date'    : today,
+                                      'jjform_no'       : jjform
                                       }) 
 #             move_obj.action_done(cr, uid, move_ids, context=None)
             return True
+
+
+    def generate_tnvat(self, cr, uid,  desc, qty, price, product_id, username, password, url, url2, url3, case, context=None):
+        if not context:
+            context = {}
+        #for calulating taxes
+        tax_amount = 0
+        esugam = 0
+        comp_tin = ''
+        zip = ''
+        pincode = ''
+        tot_price = qty * price
+        if case.state_id.code == 'TN':
+            for t in product_id.taxes_id:
+                if t.state_id.code == 'TN':
+                    tax_amount += t.amount * price * qty
+
+                else:
+                    tax_amount += 0.02000 * price * qty
+
+        cr.execute("""
+                    select
+                        rp.zip
+
+                        from res_partner rp
+                        inner join res_country_state rcs on rcs.id = rp.state_id
+                        where rp.parent_id is not null and rcs.code = 'TN'  """)
+        zip = [x[0] for x in cr.fetchall()]
+
+        cr.execute("""
+                select
+                    c.pincode
+                from stock_picking sp
+                inner join kw_city c on c.id = sp.city_id
+                where c.pincode ilike '6%' and sp.id ='""" +str(case.id)+"""'  """)
+        pincode = [x[0] for x in cr.fetchall()]
+
+
+        today = time.strftime('%Y-%m-%d %H:%M:%S')
+        last_month_date = datetime.strptime(today, '%Y-%m-%d %H:%M:%S')
+        veh_owner = case.driver_name and case.driver_name or ''
+        inv_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%d/%m/%Y')
+
+        # browser = webdriver.Chrome()
+        browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
+        time.sleep(2)
+        browser.get(url)
+        print "................",url,browser,browser.window_handles
+        browser.find_element_by_xpath("//a[contains(.,'Go to New Portal ')]").click()
+
+        time.sleep(2)
+
+        if len(browser.window_handles):
+            browser.switch_to.window(browser.window_handles[-1])
+        time.sleep(2)
+        try:
+            browser.find_element_by_link_text('e-Registration').click()
+        except:
+            browser.find_element_by_link_text('Home').click()
+            browser.find_element_by_link_text('e-Registration').click()
+
+
+        time.sleep(2)
+        browser.window_handles
+        print "Current Window", browser.window_handles
+        if len(browser.window_handles):
+            browser.switch_to.window(browser.window_handles[-1])
+
+
+        try:
+            error = "Invalid Captcha."
+
+            while error:
+                time.sleep(2)
+                browser.find_element_by_id('userName')
+                browser.find_element_by_id('xxZTT9p2wQ')
+
+                captcha= self.get_tn_captcha(cr, uid, [case.id], browser, context)
+                print ".............",captcha
+                browser.find_element_by_id('userName').clear()
+
+                browser.find_element_by_id('userName').send_keys(username)
+                browser.find_element_by_id('xxZTT9p2wQ').send_keys(password)
+                browser.find_element_by_id('captcahText')
+                browser.find_element_by_id('captcahText').send_keys(captcha)
+                time.sleep(2)
+
+                browser.find_element_by_id('loginSubmit')
+                browser.find_element_by_id('loginSubmit').click()
+                time.sleep(2)
+                try:
+                    browser.find_element_by_class_name('alert-error')
+                    error = browser.find_element_by_class_name('alert-error').text
+                    _logger.info('Captcha Error %s',error)
+                except:
+                    error = ''
+
+            time.sleep(3)
+            browser.find_element_by_link_text('Authenticate for e-Services').click()
+            time.sleep(2)
+            browser.find_element_by_id('taxType').send_keys('Value Added Tax/Central Sales Tax')
+            browser.find_element_by_id('transPassword').send_keys('KWSPL@305')
+            time.sleep(2)
+            browser.find_element_by_name('loginBtn').click()
+            time.sleep(4)
+            browser.find_element_by_link_text("e-Forms").click()
+            time.sleep(2)
+            browser.find_element_by_link_text("Online Forms(JJ/KK/LL/MM)").click()
+            time.sleep(2)
+            browser.find_element_by_id('menuId_452').click()
+            browser.find_element_by_id('formType').send_keys('Form JJ')
+            browser.find_element_by_id('trnsType').send_keys('Outgoing Declaration')
+            time.sleep(2)
+            browser.find_element_by_id('submitBtn').click()
+            time.sleep(5)
+            # to confirm the alert pop up
+            # browser.switch_to_alert().accept()
+            browser.execute_script("window.confirm = function(msg) { return true; }");
+            time.sleep(2)
+            browser.find_element_by_name('purOfConsignment').send_keys('Purchase/Sales')
+            if case.partner_id and case.partner_id.tin_no:
+                browser.find_element_by_name('dealerTinIfAny').send_keys(case.partner_id.tin_no)
+            else:
+                raise osv.except_osv(_('Warning'),_('Please enter the Consignee Tin Number.'))
+
+            browser.find_element_by_name('dealerName').send_keys(case.partner_id and case.partner_id.name or '')
+            browser.find_element_by_name('dealerCity').send_keys(case.city_id and case.city_id.name or '')
+            time.sleep(1)
+            if case.company_id and case.company_id.partner_id.tin_no:
+                browser.find_element_by_name('jobTinIfAny').send_keys(comp_tin)
+            else:
+                raise osv.except_osv(_('Warning'),_('Please enter the Company Tin Number.'))
+
+            browser.find_element_by_name('shipCity').send_keys(case.city_id and case.city_id.name or '')
+            time.sleep(1)
+            browser.find_element_by_name('shipPinCode').send_keys(pincode or zip)
+            browser.find_element_by_name('invoiceNo').send_keys(case.name)
+            browser.find_element_by_name('invoiceDt').send_keys(inv_date)
+            time.sleep(1)
+            browser.find_element_by_name('goodsDesc').send_keys('FIREWOOD, EXCLUDING CASURINA AND EUCALYPTUS TIMBER')
+            browser.find_element_by_name('cmdtyDesc').send_keys(case.product_id and case.product_id.name or '')
+            time.sleep(2)
+            browser.find_element_by_name('quantity').send_keys(int(round(qty)))
+            time.sleep(1)
+            browser.find_element_by_name('unit').send_keys('Metric Ton')
+            browser.find_element_by_name('basicPrice').send_keys(int(round(tot_price)))
+            time.sleep(3)
+            browser.find_element_by_name('taxrate').send_keys('2.0')
+            browser.find_element_by_name('vatCstCharges').send_keys(int(round(tax_amount)))
+            time.sleep(1)
+            browser.find_element_by_name('transportMode').send_keys('By Road')
+            browser.find_element_by_name('vehRegNoIfAny').send_keys(case.truck_no)
+            browser.find_element_by_name('lspName').send_keys(case.transporter_id and case.transporter_id.name or '')
+            time.sleep(1)
+            browser.find_element_by_id('a_gisInvoiceVehicleDtls').click()
+            time.sleep(5)
+            browser.find_element_by_id('save').click()
+            time.sleep(2)
+            dnld_url = 'https://ctd.tn.gov.in/Portal/popUpPDFController.htm?actionCode=gisDownloadForm&refId='
+            pdf_lnk = browser.find_element_by_xpath("//a[contains(.,'FJJ')]")
+            print "pdf_lnk............",pdf_lnk.get_attribute('href')
+            dnld_url = dnld_url + pdf_lnk.get_attribute('href').split("'")[1]
+            print "pdf_lnk_txt............",pdf_lnk.text
+            print "dnld_url............",dnld_url
+            jjform = pdf_lnk.text
+
+            time.sleep(3)
+            #pdf_lnk.click()
+            all_cookies = browser.get_cookies()
+
+            cookies = {}
+            s = requests.Session()
+            for s_cookie in all_cookies:
+                c_name = s_cookie["name"]
+                c_value = s_cookie["value"]
+                cookies[c_name] = c_value
+                #response = s.post(dnld_url, cookies=cookies,verify=False)
+
+            response = s.post(dnld_url, cookies=cookies,verify=False)
+            f = open('/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf','wb')
+            f.write(response.content)
+            f.close()
+
+
+
+            #for creating file
+            current_file = '/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf'
+            pdf_data = self.convert_pdf(current_file)
+            fp = open(current_file,'rb')
+            result = base64.b64encode(fp.read())
+            file_name = 'jjform_' + jjform
+            file_name += ".pdf"
+            self.pool.get('ir.attachment').create(cr, uid,
+                                                  {
+                                                   'name': file_name,
+                                                   'datas': result,
+                                                   'datas_fname': file_name,
+                                                   'res_model': self._name,
+                                                   'res_id': case.id,
+                                                   'type': 'binary'
+                                                  },
+                                                  context=context)
+            os.remove(current_file)
+            return jjform
+
+        except Exception as e:
+            _logger.info('Error reason %s',e)
+            raise osv.except_osv(_('Error'),_(e))
+
+        return True
+
+    def get_tn_captcha(self, cr, uid, ids, browser, context=None):
+        if not context:
+            context = {}
+
+        time.sleep(5)
+        img = browser.find_element_by_name('captchaImage')
+        location = img.location
+        size = img.size
+        browser.save_screenshot('/tmp/tncaptcha.jpg')
+
+        image = Image.open('/tmp/tncaptcha.jpg')
+        left = location['x']
+        top = location['y']
+        right = location['x'] + size['width']
+        bottom = location['y'] + size['height']
+        image = image.crop((left, top, right, bottom))  # defines crop points
+        image.save('/tmp/tncaptcha1.jpg', 'jpeg')
+
+        #src = img.get_attribute('src')
+        #context = ssl._create_unverified_context()
+        #urllib.urlretrieve(src, '/home/serveradmin/Desktop/captcha.jpg')
+
+        img = Image.open('/tmp/tncaptcha1.jpg')
+        img = img.convert("RGBA")
+        pixdata = img.load()
+        print "pixdata[x, y]",pixdata
+
+        for y in xrange(img.size[1]):
+         for x in xrange(img.size[0]):
+             if pixdata[x, y][1] < 50: #136
+                pixdata[x, y] = (0, 0, 0, 255)
+
+        img.save("/tmp/tncaptcha1.jpg")
+
+        #   Make the image bigger (needed for OCR)
+        #img = img.resize((1000, 500))
+        #img.save("/home/serveradmin/Desktop/esugam/new_"+case.driver_name+".jpeg")
+        time.sleep(5)
+        data = pytesseract.image_to_string(Image.open('/tmp/tncaptcha1.jpg'))
+        print data
+        return data.replace(' ', '')
+        return True
+
     
     
     
@@ -4884,6 +5167,11 @@ class stock_picking(osv.osv):
                 'bank_addr'     :   fields.text("Bank Address"),
                 'ac_holder_mob' :   fields.char("Mobile Number", size=10),
 
+                #esugam, for specific users
+                'gen_jjform'   : fields.boolean("Generate JJform"),
+                'show_jjform'  : fields.related('partner_id','show_jjform',type='boolean',store=False),
+                'jjform_no'    : fields.char("JJform Number", size=50),
+
               }
     _order = 'date desc'
     _defaults={
@@ -4905,7 +5193,8 @@ class stock_picking(osv.osv):
                     'fd_filename'   : "Farmer Declaration.pdf",
                     'user_partner_id':_get_default_user_partner, 
                 'hide_fields' : _get_default_permission,   
-                'transit_pass' : False           
+                'transit_pass' : False,
+                'jjform_no'  : '0',
                }
 
     # Actions

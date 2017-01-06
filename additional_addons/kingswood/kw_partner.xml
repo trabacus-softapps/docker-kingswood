@@ -227,6 +227,11 @@
 									<field name="is_farm_decl"/>
 									<field name="transit_pass" attrs="{'invisible': [('customer','=', False)]}"/>
 									<field name="tax_link" attrs="{'invisible': [('transit_pass','=', False)],'required':[('transit_pass','=', True)]}"/>
+
+									<field name="gen_jjform" attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
+									<field name="show_jjform" attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
+
+
 				 				</group>                    	
                     	
 			                    <group name="Freight" string="Freight">

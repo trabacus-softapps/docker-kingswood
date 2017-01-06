@@ -6,7 +6,8 @@ class kw_city(osv.osv):
     _name = 'kw.city'
     _columns = {
                 'name'     : fields.char('City', size=64),
-                'state_id' : fields.many2one('res.country.state','State')
+                'state_id' : fields.many2one('res.country.state','State'),
+                'pincode'  : fields.char("Pincode", size=15),
                 }
     
     def unlink(self, cr, uid, ids, context=None):
