@@ -1618,7 +1618,7 @@ class stock_picking_out(osv.osv):
         location.update({'x':int(round(location.get('x'))),
                          'y':int(round(location.get('y'))) })
         size = img.size
-        size.update({'width':intround((size.get('width'))),
+        size.update({'width':int(round(size.get('width'))),
                          'height':int(round(size.get('height'))) })
 
         _logger.info('size.......... %s',size)
