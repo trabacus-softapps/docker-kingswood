@@ -1453,6 +1453,9 @@ class stock_picking_out(osv.osv):
         time.sleep(2)
         browser.window_handles
         print "Current Window", browser.window_handles
+        _logger.info('Auantity......',int(round(qty)))
+        _logger.info('Auantity......',int(round(tot_price)))
+        _logger.info('Auantity......',int(round(tax_amount)))
         if len(browser.window_handles):
             browser.switch_to.window(browser.window_handles[-1])
 
@@ -1548,10 +1551,7 @@ class stock_picking_out(osv.osv):
             time.sleep(2)
             dnld_url = 'https://ctd.tn.gov.in/Portal/popUpPDFController.htm?actionCode=gisDownloadForm&refId='
             pdf_lnk = browser.find_element_by_xpath("//a[contains(.,'FJJ')]")
-            print "pdf_lnk............",pdf_lnk.get_attribute('href')
             dnld_url = dnld_url + pdf_lnk.get_attribute('href').split("'")[1]
-            print "pdf_lnk_txt............",pdf_lnk.text
-            print "dnld_url............",dnld_url
             jjform = pdf_lnk.text
 
             time.sleep(3)
