@@ -1482,11 +1482,11 @@ class stock_picking_out(osv.osv):
                 browser.find_element_by_id('xxZTT9p2wQ').send_keys(password)
                 browser.find_element_by_id('captcahText')
                 browser.find_element_by_id('captcahText').send_keys(captcha)
-                time.sleep(2)
+                time.sleep(6)
 
                 browser.find_element_by_id('loginSubmit')
                 browser.find_element_by_id('loginSubmit').click()
-                time.sleep(2)
+                time.sleep(3)
                 try:
                     browser.find_element_by_class_name('alert-error')
                     error = browser.find_element_by_class_name('alert-error').text
