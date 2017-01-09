@@ -1458,17 +1458,20 @@ class stock_picking_out(osv.osv):
         _logger.info('Quantity....... %s',int(round(tot_price)))
         _logger.info('Quantity....... %s',int(round(tax_amount)))
         if len(browser.window_handles):
+            _logger.info('Before windo handles....... ')
             browser.switch_to.window(browser.window_handles[-1])
+            _logger.info('After windo handles....... %s',browser.switch_to.window(browser.window_handles[-1]))
 
 
         try:
             error = "Invalid Captcha."
-
+            _logger.info('Inside Try....... ')
             while error:
                 time.sleep(2)
+                _logger.info('Inside While....... ')
                 browser.find_element_by_id('userName')
                 browser.find_element_by_id('xxZTT9p2wQ')
-
+                _logger.info('Before captcha....... ')
                 captcha= self.get_tn_captcha(cr, uid, [case.id], browser, context)
                 _logger.info('captcha....... %s',captcha)
                 browser.find_element_by_id('userName').clear()
