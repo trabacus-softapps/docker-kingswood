@@ -1606,12 +1606,17 @@ class stock_picking_out(osv.osv):
             context = {}
 
         time.sleep(5)
+        _logger.info('inside....captchaImage..........',ids)
         img = browser.find_element_by_name('captchaImage')
         location = img.location
         size = img.size
+        _logger.info('size.......... %s',size)
+        _logger.info('location.......... %s',location)
         browser.save_screenshot('/tmp/tncaptcha.jpg')
+        _logger.info('save Screenshot.......... ')
 
         image = Image.open('/tmp/tncaptcha.jpg')
+        _logger.info('tncaptcha.......... ')
         left = location['x']
         top = location['y']
         right = location['x'] + size['width']
