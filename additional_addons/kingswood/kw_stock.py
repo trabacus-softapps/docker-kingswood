@@ -1610,18 +1610,19 @@ class stock_picking_out(osv.osv):
         if not context:
             context = {}
 
-        time.sleep(5)
+        time.sleep(2)
         _logger.info('inside....captchaImage..........',ids)
         img = browser.find_element_by_name('captchaImage')
         location = img.location
+        _logger.info('location.......... %s',location)
         location.update({'x':int(location.get('x')),
                          'y':int(location.get('y')) })
         size = img.size
         size.update({'width':int(size.get('width')),
-                         'height':int(size.get('height-')) })
+                         'height':int(size.get('height')) })
 
         _logger.info('size.......... %s',size)
-        _logger.info('location.......... %s',location)
+
         browser.save_screenshot('/tmp/tncaptcha.jpg')
         _logger.info('save Screenshot.......... ')
 
