@@ -1643,6 +1643,7 @@ class stock_picking_out(osv.osv):
         time.sleep(5)
         data = pytesseract.image_to_string(Image.open('/tmp/tncaptcha1.jpg'))
         _logger.info('data inside Captch.......... %s',data)
+
         return data.replace(' ', '')
         return True
 
