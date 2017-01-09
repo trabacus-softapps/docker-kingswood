@@ -1457,6 +1457,8 @@ class stock_picking_out(osv.osv):
         _logger.info('Quantity....... %s',int(round(qty)))
         _logger.info('Quantity....... %s',int(round(tot_price)))
         _logger.info('Quantity....... %s',int(round(tax_amount)))
+        _logger.info('browser....... %s',browser.window_handles)
+        _logger.info('Len(Browser window)....... %s',len(browser.window_handles))
         if len(browser.window_handles):
             _logger.info('Before windo handles....... ')
             browser.switch_to.window(browser.window_handles[-1])
