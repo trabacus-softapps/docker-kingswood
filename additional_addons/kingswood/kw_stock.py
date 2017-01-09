@@ -1435,6 +1435,7 @@ class stock_picking_out(osv.osv):
         browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
         time.sleep(2)
         browser.get(url)
+        _logger.info('URL....... %s',url)
         print "................",url,browser,browser.window_handles
         browser.find_element_by_xpath("//a[contains(.,'Go to New Portal ')]").click()
 
@@ -1453,9 +1454,9 @@ class stock_picking_out(osv.osv):
         time.sleep(2)
         browser.window_handles
         print "Current Window", browser.window_handles
-        _logger.info('Auantity......',int(round(qty)))
-        _logger.info('Auantity......',int(round(tot_price)))
-        _logger.info('Auantity......',int(round(tax_amount)))
+        _logger.info('Quantity....... %s',int(round(qty)))
+        _logger.info('Quantity....... %s',int(round(tot_price)))
+        _logger.info('Quantity....... %s',int(round(tax_amount)))
         if len(browser.window_handles):
             browser.switch_to.window(browser.window_handles[-1])
 
@@ -1469,7 +1470,7 @@ class stock_picking_out(osv.osv):
                 browser.find_element_by_id('xxZTT9p2wQ')
 
                 captcha= self.get_tn_captcha(cr, uid, [case.id], browser, context)
-                print ".............",captcha
+                _logger.info('captcha....... %s',captcha)
                 browser.find_element_by_id('userName').clear()
 
                 browser.find_element_by_id('userName').send_keys(username)
@@ -1533,6 +1534,7 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_name('goodsDesc').send_keys('FIREWOOD, EXCLUDING CASURINA AND EUCALYPTUS TIMBER')
             browser.find_element_by_name('cmdtyDesc').send_keys(case.product_id and case.product_id.name or '')
             time.sleep(2)
+            _logger.info('Final Page......................')
             browser.find_element_by_name('quantity').send_keys(int(round(qty)))
             time.sleep(1)
             browser.find_element_by_name('unit').send_keys('Metric Ton')
