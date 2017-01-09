@@ -1481,11 +1481,14 @@ class stock_picking_out(osv.osv):
                 browser.find_element_by_id('userName').clear()
 
                 browser.find_element_by_id('userName').send_keys(username)
+                time.sleep(2)
                 browser.find_element_by_id('xxZTT9p2wQ').send_keys(password)
-                browser.find_element_by_id('captcahText')
+                time.sleep(2)
+                # browser.find_element_by_id('captcahText')
                 browser.find_element_by_id('captcahText').send_keys(captcha)
+                time.sleep(2)
                 browser.save_screenshot('/tmp/tncaptcha2.jpg')
-                time.sleep(6)
+                time.sleep(1)
 
                 browser.find_element_by_id('loginSubmit')
                 browser.find_element_by_id('loginSubmit').click()
