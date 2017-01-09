@@ -1615,11 +1615,11 @@ class stock_picking_out(osv.osv):
         img = browser.find_element_by_name('captchaImage')
         location = img.location
         _logger.info('location.......... %s',location)
-        location.update({'x':int(location.get('x')),
-                         'y':int(location.get('y')) })
+        location.update({'x':int(round(location.get('x'))),
+                         'y':int(round(location.get('y'))) })
         size = img.size
-        size.update({'width':int(size.get('width')),
-                         'height':int(size.get('height')) })
+        size.update({'width':int(round(size.get('width'))),
+                         'height':int(round(size.get('height'))) })
 
         _logger.info('size.......... %s',size)
 
