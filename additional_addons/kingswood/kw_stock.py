@@ -1613,8 +1613,13 @@ class stock_picking_out(osv.osv):
         time.sleep(5)
         _logger.info('inside....captchaImage..........',ids)
         img = browser.find_element_by_name('captchaImage')
-        location = int(img.location)
-        size = int(img.size)
+        location = img.location
+        location.update({'x':int(location.get('x')),
+                         'y':int(location.get('y')) })
+        size = img.size
+        size.update({'width':int(size.get('width')),
+                         'height':int(size.get('height-')) })
+
         _logger.info('size.......... %s',size)
         _logger.info('location.......... %s',location)
         browser.save_screenshot('/tmp/tncaptcha.jpg')
