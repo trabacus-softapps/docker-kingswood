@@ -1471,9 +1471,11 @@ class stock_picking_out(osv.osv):
             while error:
                 time.sleep(2)
                 _logger.info('Inside While....... ')
-                browser.find_element_by_id('userName')
-                browser.find_element_by_id('xxZTT9p2wQ')
                 _logger.info('Before captcha....... ')
+                browser.find_element_by_id('userName').clear()
+                browser.find_element_by_id('xxZTT9p2wQ').clear()
+                browser.find_element_by_xpath("//a[contains(@href,'refreshCaptchaImage()')]").click()
+                time.sleep(2)
                 captcha= self.get_tn_captcha(cr, uid, [case.id], browser, context)
                 _logger.info('captcha....... %s',captcha)
                 browser.find_element_by_id('userName').clear()
