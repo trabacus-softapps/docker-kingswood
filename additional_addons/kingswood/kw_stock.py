@@ -1475,20 +1475,15 @@ class stock_picking_out(osv.osv):
                 browser.find_element_by_id('userName').clear()
                 browser.find_element_by_id('xxZTT9p2wQ').clear()
                 browser.find_element_by_xpath("//a[contains(@href,'refreshCaptchaImage()')]").click()
-                time.sleep(2)
                 captcha= self.get_tn_captcha(cr, uid, [case.id], browser, context)
                 _logger.info('captcha....... %s',captcha)
                 browser.find_element_by_id('userName').clear()
 
                 browser.find_element_by_id('userName').send_keys(username)
-                time.sleep(2)
                 browser.find_element_by_id('xxZTT9p2wQ').send_keys(password)
-                time.sleep(2)
                 # browser.find_element_by_id('captcahText')
                 browser.find_element_by_id('captcahText').send_keys(captcha)
                 time.sleep(2)
-                browser.save_screenshot('/tmp/tncaptcha2.jpg')
-                time.sleep(1)
 
                 browser.find_element_by_id('loginSubmit')
                 browser.find_element_by_id('loginSubmit').click()
@@ -1501,24 +1496,24 @@ class stock_picking_out(osv.osv):
                 except:
                     error = ''
 
-            time.sleep(3)
+            time.sleep(2)
             browser.find_element_by_link_text('Authenticate for e-Services').click()
             time.sleep(2)
             browser.find_element_by_id('taxType').send_keys('Value Added Tax/Central Sales Tax')
             browser.find_element_by_id('transPassword').send_keys('KWSPL@305')
             time.sleep(2)
             browser.find_element_by_name('loginBtn').click()
-            time.sleep(4)
+            time.sleep(2)
             browser.find_element_by_link_text("e-Forms").click()
-            time.sleep(2)
+            time.sleep(1)
             browser.find_element_by_link_text("Online Forms(JJ/KK/LL/MM)").click()
-            time.sleep(2)
+            time.sleep(1)
             browser.find_element_by_id('menuId_452').click()
             browser.find_element_by_id('formType').send_keys('Form JJ')
             browser.find_element_by_id('trnsType').send_keys('Outgoing Declaration')
             time.sleep(2)
             browser.find_element_by_id('submitBtn').click()
-            time.sleep(5)
+            time.sleep(2)
             # to confirm the alert pop up
             # browser.switch_to_alert().accept()
             browser.execute_script("window.confirm = function(msg) { return true; }");
@@ -1560,7 +1555,7 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_name('lspName').send_keys(case.transporter_id and case.transporter_id.name or '')
             time.sleep(1)
             browser.find_element_by_id('a_gisInvoiceVehicleDtls').click()
-            time.sleep(5)
+            time.sleep(2)
             browser.find_element_by_id('save').click()
             time.sleep(2)
             dnld_url = 'https://ctd.tn.gov.in/Portal/popUpPDFController.htm?actionCode=gisDownloadForm&refId='
@@ -1568,7 +1563,7 @@ class stock_picking_out(osv.osv):
             dnld_url = dnld_url + pdf_lnk.get_attribute('href').split("'")[1]
             jjform = pdf_lnk.text
 
-            time.sleep(3)
+            time.sleep(2)
             #pdf_lnk.click()
             all_cookies = browser.get_cookies()
 
