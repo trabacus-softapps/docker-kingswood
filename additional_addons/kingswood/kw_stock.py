@@ -1616,6 +1616,7 @@ class stock_picking_out(osv.osv):
         top = location['y']
         right = location['x'] + size['width']
         bottom = location['y'] + size['height']
+        _logger.info('left.......... %s',left,top,right,bottom)
         image = image.crop((left, top, right, bottom))  # defines crop points
         image.save('/tmp/tncaptcha1.jpg', 'jpeg')
 
@@ -1626,7 +1627,8 @@ class stock_picking_out(osv.osv):
         img = Image.open('/tmp/tncaptcha1.jpg')
         img = img.convert("RGBA")
         pixdata = img.load()
-        print "pixdata[x, y]",pixdata
+        _logger.info('pixdata[x, y].......... %s',pixdata)
+        # print "pixdata[x, y]",pixdata
 
         for y in xrange(img.size[1]):
          for x in xrange(img.size[0]):
@@ -1640,7 +1642,8 @@ class stock_picking_out(osv.osv):
         #img.save("/home/serveradmin/Desktop/esugam/new_"+case.driver_name+".jpeg")
         time.sleep(5)
         data = pytesseract.image_to_string(Image.open('/tmp/tncaptcha1.jpg'))
-        print data
+        _logger.info('data inside Captch.......... %s',data)
+
         return data.replace(' ', '')
         return True
 
