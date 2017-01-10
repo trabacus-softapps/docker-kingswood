@@ -1401,10 +1401,9 @@ class stock_picking_out(osv.osv):
         pincode = ''
         tot_price = qty * price
         if case.state_id.code == 'TN':
-            for t in product_id.taxes_id:
-                if t.state_id.code == 'TN':
+            for t in product_id.cst_taxes_id:
+                if t.id:
                     tax_amount += t.amount * price * qty
-
                 else:
                     tax_amount += 0.02000 * price * qty
 
@@ -1436,14 +1435,13 @@ class stock_picking_out(osv.osv):
         time.sleep(2)
         browser.get(url)
         _logger.info('URL....... %s',url)
-        print "................",url,browser,browser.window_handles
         browser.find_element_by_xpath("//a[contains(.,'Go to New Portal ')]").click()
 
         time.sleep(2)
 
         if len(browser.window_handles):
             browser.switch_to.window(browser.window_handles[-1])
-        time.sleep(2)
+        time.sleep(1)
         try:
             browser.find_element_by_link_text('e-Registration').click()
         except:
@@ -1453,25 +1451,14 @@ class stock_picking_out(osv.osv):
 
         time.sleep(2)
         browser.window_handles
-        print "Current Window", browser.window_handles
-        _logger.info('Quantity....... %s',int(round(qty)))
-        _logger.info('Quantity....... %s',int(round(tot_price)))
-        _logger.info('Quantity....... %s',int(round(tax_amount)))
-        _logger.info('browser....... %s',browser.window_handles)
-        _logger.info('Len(Browser window)....... %s',len(browser.window_handles))
         if len(browser.window_handles):
-            _logger.info('Before windo handles....... ')
             browser.switch_to.window(browser.window_handles[-1])
-            _logger.info('After windo handles....... %s',browser.switch_to.window(browser.window_handles[-1]))
-
 
         try:
             error = "Invalid Captcha."
             _logger.info('Inside Try....... ')
             while error:
                 time.sleep(2)
-                _logger.info('Inside While....... ')
-                _logger.info('Before captcha....... ')
                 browser.find_element_by_id('userName').clear()
                 browser.find_element_by_id('xxZTT9p2wQ').clear()
                 browser.find_element_by_xpath("//a[contains(@href,'refreshCaptchaImage()')]").click()
@@ -1517,8 +1504,8 @@ class stock_picking_out(osv.osv):
             # to confirm the alert pop up
             # browser.switch_to_alert().accept()
             browser.execute_script("window.confirm = function(msg) { return true; }");
-            time.sleep(2)
-            browser.find_element_by_name('purOfConsignment').send_keys('Purchase/Sales')
+            time.sleep(1)
+            browser.find_element_by_name('purOfConsignment').send_keys('Sale/Purchase')
             if case.partner_id and case.partner_id.tin_no:
                 browser.find_element_by_name('dealerTinIfAny').send_keys(case.partner_id.tin_no)
             else:
@@ -1527,7 +1514,22 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_name('dealerName').send_keys(case.partner_id and case.partner_id.name or '')
             browser.find_element_by_name('dealerCity').send_keys(case.city_id and case.city_id.name or '')
             time.sleep(1)
-            if case.company_id and case.company_id.partner_id.tin_no:
+            if case.company_id:
+                cr.execute("""
+                select p2.tin_no
+                        from stock_picking st
+                        inner join res_company c on c.id = st.company_id
+                        inner join res_partner p on p.id = c.partner_id
+                        inner join res_partner p2 on p2.parent_id = p.id
+                        inner join res_country_state rcs on rcs.id = p2.state_id
+                        where st.id = """+str(case.id)+""" and rcs.code = 'TN'
+
+                """)
+                comp_tin = [x[0] for x in cr.fetchall()]
+                if comp_tin:
+                    comp_tin[0]
+                else:
+                    comp_tin = '33944481896'
                 browser.find_element_by_name('jobTinIfAny').send_keys(comp_tin)
             else:
                 raise osv.except_osv(_('Warning'),_('Please enter the Company Tin Number.'))
@@ -1546,7 +1548,7 @@ class stock_picking_out(osv.osv):
             time.sleep(1)
             browser.find_element_by_name('unit').send_keys('Metric Ton')
             browser.find_element_by_name('basicPrice').send_keys(int(round(tot_price)))
-            time.sleep(3)
+            time.sleep(2)
             browser.find_element_by_name('taxrate').send_keys('2.0')
             browser.find_element_by_name('vatCstCharges').send_keys(int(round(tax_amount)))
             time.sleep(1)
@@ -1612,40 +1614,29 @@ class stock_picking_out(osv.osv):
         if not context:
             context = {}
 
-        time.sleep(2)
-        _logger.info('inside....captchaImage..........',ids)
+        time.sleep(1)
         img = browser.find_element_by_name('captchaImage')
         location = img.location
-        _logger.info('location.......... %s',location)
         location.update({'x':int(round(location.get('x'))),
                          'y':int(round(location.get('y'))) })
         size = img.size
         size.update({'width':int(round(size.get('width'))),
                          'height':int(round(size.get('height'))) })
 
-        _logger.info('size.......... %s',size)
 
         browser.save_screenshot('/tmp/tncaptcha.jpg')
-        _logger.info('save Screenshot.......... ')
 
         image = Image.open('/tmp/tncaptcha.jpg')
-        _logger.info('tncaptcha.......... ')
         left = location['x']
         top = location['y']
         right = location['x'] + size['width']
         bottom = location['y'] + size['height']
-        _logger.info('left.......... %s',left,top,right,bottom)
         image = image.crop((left, top, right, bottom))  # defines crop points
         image.save('/tmp/tncaptcha1.jpg', 'jpeg')
-
-        #src = img.get_attribute('src')
-        #context = ssl._create_unverified_context()
-        #urllib.urlretrieve(src, '/home/serveradmin/Desktop/captcha.jpg')
 
         img = Image.open('/tmp/tncaptcha1.jpg')
         img = img.convert("RGBA")
         pixdata = img.load()
-        _logger.info('pixdata[x, y].......... %s',pixdata)
         # print "pixdata[x, y]",pixdata
 
         for y in xrange(img.size[1]):
@@ -1658,7 +1649,7 @@ class stock_picking_out(osv.osv):
         #   Make the image bigger (needed for OCR)
         #img = img.resize((1000, 500))
         #img.save("/home/serveradmin/Desktop/esugam/new_"+case.driver_name+".jpeg")
-        time.sleep(5)
+        time.sleep(2)
         data = pytesseract.image_to_string(Image.open('/tmp/tncaptcha1.jpg'))
         _logger.info('data inside Captch.......... %s',data)
 
