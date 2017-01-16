@@ -1012,7 +1012,7 @@ class stock_picking_out(osv.osv):
             res['wc_num'] = i.wc_num or False
             res['w_report'] = i.w_report or False
             res['dc_report'] = i.dc_report or False
-            res['show_jjform'] = i.gen_jjform or False
+            res['show_jjform'] = i.show_jjform or False
             if freight:
                 res['freight']=freight
             else:
@@ -1341,7 +1341,7 @@ class stock_picking_out(osv.osv):
                 voucher_obj.proforma_voucher(cr, uid,[vid],context=ctxt)
 
             # Tamilnadu Vat
-            if (case.partner_id.gen_esugam == True or case.gen_esugam) and case.state_id.code == 'TN':
+            if (case.partner_id.gen_jjform == True or case.gen_jjform) and case.state_id.code == 'TN':
                 esugam_ids = []
                 cr.execute(""" select e.id
                    from esugam_master e
