@@ -1322,8 +1322,12 @@ class stock_picking_out(osv.osv):
 #                 print ln.state, "state"
                 if not ln.product_qty >0 : 
                     raise osv.except_osv(_('Warning'),_('Please Enter the Valid Loaded Qty'))
-                
-                
+
+            if len(case.esugam_no)>2:
+                raise osv.except_osv(_('Warning'),_('E-sugam is Already Generated for this Delivery Challan'))
+
+            if len(case.jjform_no)>2:
+                raise osv.except_osv(_('Warning'),_('JJ-from is Already Generated for this Delivery Challan'))
                   
             #for creating vKW_Depotoucher lines
             if case.transporter_id and case.freight_advance >0 and case.transporter_id.name !='Others':
@@ -1384,7 +1388,7 @@ class stock_picking_out(osv.osv):
                                       'esugam_no'       : esugam,
                                       'transit_date'    : today,
                                       'jjform_no'       : jjform
-                                      }) 
+                                      })
 #             move_obj.action_done(cr, uid, move_ids, context=None)
             return True
 
