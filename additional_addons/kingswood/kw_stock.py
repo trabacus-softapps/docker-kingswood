@@ -1323,10 +1323,10 @@ class stock_picking_out(osv.osv):
                 if not ln.product_qty >0 : 
                     raise osv.except_osv(_('Warning'),_('Please Enter the Valid Loaded Qty'))
 
-            if len(case.esugam_no)>2:
+            if context.get("confirm_vat") and case.esugam_no != 0:
                 raise osv.except_osv(_('Warning'),_('E-sugam is Already Generated for this Delivery Challan'))
 
-            if len(case.jjform_no)>2:
+            if context.get("confirm_tnvat") and case.jjform_no !=0:
                 raise osv.except_osv(_('Warning'),_('JJ-from is Already Generated for this Delivery Challan'))
                   
             #for creating vKW_Depotoucher lines
@@ -1345,7 +1345,7 @@ class stock_picking_out(osv.osv):
                 voucher_obj.proforma_voucher(cr, uid,[vid],context=ctxt)
 
             # Tamilnadu Vat
-            if (case.partner_id.gen_jjform == True or case.gen_jjform) and case.state_id.code == 'TN':
+            if (case.partner_id.gen_jjform == True or case.gen_jjform) and (context.get('state') == 'TN' or case.state_id.code == 'TN'):
                 esugam_ids = []
                 cr.execute(""" select e.id
                    from esugam_master e
@@ -1364,7 +1364,7 @@ class stock_picking_out(osv.osv):
                             jjform = self.generate_tnvat(cr, uid, desc, qty, price, product_id, username, password, url, url2, url3, case, context)
 
 
-            if (case.partner_id.gen_esugam == True or case.gen_esugam) and user_id.partner_id.state_id.name =='Karnataka' and case.state_id.name == 'Karnataka':
+            if (case.partner_id.gen_esugam == True or case.gen_esugam) and ((user_id.partner_id.state_id.code =='KA' and case.state_id.code == 'KA') or context.get('state')=='KA'):
                 for e in case.company_id.esugam_ids:
                     if e.state_id.id == user_id.partner_id.state_id.id:
                         username = e.username
@@ -1375,7 +1375,7 @@ class stock_picking_out(osv.osv):
                 """ Esugam Site security reason commented"""
                 esugam = self.generate_esugam(cr,uid,desc, qty, price, product_id, username, password, url1,url2, url3, case, context)
             
-            elif (case.partner_id.gen_esugam == True or case.gen_esugam) and case.partner_id.state_id.name == 'Karnataka' and case.state_id.name == 'Karnataka' and user_id.partner_id.state_id.name !='Andhra Pradesh':
+            elif (case.partner_id.gen_esugam == True or case.gen_esugam) and ((case.partner_id.state_id.code == 'KA' and case.state_id.code == 'KA' and user_id.partner_id.state_id.code !='AP') or context.get('state'=='KA')):
                 esugam_ids = esugam_obj.search(cr, uid, [('state_id','=',case.partner_id.state_id.id)])
                 username = case.partner_id.es_username 
                 password = case.partner_id.es_password 

@@ -9,6 +9,15 @@
             <field name="model">vat.wizard</field>
             <field name="arch" type="xml">
                 <form string="Confirm Draft Delivery Orders" version="7.0">
+                    <group colspan="2" col="4">
+                    <group colspan="2" col="4">
+                        <field name="esugam_jjform" />
+                    </group>
+                        <group>
+
+                        </group>
+
+                    </group>
                     <p class="oe_grey">
                         Once draft Delivery Orders are confirmed, you will not be able
                         to modify them. The Delivery Orders will receive a unique

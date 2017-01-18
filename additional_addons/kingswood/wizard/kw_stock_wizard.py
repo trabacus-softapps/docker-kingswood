@@ -15,7 +15,7 @@ class vat_wizard(osv.osv_memory):
     _name = 'vat.wizard'
 
     _columns={
-        'esugam_jjform'  :   fields.selection([('esugam','Generate E-sugam'),('jjform','Generate JJ-form')]),
+        'esugam_jjform'  :   fields.selection([('esugam','Generate E-sugam'),('jjform','Generate JJ-form')],"VAT"),
 
              }
 
@@ -26,10 +26,14 @@ class vat_wizard(osv.osv_memory):
         pick_obj = self.pool.get('stock.picking.out')
         for case in self.browse(cr, uid, ids):
             for pick in pick_obj.browse(cr, uid, context.get("active_ids",[])):
-                if case.esugam_jjform == 'esugam' and pick.esugam_no == 0:
+                if case.esugam_jjform == 'esugam' and pick.esugam_no != 0:
                     raise osv.except_osv(_('Warning'),_("E-sugam is Already Created for this Delivery Challan."))
-                if case.esugam_jjform == 'jjform' and pick.jjform_no == 0:
+                if case.esugam_jjform == 'jjform' and pick.jjform_no != 0:
                     raise osv.except_osv(_('Warning'),_("JJ-form is Already Created for this Delivery Challan."))
+            if case.esugam_jjform == 'esugam':
+                context.update({'state' : 'KA'})
+            if case.esugam_jjform == 'jjform':
+                context.update({'state' : 'TN'})
         context.update({"confirm_tnvat":True})
         pick_obj.kw_confirm(cr, uid, context['active_ids'],context=context)
         return True
