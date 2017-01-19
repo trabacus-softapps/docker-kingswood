@@ -14,27 +14,14 @@ from openerp.osv.orm import setup_modifiers
 class vat_wizard(osv.osv_memory):
     _name = 'vat.wizard'
 
-    _columns={
-        'esugam_jjform'  :   fields.selection([('esugam','Generate E-sugam'),('jjform','Generate JJ-form')],"VAT"),
-
-             }
 
     def confirm(self, cr, uid, ids, context = None):
         if not context:
             context = {}
 
         pick_obj = self.pool.get('stock.picking.out')
-        for case in self.browse(cr, uid, ids):
-            for pick in pick_obj.browse(cr, uid, context.get("active_ids",[])):
-                if case.esugam_jjform == 'esugam' and pick.esugam_no != 0:
-                    raise osv.except_osv(_('Warning'),_("E-sugam is Already Created for this Delivery Challan."))
-                if case.esugam_jjform == 'jjform' and pick.jjform_no != 0:
-                    raise osv.except_osv(_('Warning'),_("JJ-form is Already Created for this Delivery Challan."))
-            if case.esugam_jjform == 'esugam':
-                context.update({'state' : 'KA'})
-            if case.esugam_jjform == 'jjform':
-                context.update({'state' : 'TN'})
-        context.update({"confirm_tnvat":True})
+        context.update({'state'         : 'KA',
+                        "confirm_tnvat" : True})
         pick_obj.kw_confirm(cr, uid, context['active_ids'],context=context)
         return True
 
@@ -44,44 +31,6 @@ vat_wizard()
 class stock_wizard(osv.osv_memory):
     _name = 'stock.wizard'
 
-    # def default_get(self, cr, uid, fields, context=None):
-    #     if not context:
-    #         context={}
-    #     res={}
-    #     today = time.strftime('%Y-%m-%d')
-    #     pick_obj = self.pool.get("stock.picking.out")
-    #
-    #     for pick in pick_obj.browse(cr, uid, context.get('active_ids',[])):
-    #         if (pick.partner_id.gen_esugam == True or pick.gen_esugam) and pick.state_id.name == 'Karnataka':
-    #             res['gen_esugam'] = True
-    #
-    #         if (pick.partner_id.gen_jjform == True or pick.gen_jjform) and pick.state_id.code == 'TN':
-    #             res['gen_jjform'] = True
-    #
-    #
-    #     return res
-
-    # def fields_view_get(self, cr, uid, view_id=None, view_type='form', context=None, toolbar=False, submenu=False):
-    #     if context is None:context = {}
-    #     pick_obj = self.pool.get("stock.picking.out")
-    #
-    #     res = super(stock_wizard, self).fields_view_get(cr, uid, view_id=view_id, view_type=view_type, context=context, toolbar=toolbar,submenu=False)
-    #     doc = etree.XML(res['arch'])
-    #     if view_type =='form':
-    #         for pick in pick_obj.browse(cr, uid, context.get("active_ids",[])):
-    #             if (pick.partner_id.gen_esugam == False and pick.gen_esugam == False):
-    #                 for node in doc.xpath("//field[@name='gen_esugam']"):
-    #                     node.set('invisible', '1')
-    #                     setup_modifiers(node, res['fields']['gen_esugam'])
-    #                     res['arch'] = etree.tostring(doc)
-    #
-    #             if (pick.partner_id.gen_jjform == False and pick.gen_jjform == False):
-    #                 for node in doc.xpath("//field[@name='gen_jjform']"):
-    #                     node.set('invisible', '1')
-    #                     setup_modifiers(node, res['fields']['gen_jjform'])
-    #                     res['arch'] = etree.tostring(doc)
-    #
-    #     return res
 
     _columns ={
                'gross_weight'   :   fields.float("Gross Weight", digits=(16,2)),
@@ -89,8 +38,6 @@ class stock_wizard(osv.osv_memory):
                'net_weight'     :   fields.float("Net Weight", digits=(16,2)),
                'loaded_qty'     :   fields.float('Loaded Quantity (MT)',digits=(0,3),track_visibility='onchange'),
 
-               # 'gen_esugam'     :   fields.boolean("Generate E-sugam"),
-               # 'gen_jjform'     :   fields.boolean("Generate JJ-form"),
 
                }
 
