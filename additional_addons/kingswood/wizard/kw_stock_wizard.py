@@ -21,7 +21,7 @@ class vat_wizard(osv.osv_memory):
 
         pick_obj = self.pool.get('stock.picking.out')
         context.update({'state'         : 'KA',
-                        "confirm_tnvat" : True})
+                        "confirm_esugam" : True})
         pick_obj.kw_confirm(cr, uid, context['active_ids'],context=context)
         return True
 

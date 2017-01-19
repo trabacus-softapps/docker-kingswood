@@ -773,7 +773,7 @@ class stock_picking_out(osv.osv):
                 'show_jjform'  : fields.related('partner_id','show_jjform',type='boolean',store=False),
                 'jjform_no'    : fields.char("JJform Number", size=50),
 
-                'es_active'    : fields.related('partner_id','Active',type='boolean',store=True),
+                'es_active'    : fields.related('partner_id','Active',type='boolean',store=False),
 
 
               }
@@ -1326,12 +1326,10 @@ class stock_picking_out(osv.osv):
                 if not ln.product_qty >0 : 
                     raise osv.except_osv(_('Warning'),_('Please Enter the Valid Loaded Qty'))
 
-            # if context.get("confirm_vat") and case.esugam_no != 0:
-            #     raise osv.except_osv(_('Warning'),_('E-sugam is Already Generated for this Delivery Challan'))
-            #
-            # if context.get("confirm_tnvat") and case.jjform_no !=0:
-            #     raise osv.except_osv(_('Warning'),_('JJ-from is Already Generated for this Delivery Challan'))
-                  
+            if context.get("confirm_esugam") and case.esugam_no != 0:
+                raise osv.except_osv(_('Warning'),_('E-sugam is Already Generated for this Delivery Challan'))
+
+
             #for creating vKW_Depotoucher lines
             if case.transporter_id and case.freight_advance >0 and case.transporter_id.name !='Others':
                 j_ids = journal_obj.search(cr, uid, [('type','=','cash'),('company_id','=',case.company_id.id)]) 
@@ -1348,26 +1346,27 @@ class stock_picking_out(osv.osv):
                 voucher_obj.proforma_voucher(cr, uid,[vid],context=ctxt)
 
             # Tamilnadu Vat
-            if (case.partner_id.gen_jjform == True or case.gen_jjform) and case.state_id.code == 'TN':
-                esugam_ids = []
-                cr.execute(""" select e.id
-                   from esugam_master e
-                   inner join res_country_state rcs on rcs.id = e.state_id
-                    where rcs.code = 'TN' order by e.id desc limit 1
-                           """)
-                esugam_ids = [x[0] for x in cr.fetchall()]
-                if esugam_ids:
-                    for e in esugam_obj.browse(cr, uid, esugam_ids):
-                        if e.state_id.id == case.state_id.id:
-                            username = e.username
-                            password = e.password
-                            url = e.url1
-                            url2 = e.url2
-                            url3 = e.url3
-                            jjform = self.generate_tnvat(cr, uid, desc, qty, price, product_id, username, password, url, url2, url3, case, context)
+            if not context.get("confirm_esugam", False):
+                if (case.partner_id.gen_jjform == True or case.gen_jjform) and case.state_id.code == 'TN':
+                    esugam_ids = []
+                    cr.execute(""" select e.id
+                       from esugam_master e
+                       inner join res_country_state rcs on rcs.id = e.state_id
+                        where rcs.code = 'TN' order by e.id desc limit 1
+                               """)
+                    esugam_ids = [x[0] for x in cr.fetchall()]
+                    if esugam_ids:
+                        for e in esugam_obj.browse(cr, uid, esugam_ids):
+                            if e.state_id.id == case.state_id.id:
+                                username = e.username
+                                password = e.password
+                                url = e.url1
+                                url2 = e.url2
+                                url3 = e.url3
+                                jjform = self.generate_tnvat(cr, uid, desc, qty, price, product_id, username, password, url, url2, url3, case, context)
 
 
-            if (case.partner_id.gen_esugam == True or case.gen_esugam) and user_id.partner_id.state_id.code =='KA' and case.state_id.code == 'KA':
+            if (case.partner_id.gen_esugam == True or case.gen_esugam) and user_id.partner_id.state_id.code =='KA' and case.state_id.code == 'KA' or context.get("confirm_esugam",False):
                 for e in case.company_id.esugam_ids:
                     if e.state_id.id == user_id.partner_id.state_id.id:
                         username = e.username
@@ -1375,13 +1374,17 @@ class stock_picking_out(osv.osv):
                         url1 = e.url1
                         url2 = e.url2
                         url3 = e.url3
+                        if context.get("confirm_esugam"):
+                            username = case.partner_id.es_username
+                            password = case.partner_id.es_password
+
                 """ Esugam Site security reason commented"""
                 esugam = self.generate_esugam(cr,uid,desc, qty, price, product_id, username, password, url1,url2, url3, case, context)
-            
+
             elif (case.partner_id.gen_esugam == True or case.gen_esugam) and case.partner_id.state_id.code == 'KA' and case.state_id.code == 'KA' and user_id.partner_id.state_id.code !='AP':
                 esugam_ids = esugam_obj.search(cr, uid, [('state_id','=',case.partner_id.state_id.id)])
-                username = case.partner_id.es_username 
-                password = case.partner_id.es_password 
+                username = case.partner_id.es_username
+                password = case.partner_id.es_password
                 url1 = case.partner_id.es_url1
                 url2 = case.partner_id.es_url2
                 esugam = self.generate_esugam(cr, uid, desc, qty, price, product_id, username, password, url1, url2, url2, case, context)
@@ -5195,7 +5198,7 @@ class stock_picking(osv.osv):
                 'show_jjform'  : fields.related('partner_id','show_jjform',type='boolean',store=False),
                 'jjform_no'    : fields.char("JJform Number", size=50),
 
-                'es_active'    : fields.related('partner_id','Active',type='boolean',store=True),
+                'es_active'    : fields.related('partner_id','Active',type='boolean',store=False),
 
               }
     _order = 'date desc'
