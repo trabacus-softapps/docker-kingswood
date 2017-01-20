@@ -373,3 +373,38 @@ class gross_profit_wiz(osv.osv):
             }
 
 gross_profit_wiz()
+
+
+class bank_details_wiz(osv.osv):
+    _name = 'bank.details.wiz'
+
+    _columns = {
+                'from_date'     :   fields.date("From Date"),
+                'to_date'       :   fields.date("To Date"),
+                'instrument_date' :   fields.date("Instrument Date"),
+                }
+
+
+    def print_bank_report(self, cr, uid, ids, context=None):
+        if not context:
+            cntext={}
+        report_data = []
+        for case in self.browse(cr, uid, ids):
+            report_name = 'Bank Details'
+            data={}
+            data['ids'] = ids
+            data['model'] = context.get('active_model','ir.ui.menu')
+            data['output_type'] = 'xls'
+            data['variables'] = {
+                                 'from_date'        : case.from_date,
+                                 'to_date'          : case.to_date,
+                                 'instrument_date'  : case.instrument_date,
+                                 }
+
+        return {
+        'type': 'ir.actions.report.xml',
+        'report_name': report_name,
+        'datas': data,
+            }
+
+bank_details_wiz()

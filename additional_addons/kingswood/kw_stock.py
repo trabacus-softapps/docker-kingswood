@@ -763,10 +763,13 @@ class stock_picking_out(osv.osv):
               # Bank details
                 'bank_name'     :   fields.char("Bank Name", size=100),
                 'ifsc_code'     :   fields.char("IFSC Cde", size=11),
-                'ac_holder'     :   fields.char("Account Holder Name", size=100),
+                'ac_holder'     :   fields.char("Beneficiary Name", size=100),
                 'ac_number'     :   fields.char("Account Number", size=30),
                 'bank_addr'     :   fields.text("Bank Address"),
                 'ac_holder_mob' :   fields.char("Mobile Number", size=10),
+                'ac_holder_pan' :   fields.char("Pan Number"),
+                'bene_code'     :   fields.char("Beneficiary Code"),
+
 
                 #esugam, for specific users
                 'gen_jjform'   : fields.boolean("Generate JJform"),
@@ -5192,10 +5195,12 @@ class stock_picking(osv.osv):
               # Bank details
                 'bank_name'     :   fields.char("Bank Name", size=100),
                 'ifsc_code'     :   fields.char("IFSC Cde", size=11),
-                'ac_holder'     :   fields.char("Account Holder Name", size=100),
+                'ac_holder'     :   fields.char("Beneficiary Name", size=100),
                 'ac_number'     :   fields.char("Account Number", size=30),
                 'bank_addr'     :   fields.text("Bank Address"),
                 'ac_holder_mob' :   fields.char("Mobile Number", size=10),
+                'ac_holder_pan' :   fields.char("Pan Number", size=20),
+                'bene_code'     :   fields.char("Beneficiary Code", size=30),
 
                 #esugam, for specific users
                 'gen_jjform'   : fields.boolean("Generate JJform"),
@@ -5956,10 +5961,12 @@ class stock_picking_in(osv.osv):
                # Bank details
                 'bank_name'     :   fields.char("Bank Name", size=100),
                 'ifsc_code'     :   fields.char("IFSC Cde", size=11),
-                'ac_holder'     :   fields.char("Account Holder Name", size=100),
+                'ac_holder'     :   fields.char("Beneficiary Name", size=100),
                 'ac_number'     :   fields.char("Account Number", size=30),
                 'bank_addr'     :   fields.text("Bank Address"),
                 'ac_holder_mob' :   fields.char("Mobile Number", size=10),
+                'ac_holder_pan' :   fields.char("Pan Number", size=20),
+                'bene_code'     :   fields.char("Beneficiary Code", size=30),
 
 
 

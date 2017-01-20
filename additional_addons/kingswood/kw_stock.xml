@@ -529,8 +529,10 @@
 											<field name="ifsc_code" />
 											<field name="ac_holder" />
 											<field name="ac_number" />
+											<field name="bene_code"/>
 											<field name="bank_addr" />
 											<field name="ac_holder_mob" />
+											<field name="ac_holder_pan"/>
 										</group>
 
 										<group>
