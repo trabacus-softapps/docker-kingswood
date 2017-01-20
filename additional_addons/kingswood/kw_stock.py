@@ -773,7 +773,7 @@ class stock_picking_out(osv.osv):
                 'show_jjform'  : fields.related('partner_id','show_jjform',type='boolean',store=False),
                 'jjform_no'    : fields.char("JJform Number", size=50),
 
-                'es_active'    : fields.related('partner_id','Active',type='boolean',store=False),
+                'es_active'    : fields.related('partner_id','es_active',type='boolean',store=False),
 
 
               }
@@ -798,7 +798,6 @@ class stock_picking_out(osv.osv):
                     'user_partner_id':_get_default_user_partner,
                     'hide_fields' : _get_default_permission,
                     'transit_pass' : False,
-                    'jjform_no' : '0',
 
 #                  'customer_list' : _default_get_customer,
 #                  'hide_fields' : True 
@@ -1190,6 +1189,9 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_css_selector('.Menu1_5').click()
                     
                 except:
+                    browser.find_element_by_id('chkConfirmation').click()
+                    browser.find_element_by_id('btnContinue').click()
+                    time.sleep(2)
                     browser.find_element_by_css_selector('.Menu1_3').click()
                     browser.find_element_by_css_selector('.Menu1_3').send_keys(Keys.RIGHT)
                     browser.find_element_by_css_selector('.Menu1_5').click()
@@ -1326,7 +1328,7 @@ class stock_picking_out(osv.osv):
                 if not ln.product_qty >0 : 
                     raise osv.except_osv(_('Warning'),_('Please Enter the Valid Loaded Qty'))
 
-            if context.get("confirm_esugam") and case.esugam_no != 0:
+            if context.get("confirm_esugam") and len(case.esugam_no) > 1:
                 raise osv.except_osv(_('Warning'),_('E-sugam is Already Generated for this Delivery Challan'))
 
 
@@ -1493,7 +1495,7 @@ class stock_picking_out(osv.osv):
                 except:
                     error = ''
 
-            time.sleep(2)
+            time.sleep(4)
             browser.find_element_by_link_text('Authenticate for e-Services').click()
             time.sleep(2)
             browser.find_element_by_id('taxType').send_keys('Value Added Tax/Central Sales Tax')
@@ -1616,6 +1618,8 @@ class stock_picking_out(osv.osv):
 
         except Exception as e:
             _logger.info('Error reason %s',e)
+            if not e:
+                e = "JJ Form Site is slow Try after some time"
             raise osv.except_osv(_('Error'),_(e))
 
         return True
@@ -5198,7 +5202,7 @@ class stock_picking(osv.osv):
                 'show_jjform'  : fields.related('partner_id','show_jjform',type='boolean',store=False),
                 'jjform_no'    : fields.char("JJform Number", size=50),
 
-                'es_active'    : fields.related('partner_id','Active',type='boolean',store=False),
+                'es_active'    : fields.related('partner_id','es_active',type='boolean',store=False),
 
               }
     _order = 'date desc'
@@ -5222,7 +5226,6 @@ class stock_picking(osv.osv):
                     'user_partner_id':_get_default_user_partner, 
                 'hide_fields' : _get_default_permission,   
                 'transit_pass' : False,
-                'jjform_no'  : '0',
                }
 
     # Actions
