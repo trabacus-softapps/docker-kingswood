@@ -387,7 +387,7 @@ class bank_details_wiz(osv.osv):
                 }
 
 
-    def generate_report(self, cr, uid, ids, context=None):
+    def bank_details_report(self, cr, uid, ids, context=None):
         if not context:
             context = {}
         rep_obj = self.pool.get('ir.actions.report.xml')
@@ -403,10 +403,9 @@ class bank_details_wiz(osv.osv):
         file_name = "bank_acc_details.xls"
         variables = {}
         partners = ''
-        pick_id = context.get('active_ids',False)
         pick_obj = self.pool.get('stock.picking')
 
-        template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_bank_details')
+        template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_bank_details_mail')
 
         cr.execute(""" select ru.partner_id
                         from res_groups_users_rel gu
@@ -469,11 +468,9 @@ class bank_details_wiz(osv.osv):
                         distinct(sp.id) as pick_id
 
                     from stock_picking sp
-                    inner join res_company rc on rc.id = sp.company_id
-                    inner join res_partner rp on rp.id = rc.partner_id
 
                     where sp.state = 'freight_paid'
-                    and sp.frtpaid_date::date >= ${from_date} and sp.frtpaid_date::date <= ${to_date}
+                    and sp.frtpaid_date::date >= ' """+str(case.from_date)+"""' and sp.frtpaid_date::date <= ' """+str(case.to_date)+""" '
                     and sp.is_bank_submit != True
 
             """)

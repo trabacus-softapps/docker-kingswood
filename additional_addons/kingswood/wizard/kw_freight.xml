@@ -575,7 +575,6 @@
                     <group col="4" colspan="2">
                         <field name="from_date" required="1"/>
                         <field name="to_date" required="1"/>
-                        <field name="instrument_date" required="1"/>
                     </group>
 
                     <group></group>

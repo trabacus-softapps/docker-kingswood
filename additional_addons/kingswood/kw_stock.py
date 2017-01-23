@@ -805,6 +805,7 @@ class stock_picking_out(osv.osv):
                     'user_partner_id':_get_default_user_partner,
                     'hide_fields' : _get_default_permission,
                     'transit_pass' : False,
+                    'is_bank_submit' :  False,
 
 #                  'customer_list' : _default_get_customer,
 #                  'hide_fields' : True 
@@ -1684,6 +1685,7 @@ class stock_picking_out(osv.osv):
     def kw_pay_freight(self, cr, uid, ids, context = None):
 #         if context.get('type', '') == 'out':
         today = time.strftime('%Y-%m-%d')
+        cur_date = time.strftime('%Y-%m-%d')
         voucher_obj = self.pool.get('account.voucher')
         journal_obj = self.pool.get('account.journal') 
         period_obj = self.pool.get('account.period')
@@ -1795,7 +1797,7 @@ class stock_picking_out(osv.osv):
                                 vid = voucher_obj.create(cr, uid, voucher_vals, context= context)
                                 if case.partner_id.freight or case.gen_freight:
                                     context.update({'freight':freight})
-                                self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':today})
+                                self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':cur_date})
                                 
                                 #TODO: Added functionlity of posting the entries on 29/04/2014
                                 voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
@@ -1845,7 +1847,7 @@ class stock_picking_out(osv.osv):
                                 context.update({'freight':freight})
                             #TODO: Remove the functionlity of posting the entries
                             #voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
-                            self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':today})
+                            self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':cur_date})
      
                         if user_id.role != 'customer' and user_id.role!='freight':
                                                        
@@ -1873,7 +1875,7 @@ class stock_picking_out(osv.osv):
                                 context.update({'freight':freight})
                             #TODO: Remove the functionlity of posting the entries
                             #voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
-                            self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':today})
+                            self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':cur_date})
                 
 
         
@@ -4890,6 +4892,7 @@ class stock_picking(osv.osv):
     
     def kw_pay_freight(self, cr, uid, ids, context = None):
 #         if context.get('type', '') == 'out':
+        cur_date = time.strftime('%Y-%m-%d')
         voucher_obj = self.pool.get('account.voucher')
         journal_obj = self.pool.get('account.journal') 
         period_obj = self.pool.get('account.period')
@@ -4970,7 +4973,7 @@ class stock_picking(osv.osv):
                         vid = voucher_obj.create(cr, uid, voucher_vals, context= context)
                         if case.partner_id.freight or case.gen_freight:
                             context.update({'freight':freight})
-                        self.write(cr, uid, ids, {'state':'freight_paid'})
+                        self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':cur_date})
                         #TODO: Remove the functionlity of posting the entries
                         #voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
                     
@@ -5002,7 +5005,7 @@ class stock_picking(osv.osv):
                                 context.update({'freight':freight})
                             #TODO: Remove the functionlity of posting the entries
                             #voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
-                            self.write(cr, uid, ids, {'state':'freight_paid'})
+                            self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':cur_date})
         return True
     
     def _get_new_date(self, cr, uid, ids, args, field_name, context = None):
@@ -5239,6 +5242,7 @@ class stock_picking(osv.osv):
                     'user_partner_id':_get_default_user_partner, 
                 'hide_fields' : _get_default_permission,   
                 'transit_pass' : False,
+                'is_bank_submit' : False,
                }
 
     # Actions
