@@ -778,6 +778,10 @@ class stock_picking_out(osv.osv):
 
                 'es_active'    : fields.related('partner_id','es_active',type='boolean',store=False),
 
+                # For Bank Account Details Report
+                'frtpaid_date'   : fields.date("Freight Paid Date"),
+                'is_bank_submit' : fields.boolean("Is Online Bank Submit"),
+
 
               }
     
@@ -1791,7 +1795,7 @@ class stock_picking_out(osv.osv):
                                 vid = voucher_obj.create(cr, uid, voucher_vals, context= context)
                                 if case.partner_id.freight or case.gen_freight:
                                     context.update({'freight':freight})
-                                self.write(cr, uid, ids, {'state':'freight_paid'})
+                                self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':today})
                                 
                                 #TODO: Added functionlity of posting the entries on 29/04/2014
                                 voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
@@ -1841,7 +1845,7 @@ class stock_picking_out(osv.osv):
                                 context.update({'freight':freight})
                             #TODO: Remove the functionlity of posting the entries
                             #voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
-                            self.write(cr, uid, ids, {'state':'freight_paid'})
+                            self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':today})
      
                         if user_id.role != 'customer' and user_id.role!='freight':
                                                        
@@ -1869,7 +1873,7 @@ class stock_picking_out(osv.osv):
                                 context.update({'freight':freight})
                             #TODO: Remove the functionlity of posting the entries
                             #voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
-                            self.write(cr, uid, ids, {'state':'freight_paid'})
+                            self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':today})
                 
 
         
@@ -5208,6 +5212,10 @@ class stock_picking(osv.osv):
                 'jjform_no'    : fields.char("JJform Number", size=50),
 
                 'es_active'    : fields.related('partner_id','es_active',type='boolean',store=False),
+
+                # For Bank Account Details Report
+                'frtpaid_date'   : fields.date("Freight Paid Date"),
+                'is_bank_submit' : fields.boolean("Is Online Bank Submit"),
 
               }
     _order = 'date desc'
