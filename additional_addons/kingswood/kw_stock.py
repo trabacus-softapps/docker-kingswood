@@ -1321,6 +1321,11 @@ class stock_picking_out(osv.osv):
 #             password = c.password
 #             url = c.url
         for case in self.browse(cr, uid, ids):
+            if case.jjform_no != '0':
+                jjform = case.jjform_no
+            else:
+                jjform = '0'
+
             if case.paying_agent_id:
                 self.write(cr,uid,ids,{'state_id':case.paying_agent_id.state_id.id})            
             for ln in case.move_lines:
