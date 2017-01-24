@@ -1323,6 +1323,7 @@ class stock_picking_out(osv.osv):
         for case in self.browse(cr, uid, ids):
             if case.jjform_no != '0':
                 jjform = case.jjform_no
+
             else:
                 jjform = '0'
 
