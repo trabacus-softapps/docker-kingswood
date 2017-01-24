@@ -4,6 +4,9 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from dateutil import parser
 from openerp.tools.translate import _
+import base64
+import netsvc
+from openerp import netsvc
 import re
 # from PyPDF import PdfFileReader, PdfFileWriter
 
@@ -373,3 +376,130 @@ class gross_profit_wiz(osv.osv):
             }
 
 gross_profit_wiz()
+
+
+class bank_details_wiz(osv.osv):
+    _name = 'bank.details.wiz'
+
+    _columns = {
+                'from_date'     :   fields.date("From Date"),
+                'to_date'       :   fields.date("To Date"),
+                }
+
+
+    def bank_details_report(self, cr, uid, ids, context=None):
+        if not context:
+            context = {}
+        rep_obj = self.pool.get('ir.actions.report.xml')
+        today = time.strftime('%Y-%m-%d')
+        mail_obj = self.pool.get('mail.mail')
+        email_obj = self.pool.get('email.template')
+        user_obj = self.pool.get('res.users')
+        mail_compose = self.pool.get('mail.compose.message')
+        print_report = True
+        partner_obj = self.pool.get('res.partner')
+        model_obj = 'stock.picking.out'
+        temp_obj = self.pool.get('email.template')
+        file_name = "bank_acc_details.xls"
+        variables = {}
+        partners = ''
+        pick_obj = self.pool.get('stock.picking')
+
+        template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_bank_details_mail')
+
+        cr.execute(""" select ru.partner_id
+                        from res_groups_users_rel gu
+                        inner join res_groups g on g.id = gu.gid
+                        inner join res_users ru on ru.id = gu.uid
+                        where g.name = 'KW_Admin'""")
+        # By Praveen
+        # if context.get('adl'):
+        #     cr.execute("select id from res_partner where ref ='ADL'")
+
+        for p in cr.fetchall():
+            p = partner_obj.browse(cr, uid,p[0])
+            if p.email and p.email not in partners:
+                partners += (p.email and p.email or "") + ","
+        if partners:
+            email_obj.write(cr, uid, [template.id], {'email_to':partners[0:-1]})
+
+        print_report = self.print_bank_report(cr, uid, ids, context)
+
+        print 'mail_id',template.report_template
+        report = print_report['datas']
+        if report:
+            variables = report['variables']
+
+        report_service = "report." + 'Bank Details'
+
+        service = netsvc.LocalService(report_service)
+        (result, format) = service.create(cr, uid, ids, {'model': 'bank.details.wiz','variables':variables}, context)
+        result = base64.b64encode(result)
+
+        if ids:
+            for case in self.browse(cr, uid, ids):
+    #                 (result, format) = service.create(cr, uid, ids, {'model': 'stock.picking.out'}, context)
+    #                 result = base64.b64encode(result)
+                attach_ids = self.pool.get('ir.attachment').create(cr, uid,
+                                                          {
+                                                           'name': file_name,
+                                                           'datas': result,
+                                                           'datas_fname': file_name,
+                                                           'res_model': 'bank.details.wiz',
+                                                           'res_id': case.id,
+                                                           'type': 'binary'
+                                                          },
+                                                          context=context)
+
+
+                temp_obj.dispatch_mail(cr,uid,[template.id],attach_ids,context)
+            print "template ......",template.id
+            mail_id = self.pool.get('email.template').send_mail(cr, uid, template.id, case.id, True, context=context)
+            mail_state = mail_obj.read(cr, uid, mail_id, ['state'], context=context)
+            try:
+                if mail_state and mail_state['state'] == 'exception':
+                    mail_state=mail_state
+            except:
+                pass
+
+            cr.execute("""
+
+                    select
+                        distinct(sp.id) as pick_id
+
+                    from stock_picking sp
+
+                    where sp.state = 'freight_paid'
+                    and sp.frtpaid_date::date >= ' """+str(case.from_date)+"""' and sp.frtpaid_date::date <= ' """+str(case.to_date)+""" '
+                    and sp.is_bank_submit != True
+
+            """)
+            pick_ids = [x[0] for x in cr.fetchall()]
+            if pick_ids:
+                pick_obj.write(cr, uid, pick_ids, {'is_bank_submit':True}, context)
+
+        return print_report
+
+
+    def print_bank_report(self, cr, uid, ids, context=None):
+        if not context:
+            cntext={}
+        report_data = []
+        for case in self.browse(cr, uid, ids):
+            report_name = 'Bank Details'
+            data={}
+            data['ids'] = ids
+            data['model'] = context.get('active_model','ir.ui.menu')
+            data['output_type'] = 'xls'
+            data['variables'] = {
+                                 'from_date'        : case.from_date,
+                                 'to_date'          : case.to_date,
+                                 }
+
+        return {
+        'type': 'ir.actions.report.xml',
+        'report_name': report_name,
+        'datas': data,
+            }
+
+bank_details_wiz()

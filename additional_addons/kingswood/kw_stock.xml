@@ -29,6 +29,9 @@
                      <field name="month" invisible="1"/>
                      <field name="year" invisible="1"/>
                      <field name="location_id" invisible="0"/>
+					<field name="frtpaid_date"/>
+					<field name="is_bank_submit"/>
+
                      <field name="sup_invoice" string="Facilitator Invoice" invisible="0"/>
 		             <field name="cust_invoice" string="Customer Invoice" attrs="{'invisible': [('type', '=', 'in')]}" />
                 	
@@ -107,7 +110,10 @@
                      <field name="year" invisible="1"/>
                      
                      <field name="sup_invoice" readonly="1"/>
-                	<field name="cust_invoice" readonly="1"/>	
+                	<field name="cust_invoice" readonly="1"/>
+
+					<field name="is_bank_submit" />
+					<field name="frtpaid_date" />
                 </tree>
             </field>
        </record>	
@@ -287,7 +293,10 @@
             				<button name="deliver" states="in_transit" string="Goods Accepted" type="object" class="oe_highlight" groups="kingswood.kw_customer_service,kingswood.kw_admin_service"/>
             				<button name="%(kw_action_confirm_id)d" states="draft" string="Confirm" type="action" 
             					class="oe_highlight" groups="kingswood.kw_supplier_service,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_freight_service"/>
-            				<button name="send_monthly_dispatch_mail" string="Monthly Dispatch" type="object" class="oe_highlight" invisible='1'/>
+							<button name="%(kw_vat_action_id)d"  string="Generate Esugam" type="action" class="oe_highlight"
+									attrs="{'invisible' : [('es_active','=',False),('state','!=','in_transit'),('jjform_no','!=',False)]}"/>
+
+							<button name="send_monthly_dispatch_mail" string="Monthly Dispatch" type="object" class="oe_highlight" invisible='1'/>
             				<button name="send_daily_dispatch_mail" string="Daily Dispatch" type="object" class="oe_highlight" invisible='1'/>
             				<!-- 
             				<button name="kw_pay_freight" string="Pay Freight" type="object" class="oe_highlight" confirm="Customer Login is Suppose To Click The Pay Freight Button. If You Click Now Only One Pay Freight Voucher Will Be Created Instead Of Two.Click Ok To Continue or Login as Customer And Pay Freight"
@@ -372,6 +381,7 @@
 		                    </h1>
 		                    <group col='6' colspan='2'>
 		                        <group>
+									<field name="es_active" invisible="1"/>
 		                        	<field name="transit_pass" invisible="1"/>
 		                        	<!-- <field name="test" invisible="0"/> -->
 		                        	<field name="billing_cycle" invisible="1"/>
@@ -387,14 +397,16 @@
 		                        		 
 		                            <field name="transit_date" invisible="1"/>
 		                            <field name="sup_invoice" invisible="1"/>
-		                        	<field name="cust_invoice" invisible="1"/>	 
+		                        	<field name="cust_invoice" invisible="1"/>
+									<fiend name="frtpaid_date"/>
+									<fiend name="is_bank_submit"/>
 		                            <field name="show_esugam" invisible="1" string="related"/>
 		                        	<field name="show_freight" invisible="1" string="related"/>
-		                        		<field name="pay_freight" invisible="1"/>  	 
-		                        		<field name="report" invisible="1"/>  	 
+		                        	<field name="pay_freight" invisible="1"/>
+		                        	<field name="report" invisible="1"/>
 		                        	<field name="purchase_id" invisible="1"/> 	 
-		                        <field name="freight" invisible="1"/> 	
-								 <field name="invoice_line_id" invisible="1"/>
+		                        	<field name="freight" invisible="1"/>
+								 	<field name="invoice_line_id" invisible="1"/>
 									
 									<field name="product_id" invisible="1"/> 
 									<!-- domain="[('customer','=',True)]" -->
@@ -525,8 +537,10 @@
 											<field name="ifsc_code" />
 											<field name="ac_holder" />
 											<field name="ac_number" />
+											<field name="bene_code"/>
 											<field name="bank_addr" />
 											<field name="ac_holder_mob" />
+											<field name="ac_holder_pan"/>
 										</group>
 
 										<group>
@@ -696,6 +710,9 @@
 					<form string="Delivery challan" version="7.0">
             			<header>
             				<button name="%(kw_action_confirm_id)d" states="draft" string="Confirm" type="object" class="oe_highlight" groups="kingswood.kw_supplier_service,kingswood.kw_depot_service,kingswood.kw_freight_service"/>
+							<button name="%(kw_vat_action_id)d"  string="Generate Esugam" type="action" class="oe_highlight"
+									attrs="{'invisible' : [('es_active','=',False),('state','!=','in_transit'),('jjform_no','!=',False)]}"/>
+
             				<button name="deliver" states="in_transit" string="Goods Accepted" type="object" class="oe_highlight" groups="kingswood.kw_customer_service"/>
             				<button name="kw_pay_freight" states="done" string="Pay Freight" type="object" class="oe_highlight"/>
             		        <button name="%(kingswood.action_change_product_qty_wzd)d" string="Update" 
@@ -713,6 +730,7 @@
 		                    </h1>
 		                     <group col='6' colspan='2'>
 		                        <group>
+									<field name="es_active" invisible="1"/>
 		                        	<field name="partner_id" options='{"no_open":True,"create": false, "create_edit": false}' on_change="onchange_partner_in(partner_id,gen_freight)" required="1" string="Customer"  domain="[('customer','=',True)]" attrs="{'readonly':[('state', 'in', ('in_transit','done','balance_paid'))]}" readonly="1"
 		                        		 widget='selection'/>
 		                            <field name="backorder_id" readonly="1" attrs="{'invisible': [('backorder_id','=',False)]}"/>

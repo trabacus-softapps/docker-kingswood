@@ -8,16 +8,39 @@ import calendar
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
 from dateutil import parser
+from lxml import etree
+from openerp.osv.orm import setup_modifiers
+
+class vat_wizard(osv.osv_memory):
+    _name = 'vat.wizard'
+
+
+    def confirm(self, cr, uid, ids, context = None):
+        if not context:
+            context = {}
+
+        pick_obj = self.pool.get('stock.picking.out')
+        context.update({'state'         : 'KA',
+                        "confirm_esugam" : True})
+        pick_obj.kw_confirm(cr, uid, context['active_ids'],context=context)
+        return True
+
+
+vat_wizard()
 
 class stock_wizard(osv.osv_memory):
     _name = 'stock.wizard'
+
+
     _columns ={
                'gross_weight'   :   fields.float("Gross Weight", digits=(16,2)),
                'tare_weight'    :   fields.float("Tare Weight", digits=(16,2)),
                'net_weight'     :   fields.float("Net Weight", digits=(16,2)),
-               'loaded_qty'  :   fields.float('Loaded Quantity (MT)',digits=(0,3),track_visibility='onchange'),
+               'loaded_qty'     :   fields.float('Loaded Quantity (MT)',digits=(0,3),track_visibility='onchange'),
+
+
                }
-    
+
     def cash_voucher(self,cr,uid,ids,context=None):
         stock_obj = self.pool.get('stock.picking.out')
         stock_ids = context.get('active_ids',[])
@@ -33,6 +56,7 @@ class stock_wizard(osv.osv_memory):
     
     def confirm(self, cr, uid, ids, context = None):
         pick_obj = self.pool.get('stock.picking.out')
+        context.update({'confirm_vat':True})
         pick_obj.kw_confirm(cr, uid, context['active_ids'],context=context)
         return True
     

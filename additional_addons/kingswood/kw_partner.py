@@ -166,6 +166,7 @@ class res_partner(osv.osv):
                 'customer'              :   fields.boolean('Customer', help="Check this box if this contact is a customer."),  
                 'gen_esugam'            :   fields.boolean('Generate ESugam No.',track_visibility='onchange'),
                 'farmers_ids'           :   fields.many2many('kw.farmers','farmers_list_rel','supplier_id','farmers_id','Farmers'),
+                'es_active'             :   fields.boolean("Active"),
                 'es_username'           :   fields.char("UserName",size=64),
                 'es_password'           :   fields.char("Password",size=64),
                 'es_url1'               :   fields.char("Url",size=64),

@@ -763,15 +763,24 @@ class stock_picking_out(osv.osv):
               # Bank details
                 'bank_name'     :   fields.char("Bank Name", size=100),
                 'ifsc_code'     :   fields.char("IFSC Cde", size=11),
-                'ac_holder'     :   fields.char("Account Holder Name", size=100),
+                'ac_holder'     :   fields.char("Beneficiary Name", size=100),
                 'ac_number'     :   fields.char("Account Number", size=30),
                 'bank_addr'     :   fields.text("Bank Address"),
                 'ac_holder_mob' :   fields.char("Mobile Number", size=10),
+                'ac_holder_pan' :   fields.char("Pan Number"),
+                'bene_code'     :   fields.char("Beneficiary Code"),
+
 
                 #esugam, for specific users
                 'gen_jjform'   : fields.boolean("Generate JJform"),
                 'show_jjform'  : fields.related('partner_id','show_jjform',type='boolean',store=False),
                 'jjform_no'    : fields.char("JJform Number", size=50),
+
+                'es_active'    : fields.related('partner_id','es_active',type='boolean',store=False),
+
+                # For Bank Account Details Report
+                'frtpaid_date'   : fields.date("Freight Paid Date"),
+                'is_bank_submit' : fields.boolean("Is Online Bank Submit"),
 
 
               }
@@ -796,7 +805,7 @@ class stock_picking_out(osv.osv):
                     'user_partner_id':_get_default_user_partner,
                     'hide_fields' : _get_default_permission,
                     'transit_pass' : False,
-                    'jjform_no' : '0',
+                    'is_bank_submit' :  False,
 
 #                  'customer_list' : _default_get_customer,
 #                  'hide_fields' : True 
@@ -1013,6 +1022,7 @@ class stock_picking_out(osv.osv):
             res['w_report'] = i.w_report or False
             res['dc_report'] = i.dc_report or False
             res['show_jjform'] = i.show_jjform or False
+            res['es_active'] = i.es_active or False
             if freight:
                 res['freight']=freight
             else:
@@ -1187,6 +1197,9 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_css_selector('.Menu1_5').click()
                     
                 except:
+                    browser.find_element_by_id('chkConfirmation').click()
+                    browser.find_element_by_id('btnContinue').click()
+                    time.sleep(2)
                     browser.find_element_by_css_selector('.Menu1_3').click()
                     browser.find_element_by_css_selector('.Menu1_3').send_keys(Keys.RIGHT)
                     browser.find_element_by_css_selector('.Menu1_5').click()
@@ -1308,6 +1321,11 @@ class stock_picking_out(osv.osv):
 #             password = c.password
 #             url = c.url
         for case in self.browse(cr, uid, ids):
+            if case.jjform_no != '0':
+                jjform = case.jjform_no
+            else:
+                jjform = '0'
+
             if case.paying_agent_id:
                 self.write(cr,uid,ids,{'state_id':case.paying_agent_id.state_id.id})            
             for ln in case.move_lines:
@@ -1322,9 +1340,11 @@ class stock_picking_out(osv.osv):
 #                 print ln.state, "state"
                 if not ln.product_qty >0 : 
                     raise osv.except_osv(_('Warning'),_('Please Enter the Valid Loaded Qty'))
-                
-                
-                  
+
+            if context.get("confirm_esugam") and len(case.esugam_no) > 1:
+                raise osv.except_osv(_('Warning'),_('E-sugam is Already Generated for this Delivery Challan'))
+
+
             #for creating vKW_Depotoucher lines
             if case.transporter_id and case.freight_advance >0 and case.transporter_id.name !='Others':
                 j_ids = journal_obj.search(cr, uid, [('type','=','cash'),('company_id','=',case.company_id.id)]) 
@@ -1341,26 +1361,27 @@ class stock_picking_out(osv.osv):
                 voucher_obj.proforma_voucher(cr, uid,[vid],context=ctxt)
 
             # Tamilnadu Vat
-            if (case.partner_id.gen_jjform == True or case.gen_jjform) and case.state_id.code == 'TN':
-                esugam_ids = []
-                cr.execute(""" select e.id
-                   from esugam_master e
-                   inner join res_country_state rcs on rcs.id = e.state_id
-                    where rcs.code = 'TN' order by e.id desc limit 1
-                           """)
-                esugam_ids = [x[0] for x in cr.fetchall()]
-                if esugam_ids:
-                    for e in esugam_obj.browse(cr, uid, esugam_ids):
-                        if e.state_id.id == case.state_id.id:
-                            username = e.username
-                            password = e.password
-                            url = e.url1
-                            url2 = e.url2
-                            url3 = e.url3
-                            jjform = self.generate_tnvat(cr, uid, desc, qty, price, product_id, username, password, url, url2, url3, case, context)
+            if not context.get("confirm_esugam", False):
+                if (case.partner_id.gen_jjform == True or case.gen_jjform) and case.state_id.code == 'TN':
+                    esugam_ids = []
+                    cr.execute(""" select e.id
+                       from esugam_master e
+                       inner join res_country_state rcs on rcs.id = e.state_id
+                        where rcs.code = 'TN' order by e.id desc limit 1
+                               """)
+                    esugam_ids = [x[0] for x in cr.fetchall()]
+                    if esugam_ids:
+                        for e in esugam_obj.browse(cr, uid, esugam_ids):
+                            if e.state_id.id == case.state_id.id:
+                                username = e.username
+                                password = e.password
+                                url = e.url1
+                                url2 = e.url2
+                                url3 = e.url3
+                                jjform = self.generate_tnvat(cr, uid, desc, qty, price, product_id, username, password, url, url2, url3, case, context)
 
 
-            if (case.partner_id.gen_esugam == True or case.gen_esugam) and user_id.partner_id.state_id.name =='Karnataka' and case.state_id.name == 'Karnataka':
+            if (case.partner_id.gen_esugam == True or case.gen_esugam) and user_id.partner_id.state_id.code =='KA' and case.state_id.code == 'KA' or context.get("confirm_esugam",False):
                 for e in case.company_id.esugam_ids:
                     if e.state_id.id == user_id.partner_id.state_id.id:
                         username = e.username
@@ -1368,13 +1389,17 @@ class stock_picking_out(osv.osv):
                         url1 = e.url1
                         url2 = e.url2
                         url3 = e.url3
+                        if context.get("confirm_esugam"):
+                            username = case.partner_id.es_username
+                            password = case.partner_id.es_password
+
                 """ Esugam Site security reason commented"""
                 esugam = self.generate_esugam(cr,uid,desc, qty, price, product_id, username, password, url1,url2, url3, case, context)
-            
-            elif (case.partner_id.gen_esugam == True or case.gen_esugam) and case.partner_id.state_id.name == 'Karnataka' and case.state_id.name == 'Karnataka' and user_id.partner_id.state_id.name !='Andhra Pradesh':
+
+            elif (case.partner_id.gen_esugam == True or case.gen_esugam) and case.partner_id.state_id.code == 'KA' and case.state_id.code == 'KA' and user_id.partner_id.state_id.code !='AP':
                 esugam_ids = esugam_obj.search(cr, uid, [('state_id','=',case.partner_id.state_id.id)])
-                username = case.partner_id.es_username 
-                password = case.partner_id.es_password 
+                username = case.partner_id.es_username
+                password = case.partner_id.es_password
                 url1 = case.partner_id.es_url1
                 url2 = case.partner_id.es_url2
                 esugam = self.generate_esugam(cr, uid, desc, qty, price, product_id, username, password, url1, url2, url2, case, context)
@@ -1384,7 +1409,7 @@ class stock_picking_out(osv.osv):
                                       'esugam_no'       : esugam,
                                       'transit_date'    : today,
                                       'jjform_no'       : jjform
-                                      }) 
+                                      })
 #             move_obj.action_done(cr, uid, move_ids, context=None)
             return True
 
@@ -1483,7 +1508,7 @@ class stock_picking_out(osv.osv):
                 except:
                     error = ''
 
-            time.sleep(2)
+            time.sleep(4)
             browser.find_element_by_link_text('Authenticate for e-Services').click()
             time.sleep(2)
             browser.find_element_by_id('taxType').send_keys('Value Added Tax/Central Sales Tax')
@@ -1606,6 +1631,8 @@ class stock_picking_out(osv.osv):
 
         except Exception as e:
             _logger.info('Error reason %s',e)
+            if not e:
+                e = "JJ Form Site is slow Try after some time"
             raise osv.except_osv(_('Error'),_(e))
 
         return True
@@ -1663,6 +1690,7 @@ class stock_picking_out(osv.osv):
     def kw_pay_freight(self, cr, uid, ids, context = None):
 #         if context.get('type', '') == 'out':
         today = time.strftime('%Y-%m-%d')
+        cur_date = time.strftime('%Y-%m-%d')
         voucher_obj = self.pool.get('account.voucher')
         journal_obj = self.pool.get('account.journal') 
         period_obj = self.pool.get('account.period')
@@ -1774,7 +1802,7 @@ class stock_picking_out(osv.osv):
                                 vid = voucher_obj.create(cr, uid, voucher_vals, context= context)
                                 if case.partner_id.freight or case.gen_freight:
                                     context.update({'freight':freight})
-                                self.write(cr, uid, ids, {'state':'freight_paid'})
+                                self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':cur_date})
                                 
                                 #TODO: Added functionlity of posting the entries on 29/04/2014
                                 voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
@@ -1824,7 +1852,7 @@ class stock_picking_out(osv.osv):
                                 context.update({'freight':freight})
                             #TODO: Remove the functionlity of posting the entries
                             #voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
-                            self.write(cr, uid, ids, {'state':'freight_paid'})
+                            self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':cur_date})
      
                         if user_id.role != 'customer' and user_id.role!='freight':
                                                        
@@ -1852,7 +1880,7 @@ class stock_picking_out(osv.osv):
                                 context.update({'freight':freight})
                             #TODO: Remove the functionlity of posting the entries
                             #voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
-                            self.write(cr, uid, ids, {'state':'freight_paid'})
+                            self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':cur_date})
                 
 
         
@@ -4869,6 +4897,7 @@ class stock_picking(osv.osv):
     
     def kw_pay_freight(self, cr, uid, ids, context = None):
 #         if context.get('type', '') == 'out':
+        cur_date = time.strftime('%Y-%m-%d')
         voucher_obj = self.pool.get('account.voucher')
         journal_obj = self.pool.get('account.journal') 
         period_obj = self.pool.get('account.period')
@@ -4949,7 +4978,7 @@ class stock_picking(osv.osv):
                         vid = voucher_obj.create(cr, uid, voucher_vals, context= context)
                         if case.partner_id.freight or case.gen_freight:
                             context.update({'freight':freight})
-                        self.write(cr, uid, ids, {'state':'freight_paid'})
+                        self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':cur_date})
                         #TODO: Remove the functionlity of posting the entries
                         #voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
                     
@@ -4981,7 +5010,7 @@ class stock_picking(osv.osv):
                                 context.update({'freight':freight})
                             #TODO: Remove the functionlity of posting the entries
                             #voucher_obj.proforma_voucher(cr, uid,[vid],context=context)
-                            self.write(cr, uid, ids, {'state':'freight_paid'})
+                            self.write(cr, uid, ids, {'state':'freight_paid','frtpaid_date':cur_date})
         return True
     
     def _get_new_date(self, cr, uid, ids, args, field_name, context = None):
@@ -5178,15 +5207,23 @@ class stock_picking(osv.osv):
               # Bank details
                 'bank_name'     :   fields.char("Bank Name", size=100),
                 'ifsc_code'     :   fields.char("IFSC Cde", size=11),
-                'ac_holder'     :   fields.char("Account Holder Name", size=100),
+                'ac_holder'     :   fields.char("Beneficiary Name", size=100),
                 'ac_number'     :   fields.char("Account Number", size=30),
                 'bank_addr'     :   fields.text("Bank Address"),
                 'ac_holder_mob' :   fields.char("Mobile Number", size=10),
+                'ac_holder_pan' :   fields.char("Pan Number", size=20),
+                'bene_code'     :   fields.char("Beneficiary Code", size=30),
 
                 #esugam, for specific users
                 'gen_jjform'   : fields.boolean("Generate JJform"),
                 'show_jjform'  : fields.related('partner_id','show_jjform',type='boolean',store=False),
                 'jjform_no'    : fields.char("JJform Number", size=50),
+
+                'es_active'    : fields.related('partner_id','es_active',type='boolean',store=False),
+
+                # For Bank Account Details Report
+                'frtpaid_date'   : fields.date("Freight Paid Date"),
+                'is_bank_submit' : fields.boolean("Is Online Bank Submit"),
 
               }
     _order = 'date desc'
@@ -5210,7 +5247,7 @@ class stock_picking(osv.osv):
                     'user_partner_id':_get_default_user_partner, 
                 'hide_fields' : _get_default_permission,   
                 'transit_pass' : False,
-                'jjform_no'  : '0',
+                'is_bank_submit' : False,
                }
 
     # Actions
@@ -5941,10 +5978,12 @@ class stock_picking_in(osv.osv):
                # Bank details
                 'bank_name'     :   fields.char("Bank Name", size=100),
                 'ifsc_code'     :   fields.char("IFSC Cde", size=11),
-                'ac_holder'     :   fields.char("Account Holder Name", size=100),
+                'ac_holder'     :   fields.char("Beneficiary Name", size=100),
                 'ac_number'     :   fields.char("Account Number", size=30),
                 'bank_addr'     :   fields.text("Bank Address"),
                 'ac_holder_mob' :   fields.char("Mobile Number", size=10),
+                'ac_holder_pan' :   fields.char("Pan Number", size=20),
+                'bene_code'     :   fields.char("Beneficiary Code", size=30),
 
 
 

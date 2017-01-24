@@ -341,11 +341,16 @@
 				
 				<xpath expr='//page[@string="Accounting"]' position="after">
 				<page string="E-sugam Details" attrs="{'invisible':[('supplier','!=',False)]}" >
-					<group col="4" colspan="4">
-						<field name="es_url1" colspan="4"/>
-						<field name="es_url2" colspan="4"/>
-						<field name="es_username" />
-						<field name="es_password" password="1"/> 							
+					<group col="4" colspan="2">
+						<group >
+							<field name="es_url1" />
+							<field name="es_url2" />
+						</group>
+						<group>
+							<field name="es_active"/>
+							<field name="es_username" attrs="{'required' : [('es_active','!=',False)]}"/>
+							<field name="es_password" password="1" attrs="{'required' : [('es_active','!=',False)]}"/>
+						</group>
 					</group>
 				</page>
 				</xpath>
@@ -353,12 +358,17 @@
  						<field name="gen_esugam" attrs="{'invisible':[('supplier','=',True)]}" /><label for="gen_esugam" attrs="{'invisible':[('supplier','=',True)]}"/>
  						<field name="freight"/><label for="freight"/>
  						<field name="show_freight"/><label for="show_freight"/>
- 						<group col="4" colspan="4">
- 							<field name="es_url1" colspan="4"/>
- 							<field name="es_url2" colspan="4"/>
- 							<field name="es_username" />
- 							<field name="es_password" password="1"/> 							
- 						</group>
+							<group col="4" colspan="2">
+								<group >
+									<field name="es_url1" />
+									<field name="es_url2" />
+								</group>
+								<group>
+									<field name="es_active"/>
+									<field name="es_username" attrs="{'required' : [('es_active','!=',False)]}" />
+									<field name="es_password" password="1" attrs="{'required' : [('es_active','!=',False)]}"/>
+								</group>
+							</group>
 				</xpath> 
 				<xpath expr="//field[@name='child_ids']/form/sheet/group/div/div/field[@name='state_id']" position="attributes">
  					 <attribute name="domain">[('country_id', '=',country_id)]</attribute>

@@ -1,6 +1,48 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <openerp>
     <data>
+
+                <!--####################################################### Vat Form ############################################################# -->
+
+        <record id="kw_vat_form" model="ir.ui.view">
+            <field name="name">kw.vat.form</field>
+            <field name="model">vat.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Confirm Draft Delivery Orders" version="7.0">
+                    <p class="oe_grey">
+                        Once draft Delivery Orders are confirmed, you will not be able
+                        to modify them. The Delivery Orders will receive a unique
+                        number and E-sugam entries will be created based on customers
+                    </p>
+                    <footer>
+                        <button name="confirm" type="object" string="Ok" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link"
+                            special="cancel" />
+                    </footer>
+
+                </form>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="kw_vat_action_id">
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">vat.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+
+	        <record model="ir.actions.act_window.view" id="kw_vat_action_form">
+	        	<field name="view_mode">form</field>
+	        	<field eval="2" name="sequence"/>
+	        	<field name="view_id" ref="kw_vat_form"/>
+	        	<field name="act_window_id" ref="kw_vat_action_id"/>
+	        </record>
+
+
         <!--####################################################### Wizard for Confirm button############################################################# -->
         
         <record id="kw_confirm_action_form" model="ir.ui.view">
