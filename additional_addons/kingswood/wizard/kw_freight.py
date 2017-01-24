@@ -385,7 +385,10 @@ class bank_details_wiz(osv.osv):
                 'from_date'     :   fields.date("From Date"),
                 'to_date'       :   fields.date("To Date"),
                 }
-
+    _defaults = {
+                'from_date' : lambda *a: time.strftime('%Y-%m-%d'),
+                'to_date'   : lambda *a: time.strftime('%Y-%m-%d'),
+                }
 
     def bank_details_report(self, cr, uid, ids, context=None):
         if not context:
@@ -450,8 +453,9 @@ class bank_details_wiz(osv.osv):
                                                            'type': 'binary'
                                                           },
                                                           context=context)
+                print "attach_ids......",attach_ids
 
-
+                temp_obj.write(cr, uid, [template.id], {'attachment_ids' : [(6, 0, [attach_ids])]}, context)
                 temp_obj.dispatch_mail(cr,uid,[template.id],attach_ids,context)
             print "template ......",template.id
             mail_id = self.pool.get('email.template').send_mail(cr, uid, template.id, case.id, True, context=context)
@@ -475,6 +479,7 @@ class bank_details_wiz(osv.osv):
 
             """)
             pick_ids = [x[0] for x in cr.fetchall()]
+            print "pick_ids........",pick_ids
             if pick_ids:
                 pick_obj.write(cr, uid, pick_ids, {'is_bank_submit':True}, context)
 

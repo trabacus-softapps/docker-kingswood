@@ -294,7 +294,7 @@
             				<button name="%(kw_action_confirm_id)d" states="draft" string="Confirm" type="action" 
             					class="oe_highlight" groups="kingswood.kw_supplier_service,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_freight_service"/>
 							<button name="%(kw_vat_action_id)d"  string="Generate Esugam" type="action" class="oe_highlight"
-									attrs="{'invisible' : [('es_active','=',False),('state','!=','in_transit'),('jjform_no','!=',False)]}"/>
+									attrs="{'invisible' : ['|','|',('state','not in',('in_transit')),('es_active','=',False),('jjform_no','=',False)]}"/>
 
 							<button name="send_monthly_dispatch_mail" string="Monthly Dispatch" type="object" class="oe_highlight" invisible='1'/>
             				<button name="send_daily_dispatch_mail" string="Daily Dispatch" type="object" class="oe_highlight" invisible='1'/>
