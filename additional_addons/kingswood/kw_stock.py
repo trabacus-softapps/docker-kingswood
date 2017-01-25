@@ -1632,9 +1632,7 @@ class stock_picking_out(osv.osv):
 
         except Exception as e:
             _logger.info('Error reason %s',e)
-            if not e:
-                e = "JJ Form Site is slow Try after some time"
-            raise osv.except_osv(_('Error'),_(e))
+            raise osv.except_osv(_('Esugam Site Is Down'),_('Please Try After Some Time'))
 
         return True
 
