@@ -429,10 +429,13 @@ class bank_details_wiz(osv.osv):
         print_report = self.print_bank_report(cr, uid, ids, context)
 
         print 'mail_id',template.report_template
+        print "----------->",print_report
+        print "datas----------->",print_report['datas']
+
         report = print_report['datas']
         if report:
             variables = report['variables']
-
+            print "variables----------->",report['variables']
         report_service = "report." + 'Bank Details'
 
         service = netsvc.LocalService(report_service)
@@ -466,20 +469,8 @@ class bank_details_wiz(osv.osv):
             except:
                 pass
 
-            cr.execute("""
-
-                    select
-                        distinct(sp.id) as pick_id
-
-                    from stock_picking sp
-
-                    where sp.state = 'freight_paid'
-                    and sp.frtpaid_date::date >= ' """+str(case.from_date)+"""' and sp.frtpaid_date::date <= ' """+str(case.to_date)+""" '
-                    and sp.is_bank_submit != True
-
-            """)
-            pick_ids = [x[0] for x in cr.fetchall()]
-            print "pick_ids........",pick_ids
+            pick_ids = print_report['datas']['variables'].get('pick_ids')
+            print "pick_ids........",print_report['datas']['variables'].get('pick_ids')
             if pick_ids:
                 pick_obj.write(cr, uid, pick_ids, {'is_bank_submit':True}, context)
 
@@ -496,11 +487,26 @@ class bank_details_wiz(osv.osv):
             data['ids'] = ids
             data['model'] = context.get('active_model','ir.ui.menu')
             data['output_type'] = 'xls'
-            data['variables'] = {
-                                 'from_date'        : case.from_date,
-                                 'to_date'          : case.to_date,
-                                 }
+            cr.execute("""
 
+                    select
+                        distinct(sp.id) as pick_id
+
+                    from stock_picking sp
+
+                    where sp.state = 'freight_paid'
+                    and sp.frtpaid_date::date >= ' """+str(case.from_date)+"""' and sp.frtpaid_date::date <= ' """+str(case.to_date)+""" '
+                    and sp.is_bank_submit != True
+
+            """)
+            pick_ids = [x[0] for x in cr.fetchall()]
+            print "pick_ids........",pick_ids
+            if pick_ids:
+                data['variables'] = {
+                                     'pick_ids' : pick_ids
+                                     }
+            else:
+                raise osv.except_osv(_('Warning'),_('There are no Delivery Challan for the Date Range.'))
         return {
         'type': 'ir.actions.report.xml',
         'report_name': report_name,

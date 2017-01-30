@@ -711,7 +711,7 @@
             			<header>
             				<button name="%(kw_action_confirm_id)d" states="draft" string="Confirm" type="object" class="oe_highlight" groups="kingswood.kw_supplier_service,kingswood.kw_depot_service,kingswood.kw_freight_service"/>
 							<button name="%(kw_vat_action_id)d"  string="Generate Esugam" type="action" class="oe_highlight"
-									attrs="{'invisible' : [('es_active','=',False),('state','!=','in_transit'),('jjform_no','!=',False)]}"/>
+									attrs="{'invisible' : ['|','|',('state','not in',('in_transit')),('es_active','=',False),('jjform_no','=',False)]}"/>
 
             				<button name="deliver" states="in_transit" string="Goods Accepted" type="object" class="oe_highlight" groups="kingswood.kw_customer_service"/>
             				<button name="kw_pay_freight" states="done" string="Pay Freight" type="object" class="oe_highlight"/>
