@@ -592,7 +592,7 @@
 
 
                     <footer>
-                        <button name="print_bank_report" string="Print" type="object" class="oe_highlight" />
+                        <button name="bank_details_report" string="Print" type="object" class="oe_highlight" />
                         <button string="Cancel" special="cancel" type="object" class="oe_highlight"/>
                     </footer>
                 </form>
