@@ -428,14 +428,10 @@ class bank_details_wiz(osv.osv):
 
         print_report = self.print_bank_report(cr, uid, ids, context)
 
-        print 'mail_id',template.report_template
-        print "----------->",print_report
-        print "datas----------->",print_report['datas']
 
         report = print_report['datas']
         if report:
             variables = report['variables']
-            print "variables----------->",report['variables']
         report_service = "report." + 'Bank Details'
 
         service = netsvc.LocalService(report_service)
@@ -456,11 +452,9 @@ class bank_details_wiz(osv.osv):
                                                            'type': 'binary'
                                                           },
                                                           context=context)
-                print "attach_ids......",attach_ids
 
                 temp_obj.write(cr, uid, [template.id], {'attachment_ids' : [(6, 0, [attach_ids])]}, context)
                 temp_obj.dispatch_mail(cr,uid,[template.id],attach_ids,context)
-            print "template ......",template.id
             mail_id = self.pool.get('email.template').send_mail(cr, uid, template.id, case.id, True, context=context)
             mail_state = mail_obj.read(cr, uid, mail_id, ['state'], context=context)
             try:
@@ -470,10 +464,8 @@ class bank_details_wiz(osv.osv):
                 pass
 
             pick_ids = print_report['datas']['variables'].get('pick_ids')
-            print "pick_ids........",print_report['datas']['variables'].get('pick_ids')
             if pick_ids:
-                pick_obj.write(cr, uid, pick_ids, {'is_bank_submit':True}, context)
-
+                cr.execute("""update stock_picking set is_bank_submit = true where id in %s""",(tuple(pick_ids),))
         return print_report
 
 
@@ -500,7 +492,6 @@ class bank_details_wiz(osv.osv):
 
             """)
             pick_ids = [x[0] for x in cr.fetchall()]
-            print "pick_ids........",pick_ids
             if pick_ids:
                 data['variables'] = {
                                      'pick_ids' : pick_ids
