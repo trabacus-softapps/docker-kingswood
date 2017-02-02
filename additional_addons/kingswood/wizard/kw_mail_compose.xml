@@ -345,7 +345,7 @@
         <record id="kw_bank_details_mail" model="email.template">
             <field name="name">Bank Account Details</field>
             <field name="model_id" ref="model_bank_details_wiz"/>
-            <field name="email_from"></field>
+            <field name="email_from">info@kingswood.in</field>
             <field name="email_to"></field>
             <field name="subject">ONLINE UPDATING OF BANK ACCOUNT DETAILS</field>
             <field name="body_html">

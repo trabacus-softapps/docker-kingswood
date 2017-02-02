@@ -779,8 +779,8 @@ class stock_picking_out(osv.osv):
                 'es_active'    : fields.related('partner_id','es_active',type='boolean',store=False),
 
                 # For Bank Account Details Report
-                'frtpaid_date'   : fields.date("Freight Paid Date"),
-                'is_bank_submit' : fields.boolean("Is Online Bank Submit"),
+                'frtpaid_date'   : fields.date("Freight Paid Date", select=1),
+                'is_bank_submit' : fields.boolean("Is Online Bank Submit",select=1),
 
 
               }
