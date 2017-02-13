@@ -338,6 +338,7 @@ class gross_profit_wiz(osv.osv):
                 'to_date'       :   fields.date("To Date"),
                 'partner_id'    :   fields.many2one("res.partner", "Customer"),
                 'product_id'    :   fields.many2one("product.product", "Product"),
+                'state_id'      :   fields.many2one("res.country.state", "State"),
                 }
 
 
@@ -347,6 +348,7 @@ class gross_profit_wiz(osv.osv):
         report_data = []
         partner_obj = self.pool.get("res.partner")
         prod_obj = self.pool.get("product.product")
+        state_obj = self.pool.get("res.country.state")
         for case in self.browse(cr, uid, ids):
             report_name = 'Gross Profit Report'
             data={}
@@ -361,11 +363,17 @@ class gross_profit_wiz(osv.osv):
                 product_id = prod_obj.search(cr, uid, [])
             else:
                 product_id = case.product_id.id
+            if case.state_id:
+                state_id = case.state_id.id
+            if not case.state_id:
+                state_id = state_obj.search(cr, uid, [])
+
             data['variables'] = {
                                  'from_date'    : case.from_date,
                                  'to_date'      : case.to_date,
                                  'partner_id'   : partner_id,
                                  'product_id'   : product_id,
+                                 'state_id'     : state_id,
 
                                  }
 
