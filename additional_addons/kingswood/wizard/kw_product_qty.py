@@ -48,6 +48,9 @@ class change_product_qty(osv.osv_memory):
         'product_qty'     : fields.float('Quantity',digits=(0,3)),
         'freight_balance' :fields.float('Freight Balance',digits=(0,2),track_visibility='onchange'),
         'loaded_qty'     : fields.float('Loaded Quantity',digits=(0,3)),
+
+         'location_id'   : fields.many2one("stock.location", "Source Location")
+
         }
     
     def default_get(self, cr, uid, fields, context=None):
@@ -431,10 +434,11 @@ class change_product_qty(osv.osv_memory):
                                    voucher_obj.action_cancel_draft( cr, uid, [kw_vocher.id], context=None)
                                    voucher_obj.write(cr,uid,[kw_vocher.id],{'account_id':freight_account,'company_id':comp,'period_id':period[0],'journal_id':journal_id,'amount':case.freight_balance})
                                    voucher_obj.button_proforma_voucher(cr,uid,[kw_vocher.id],context=None)
-                               
-                                   
+            if case.location_id:
+                cr.execute("update stock_picking set location_id="+str(case.location_id.id)+ " where id = "+str(stock_id[0])+" ")
+                cr.execute("update stock_move set location_id="+str(case.location_id.id)+ " where picking_id ="+str(stock_id[0])+" ")
 
-               
+
         return True
     
     
