@@ -281,7 +281,7 @@ class stock_picking_out(osv.osv):
                                 
                         # Picking Qty > Product Qty
                         if case.truck_id:
-                              if ln.unloaded_qty < ln.product_qty:
+                              if ln.unloaded_qty < ln.product_qty and (ln.product_qty  - ln.unloaded_qty) > (tol_qty/1000):
                                   deduction += ((ln.product_qty - (tol_qty/1000)) - ln.unloaded_qty) *1000 * tol_rate
 #                             if ((ln.product_qty - ln.unloaded_qty) * 1000) > (ln.product_qty * truck_id.tol_qty) :
 #                                 deduction += (((ln.product_qty - ln.unloaded_qty)*1000) - (ln.product_qty * tol_qty)) * tol_rate
@@ -4863,12 +4863,11 @@ class stock_picking(osv.osv):
                                 
                         # Picking Qty > Product Qty
                         if case.truck_id:
-                              if ln.unloaded_qty < ln.product_qty:
+                              if ln.unloaded_qty < ln.product_qty and (ln.product_qty  - ln.unloaded_qty) > (tol_qty/1000):
                                   deduction += ((ln.product_qty - (tol_qty/1000)) - ln.unloaded_qty) *1000 * tol_rate
 #                             if ((ln.product_qty - ln.unloaded_qty) * 1000) > (ln.product_qty * truck_id.tol_qty) :
 #                                 deduction += (((ln.product_qty - ln.unloaded_qty)*1000) - (ln.product_qty * tol_qty)) * tol_rate
-                                       
-                        
+
                 res[case.id]['freight_deduction'] = deduction
                 res[case.id]['freight_total'] = total
 #                 self.get_freight_balance(cr, uid, ids, context)
@@ -5221,8 +5220,8 @@ class stock_picking(osv.osv):
                 'es_active'    : fields.related('partner_id','es_active',type='boolean',store=False),
 
                 # For Bank Account Details Report
-                'frtpaid_date'   : fields.date("Freight Paid Date"),
-                'is_bank_submit' : fields.boolean("Is Online Bank Submit"),
+                'frtpaid_date'   : fields.date("Freight Paid Date", select=True),
+                'is_bank_submit' : fields.boolean("Is Online Bank Submit", select=True),
 
               }
     _order = 'date desc'

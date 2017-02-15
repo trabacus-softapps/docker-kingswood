@@ -533,14 +533,14 @@
 								<page string="Bank Details">
 									<group>
 										<group col="4" colspan="8">
-											<field name="bank_name" attrs="{'required': [('state','in',('done','freight_paid'))]}"/>
-											<field name="ifsc_code" attrs="{'required': [('state','in',('done','freight_paid'))]}"/>
-											<field name="ac_holder" attrs="{'required': [('state','in',('done','freight_paid'))]}"/>
-											<field name="ac_number" attrs="{'required': [('state','in',('done','freight_paid'))]}"/>
-											<field name="bene_code" attrs="{'required': [('state','in',('done','freight_paid'))]}"/>
-											<field name="bank_addr" attrs="{'required': [('state','in',('done','freight_paid'))]}"/>
-											<field name="ac_holder_mob" attrs="{'required': [('state','in',('done','freight_paid'))]}"/>
-											<field name="ac_holder_pan" attrs="{'required': [('state','in',('done','freight_paid'))]}"/>
+											<field name="bank_name" required="1"/>
+											<field name="ifsc_code" required="1"/>
+											<field name="ac_holder" required="1"/>
+											<field name="ac_number" required="1"/>
+											<field name="bene_code" invisible="1"/>
+											<field name="bank_addr" required="1"/>
+											<field name="ac_holder_mob" required="1"/>
+											<field name="ac_holder_pan" required="1"/>
 										</group>
 
 										<group>

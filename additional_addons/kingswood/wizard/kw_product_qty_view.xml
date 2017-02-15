@@ -53,6 +53,7 @@
                        		<field name="freight_balance" attrs="{'readonly': ['|',('sup', '=', True),('dc_state','not in', ('done','freight_paid'))],'required':[('type','=','out')],'invisible':[('type', '!=', 'out')]}"/>
                        		<field name="show_freight" invisible='1'/>
                        		<field name="gen_freight" attrs="{'readonly': ['|',('cust', '=', True),'|',('sup', '=', True),'|',('cust', '=', True)],'invisible':[('show_freight','!=',True)]}"/>
+							<field name="location_id" domain="[('usage','=','internal')]"/>
                        	</group>
 					</group>
 					 <field name="dc_state" invisible='1'/>
