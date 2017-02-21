@@ -509,7 +509,7 @@
 			                        <field name="amt_txt" invisible='1'/>
                                   	<field name="freight_deduction" string="Freight Deduction" attrs="{'invisible': [('state','in',('draft','in_transit'))]}"/>
 			                    	<field name="freight_balance" string="Freight Balance" attrs="{'invisible': [('state','in',('draft','in_transit'))],'readonly':[('state','in',('freight_paid'))]}"/>
-			                    	
+			                    	<field name="frieght_paid"  groups="kingswood.kw_customer_service"/>
 			                    	
 			                    </group>	
 		                     
@@ -533,20 +533,19 @@
 								<page string="Bank Details">
 									<group>
 										<group col="4" colspan="8">
+											<field name="frieght_paid" groups="kingswood.kw_customer_service"/>
 											<field name="bank_name" required="1"/>
 											<field name="ifsc_code" required="1"/>
 											<field name="ac_holder" required="1"/>
 											<field name="ac_number" required="1"/>
 											<field name="bene_code" invisible="1"/>
-											<field name="bank_addr" required="1"/>
 											<field name="ac_holder_mob" required="1"/>
 											<field name="ac_holder_pan" required="1"/>
+											<field name="bank_addr" required="1"/>
 										</group>
 
 										<group>
-
 										</group>
-
 									</group>
 								</page>
 
@@ -801,7 +800,7 @@
 			                        
 			                    	<field name="freight_deduction" string="Freight Deduction" attrs="{'invisible': [('state','in',('draft','in_transit'))]}"/>
 			                    	<field name="freight_balance" string="Freight Balance" attrs="{'invisible': [('state','in',('draft','in_transit'))],'readonly': [('state','in',('freight_paid'))]}"/>
-			                    	
+			                    	<field name="frieght_paid" groups="kingswood.kw_customer_service"/>
 			                    </group>
 			                   </group>	
 		                    <notebook>
@@ -939,7 +938,24 @@
                				 </field>            	
                             <field name="note" placeholder="Add an internal note..." class="oe_inline"/>
                         </page>
-                       
+							<page string="Bank Details">
+								<group>
+									<group col="4" colspan="8">
+										<field name="frieght_paid" groups="kingswood.kw_customer_service"/>
+										<field name="bank_name" required="1"/>
+										<field name="ifsc_code" required="1"/>
+										<field name="ac_holder" required="1"/>
+										<field name="ac_number" required="1"/>
+										<field name="bene_code" invisible="1"/>
+										<field name="ac_holder_mob" required="1"/>
+										<field name="ac_holder_pan" required="1"/>
+										<field name="bank_addr" required="1"/>
+									</group>
+
+									<group>
+									</group>
+								</group>
+							</page>
                     </notebook>
                 	</sheet>
 				</form>
@@ -1088,8 +1104,8 @@
 								<field name="ifsc_code" />
 								<field name="ac_holder" />
 								<field name="ac_number" />
-								<field name="bank_addr" />
 								<field name="ac_holder_mob" />
+								<field name="bank_addr" />
 							</group>
 
 							<group>

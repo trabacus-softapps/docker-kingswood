@@ -781,7 +781,7 @@ class stock_picking_out(osv.osv):
                 # For Bank Account Details Report
                 'frtpaid_date'   : fields.date("Freight Paid Date", select=1),
                 'is_bank_submit' : fields.boolean("Is Online Bank Submit",select=1),
-
+                'frieght_paid'   : fields.boolean("Is Freight Paid", select=True),
 
               }
     
@@ -806,6 +806,7 @@ class stock_picking_out(osv.osv):
                     'hide_fields' : _get_default_permission,
                     'transit_pass' : False,
                     'is_bank_submit' :  False,
+                    'frieght_paid'   : False,
 
 #                  'customer_list' : _default_get_customer,
 #                  'hide_fields' : True 
@@ -5222,6 +5223,7 @@ class stock_picking(osv.osv):
                 # For Bank Account Details Report
                 'frtpaid_date'   : fields.date("Freight Paid Date", select=True),
                 'is_bank_submit' : fields.boolean("Is Online Bank Submit", select=True),
+                'frieght_paid'   : fields.boolean("Is Freight Paid", select=True),
 
               }
     _order = 'date desc'
@@ -5246,6 +5248,7 @@ class stock_picking(osv.osv):
                 'hide_fields' : _get_default_permission,   
                 'transit_pass' : False,
                 'is_bank_submit' : False,
+                'frieght_paid'  : False,
                }
 
     # Actions
