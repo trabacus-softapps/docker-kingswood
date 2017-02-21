@@ -650,7 +650,7 @@ class stock_picking_out(osv.osv):
 #                 'partner_id': fields.many2one('res.partner', 'Partner',  domain="[('id', 'in', [int(s) for s in customer_list.split(',')])] )]", states={'done':[('readonly', True)], 'cancel':[('readonly',True)]}),
                   
 #                 'partner_id': fields.many2one('res.partner', 'Partner',   domain="[('id', 'in', [s for s in [13,5,6,22,970]] )]", states={'done':[('readonly', True)], 'cancel':[('readonly',True)]}),
-              'partner_id': fields.many2one('res.partner', 'Partner',track_visibility='onchange', states={'done':[('readonly', True)], 'cancel':[('readonly',True)]}),
+              'partner_id': fields.many2one('res.partner', 'Partner',track_visibility='onchange', states={'done':[('readonly', True)], 'cancel':[('readonly',True)]}, select=True),
               # NEw:
                 'work_order'    :   fields.function(get_workorder,store=True,type="char",string='Work Order Number',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
                 'truck_no'      :   fields.char('Vehicle Number',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
@@ -670,12 +670,12 @@ class stock_picking_out(osv.osv):
               'freight_deduction': fields.function(_get_freight_amount, type='float', string='Freight Deduction', store=True, multi="tot",track_visibility='onchange'),                 
 #               'freight_balance'  : fields.function(_get_freight_amount, type='float', string='Freight Balance', store=True, multi="tot"),
                 'freight_balance' :fields.float('Freight Balance',digits=(0,2),track_visibility='onchange'),
-              'city_id'          : fields.many2one('kw.city','From'),
+              'city_id'          : fields.many2one('kw.city','From', select=True),
               'transporter_id'   : fields.many2one('res.partner','Transporter'),
 #               'date'             : fields.datetime('Delivery Date', help="Creation date, usually the time of the order.", select=True, states={'done':[('readonly', True)], 'cancel':[('readonly',True)]}),
               'date_function'   : fields.function(_get_new_date,type='date',string="Creation Date",store=True,multi="date", track_visibility='onchange'),
               'delivery_date_function'   : fields.function(_get_new_date,type='date',string="Delivery Date",store=True,multi="date",track_visibility='onchange'),
-              'paying_agent_id' : fields.many2one('res.partner','Paying Agent',track_visibility='onchange'),
+              'paying_agent_id' : fields.many2one('res.partner','Paying Agent',track_visibility='onchange', select=True),
 #               ,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
               'paying_agent'    : fields.function(_get_paying_agent,type='char',method=True,string="paying_agent", store=True),
                'product'         : fields.function(_get_move_lines,type="char", size=30, string="Product",store=True, multi="move_lines"),
@@ -683,8 +683,8 @@ class stock_picking_out(osv.osv):
               'del_quantity'    :  fields.function(_get_move_lines,type="float", digits=(0,3),string="Delivered Quantity in MTs",store=True, multi="move_lines",track_visibility='onchange'),
               'transporter'     : fields.function(_get_move_lines,type="char", size=30,string="Transporter",store=True,multi="move_lines"),
               'price_unit'      : fields.function(_get_move_lines,type="float",string="Unit Price",store=True,multi="move_lines"),
-              'product_id'      : fields.many2one('product.product', 'Products',track_visibility='onchange'),
-              'state_id'        : fields.many2one('res.country.state','State'),
+              'product_id'      : fields.many2one('product.product', 'Products',track_visibility='onchange', select=True),
+              'state_id'        : fields.many2one('res.country.state','State', select=True),
               
               'truck_id'           : fields.many2one('goods.trucks','Trucks'),
               #for reporting purpose
@@ -696,10 +696,10 @@ class stock_picking_out(osv.osv):
               
               'purchase_id': fields.many2one('purchase.order', 'Purchase Order',
                                              ondelete='set null', select=True),
-                'location_id'     : fields.function(_get_move_lines,type="integer",string="location_id",store=True,multi="move_lines"),
+                'location_id'     : fields.function(_get_move_lines,type="integer",string="location_id",store=True,multi="move_lines", select=True),
 #                 'location_id'     : fields.function(_get_move_lines,type="many2one",relation = 'stock.location',string="Location",store=True,multi="move_lines"),
            
-              'users'           : fields.function(_get_move_lines,type="char", string="User",store=True, multi="move_lines"),
+              'users'           : fields.function(_get_move_lines,type="char", string="User",store=True, multi="move_lines", select=True),
               'freight'         : fields.function(_get_move_lines,type="boolean",string="freight",store=True,multi="move_lines"), 
               'transit_date'    : fields.datetime('Transit Date'),
               'rej_quantity'    :  fields.function(_get_move_lines,type="float", digits=(0,3),string="Rejected Quantity",store=True, multi="move_lines",track_visibility='onchange'),
@@ -750,7 +750,7 @@ class stock_picking_out(osv.osv):
                 'w_report'        : fields.related('partner_id','w_report',type='boolean',store=True,string="Weighment Slip Report"),   
                 'dc_report'        : fields.related('partner_id','dc_report',type='boolean',store=True,string="DC Report"),
                 'partner'       :   fields.function(_get_user,type='char',method=True,string="Partner", store=False,multi='user'),
-                 'dest_location_id'        : fields.many2one('stock.location','Location'),      
+                 'dest_location_id'        : fields.many2one('stock.location','Location', select=True),
                  'report_date'  :       fields.char('Date'),  
                  'hide_fields'     : fields.function(_get_permission,type='boolean',method=True,string="Permission", store=True),
                  'farmer_declaration' : fields.related('company_id','farmer_declaration', string="Farmer Declaration", type='binary', store=False),
@@ -781,7 +781,7 @@ class stock_picking_out(osv.osv):
                 # For Bank Account Details Report
                 'frtpaid_date'   : fields.date("Freight Paid Date", select=1),
                 'is_bank_submit' : fields.boolean("Is Online Bank Submit",select=1),
-
+                'frieght_paid'   : fields.boolean("Is Freight Paid", select=True),
 
               }
     
@@ -806,6 +806,7 @@ class stock_picking_out(osv.osv):
                     'hide_fields' : _get_default_permission,
                     'transit_pass' : False,
                     'is_bank_submit' :  False,
+                    'frieght_paid'   : False,
 
 #                  'customer_list' : _default_get_customer,
 #                  'hide_fields' : True 
@@ -4871,7 +4872,7 @@ class stock_picking(osv.osv):
 #                             if ((ln.product_qty - ln.unloaded_qty) * 1000) > (ln.product_qty * truck_id.tol_qty) :
 #                                 deduction += (((ln.product_qty - ln.unloaded_qty)*1000) - (ln.product_qty * tol_qty)) * tol_rate
 
-                res[case.id]['freight_deduction'] = deduction
+                res[case.id]['freight_deduction'] = round(deduction)
                 res[case.id]['freight_total'] = total
 #                 self.get_freight_balance(cr, uid, ids, context)
 #                 if case.freight_charge > 0:
@@ -5094,7 +5095,7 @@ class stock_picking(osv.osv):
      
     _columns={
                #standard
-               'partner_id': fields.many2one('res.partner', 'Partner', track_visibility='onchange',states={'done':[('readonly', True)], 'cancel':[('readonly',True)],'freight_paid':[('readonly',True)]}),
+               'partner_id': fields.many2one('res.partner', 'Partner', track_visibility='onchange',states={'done':[('readonly', True)], 'cancel':[('readonly',True)],'freight_paid':[('readonly',True)]}, select=True),
               # New:
                
                'work_order'    :   fields.function(get_workorder,store=True,type="char",string='Work Order Number',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
@@ -5115,12 +5116,12 @@ class stock_picking(osv.osv):
               'freight_total'    : fields.function(_get_freight_amount, type='float', string='Freight Total', store=True, multi="tot",track_visibility='onchange'),
               'freight_deduction': fields.function(_get_freight_amount, type='float', string='Freight Deduction', store=True, multi="tot",track_visibility='onchange'),                 
 #               'freight_balance'  : fields.function(_get_freight_amount, type='float', string='Freight Balance', store=True, multi="tot"),
-              'city_id'          : fields.many2one('kw.city','From'),
-              'transporter_id'   : fields.many2one('res.partner','Transporter'),
+              'city_id'          : fields.many2one('kw.city','From', select=True),
+              'transporter_id'   : fields.many2one('res.partner','Transporter', select=True),
               'date_function'   : fields.function(_get_new_date,type='date',string="Creation Date",store=True,multi="date"),
               'delivery_date_function'   : fields.function(_get_new_date,type='date',string="Delivery Date",store=True,multi="date",track_visibility='onchange'),    
                'user_log'        : fields.function(_get_user,type='char',method=True,string="Permission", store=False,multi='user'),
-              'paying_agent_id'     : fields.many2one('res.partner','Paying Agent',track_visibility='onchange'),
+              'paying_agent_id'     : fields.many2one('res.partner','Paying Agent',track_visibility='onchange', select=True),
 #                                                       states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
               'paying_agent'    : fields.function(_get_paying_agent,type='char',method=True,string="paying_agent", store=True),        
 #               'customer_list'   : fields.function(_get_customer, type='text', string='Customers List' ,store=True),
@@ -5132,12 +5133,12 @@ class stock_picking(osv.osv):
             'transporter'     : fields.function(_get_move_lines,type="char", size=30,string="Transporter",store=True,multi="move_lines"),
             'price_unit'      : fields.function(_get_move_lines,type="float",string="Unit Price",store=True,multi="move_lines"),
 
-            'product_id'       : fields.many2one('product.product', 'Products',track_visibility='onchange'),
+            'product_id'       : fields.many2one('product.product', 'Products',track_visibility='onchange', select=True),
             'freight_balance' :fields.float('Freight Balance',digits=(0,2),track_visibility='onchange'),
-             'state_id'        : fields.many2one('res.country.state','State'),
+             'state_id'        : fields.many2one('res.country.state','State', select=True),
             'move_lines'        : fields.one2many('stock.move', 'picking_id', 'Internal Moves', states={'done': [('readonly', True)], 'cancel': [('readonly', True)]},track_visibility='onchange'),
             
-            'truck_id'           : fields.many2one('goods.trucks','Trucks'),
+            'truck_id'           : fields.many2one('goods.trucks','Trucks', select=True),
             
             'cft1'    :  fields.function(_get_move_lines,type="float", digits=(0,3),string='CFT Size1',multi="move_lines",track_visibility='onchange',
                                          store=True),
@@ -5159,7 +5160,7 @@ class stock_picking(osv.osv):
               'oinvoice_line_id'    : fields.many2one('account.invoice.line', 'Other Facilitator invoice line'),
                'purchase_id': fields.many2one('purchase.order', 'Purchase Order',
                                              ondelete='set null', select=True),
-              'location_id'     : fields.function(_get_move_lines,type="integer",string="location_id",store=True,multi="move_lines"),
+              'location_id'     : fields.function(_get_move_lines,type="integer",string="location_id",store=True,multi="move_lines", select=True),
              
               'users'           : fields.function(_get_move_lines,type="char", string="User",store=True, multi="move_lines"), 
               'freight'         : fields.function(_get_move_lines,type="boolean",string="freight",store=True,multi="move_lines"),
@@ -5225,6 +5226,7 @@ class stock_picking(osv.osv):
                 # For Bank Account Details Report
                 'frtpaid_date'   : fields.date("Freight Paid Date", select=True),
                 'is_bank_submit' : fields.boolean("Is Online Bank Submit", select=True),
+                'frieght_paid'   : fields.boolean("Is Freight Paid", select=True),
 
               }
     _order = 'date desc'
@@ -5249,6 +5251,7 @@ class stock_picking(osv.osv):
                 'hide_fields' : _get_default_permission,   
                 'transit_pass' : False,
                 'is_bank_submit' : False,
+                'frieght_paid'  : False,
                }
 
     # Actions

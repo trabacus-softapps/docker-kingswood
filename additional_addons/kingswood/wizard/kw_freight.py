@@ -496,7 +496,7 @@ class bank_details_wiz(osv.osv):
 
                     where sp.state = 'freight_paid'
                     and sp.frtpaid_date::date >= ' """+str(case.from_date)+"""' and sp.frtpaid_date::date <= ' """+str(case.to_date)+""" '
-                    and sp.is_bank_submit != True
+                    and sp.is_bank_submit != True and sp.freight_paid != True
 
             """)
             pick_ids = [x[0] for x in cr.fetchall()]
