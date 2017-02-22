@@ -4167,8 +4167,11 @@ class stock_picking_out(osv.osv):
         if not context:
             context= {}
         context.update({'summary': False})
+        _logger.info('DC Mail Before==========================> %s',context)
         
-        print_report = self.send_dispatch_mail(cr,uid,[uid],context)        
+        print_report = self.send_dispatch_mail(cr,uid,[uid],context)
+        _logger.info('DC Mail After==========================> %s',context)
+
         return print_report    
     
     def send_daily_facilitator_mail(self, cr, uid, automatic=False, use_new_cursor=False, context=None):
@@ -4294,7 +4297,7 @@ class stock_picking_out(osv.osv):
         if summary:
            template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_send_monthly_mail')
 
-            
+        _logger.info('Inside the Send Mail Function==========================> %s',context)
 # for non dispacth DC        
 #         if facilitator:
 #            template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_facilitator_daily_mail')
@@ -4324,7 +4327,7 @@ class stock_picking_out(osv.osv):
             template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_daily_dispatch_in_out')
             file_name = "daily_dispatch_in_out_report.xls"
         
-        print "partners.....",partners[0:-1]
+        _logger.info('DC Mail Before==========================> %s',partners[0:-1])
         if partners:
             email_obj.write(cr, uid, [template.id], {'email_to':partners[0:-1]})
 
@@ -4372,7 +4375,7 @@ class stock_picking_out(osv.osv):
         service = netsvc.LocalService(report_service)
         (result, format) = service.create(cr, uid, ids, {'model': 'stock.picking.out','variables':variables}, context)        
         result = base64.b64encode(result)
-        
+        _logger.info('result==========================> %s',result)
         if ids:
             for case in self.browse(cr,uid,[ids[0]]):            
     #                 (result, format) = service.create(cr, uid, ids, {'model': 'stock.picking.out'}, context)        
@@ -4398,7 +4401,7 @@ class stock_picking_out(osv.osv):
                     mail_state=mail_state
             except:
                 pass                 
-            print "..................................."
+            _logger.info('mail_state==========================> %s',mail_state)
         cr.execute("delete from email_template_attachment_rel where email_template_id="+str(template.id))  
         cr.execute("delete from ir_attachment where lower(datas_fname) like '%dispatch%'")        
 #         attachment_ids = [(4, attach_ids)]
