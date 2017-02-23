@@ -509,7 +509,7 @@
 			                        <field name="amt_txt" invisible='1'/>
                                   	<field name="freight_deduction" string="Freight Deduction" attrs="{'invisible': [('state','in',('draft','in_transit'))]}"/>
 			                    	<field name="freight_balance" string="Freight Balance" attrs="{'invisible': [('state','in',('draft','in_transit'))],'readonly':[('state','in',('freight_paid'))]}"/>
-			                    	<field name="frieght_paid"  groups="kingswood.kw_customer_service"/>
+			                    	<field name="frieght_paid"  attrs ="{'readonly': [('state','in',('freight_paid'))]}" groups="kingswood.kw_customer_service"/>
 			                    	
 			                    </group>	
 		                     
@@ -533,7 +533,6 @@
 								<page string="Bank Details">
 									<group>
 										<group col="4" colspan="8">
-											<field name="frieght_paid" groups="kingswood.kw_customer_service"/>
 											<field name="bank_name" required="1"/>
 											<field name="ifsc_code" required="1"/>
 											<field name="ac_holder" required="1"/>
@@ -800,7 +799,7 @@
 			                        
 			                    	<field name="freight_deduction" string="Freight Deduction" attrs="{'invisible': [('state','in',('draft','in_transit'))]}"/>
 			                    	<field name="freight_balance" string="Freight Balance" attrs="{'invisible': [('state','in',('draft','in_transit'))],'readonly': [('state','in',('freight_paid'))]}"/>
-			                    	<field name="frieght_paid" groups="kingswood.kw_customer_service"/>
+			                    	<field name="frieght_paid" attrs ="{'readonly': [('state','in',('freight_paid'))]}" groups="kingswood.kw_customer_service"/>
 			                    </group>
 			                   </group>	
 		                    <notebook>
@@ -941,7 +940,6 @@
 							<page string="Bank Details">
 								<group>
 									<group col="4" colspan="8">
-										<field name="frieght_paid" groups="kingswood.kw_customer_service"/>
 										<field name="bank_name" required="1"/>
 										<field name="ifsc_code" required="1"/>
 										<field name="ac_holder" required="1"/>
