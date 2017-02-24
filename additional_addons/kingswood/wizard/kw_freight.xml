@@ -576,6 +576,8 @@
                     <group col="4" colspan="2">
                         <field name="from_date" required="1"/>
                         <field name="to_date" required="1"/>
+                        <field name="partner_id"/>
+                        <field name="state_id"/>
                     </group>
 
                     <group></group>

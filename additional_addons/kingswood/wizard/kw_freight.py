@@ -7,7 +7,11 @@ from openerp.tools.translate import _
 import base64
 import netsvc
 from openerp import netsvc
+import pytz
+import logging
+_logger = logging.getLogger(__name__)
 import re
+
 # from PyPDF import PdfFileReader, PdfFileWriter
 
 class kw_freight(osv.osv_memory):
@@ -392,7 +396,11 @@ class bank_details_wiz(osv.osv):
     _columns = {
                 'from_date'     :   fields.date("From Date"),
                 'to_date'       :   fields.date("To Date"),
+                'partner_id'    :   fields.many2one("res.partner", "Customer"),
+                'state_id'      :   fields.many2one("res.country.state", "State")
                 }
+
+
     _defaults = {
                 'from_date' : lambda *a: time.strftime('%Y-%m-%d'),
                 'to_date'   : lambda *a: time.strftime('%Y-%m-%d'),
@@ -414,7 +422,7 @@ class bank_details_wiz(osv.osv):
         file_name = "bank_acc_details.xls"
         variables = {}
         partners = ''
-        pick_obj = self.pool.get('stock.picking')
+        pick_obj = self.pool.get('stock.picking.out')
 
         template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_bank_details_mail')
 
@@ -474,6 +482,14 @@ class bank_details_wiz(osv.osv):
             pick_ids = print_report['datas']['variables'].get('pick_ids')
             if pick_ids:
                 cr.execute("""update stock_picking set is_bank_submit = true where id in %s""",(tuple(pick_ids),))
+                # Calling Pay Freight Function
+
+                for pick in pick_obj.browse(cr, uid, pick_ids):
+                    cust_uid = user_obj.search(cr, uid, [('partner_id','=',pick.partner_id.id)])
+                    if cust_uid and pick.freight_charge > 0:
+                        pick_obj.kw_pay_freight(cr, cust_uid[0], [pick.id], context)
+
+
         return print_report
 
 
@@ -481,25 +497,46 @@ class bank_details_wiz(osv.osv):
         if not context:
             cntext={}
         report_data = []
+        partner_id = []
+        state_id = []
+        part_obj = self.pool.get("res.partner")
+        state_obj = self.pool.get("res.country.state")
+
         for case in self.browse(cr, uid, ids):
             report_name = 'Bank Details'
             data={}
             data['ids'] = ids
             data['model'] = context.get('active_model','ir.ui.menu')
             data['output_type'] = 'xls'
+
+            if case.partner_id:
+                partner_ids = case.partner_id.id
+                partner_ids = "(" + str(partner_ids) +")"
+            else:
+                partner_ids = part_obj.search(cr, uid, [('customer','=', True)])
+                partner_ids = tuple(partner_ids)
+            if case.state_id:
+                state_ids = case.state_id.id
+                state_ids = "(" + str(state_ids) +")"
+            else:
+                state_ids = state_obj.search(cr, uid, [])
+                state_ids = tuple(state_ids)
+
             cr.execute("""
+                select
 
-                    select
-                        distinct(sp.id) as pick_id
+                distinct(sp.id) as pick_id
 
-                    from stock_picking sp
-
-                    where sp.state = 'freight_paid'
-                    and sp.frtpaid_date::date >= ' """+str(case.from_date)+"""' and sp.frtpaid_date::date <= ' """+str(case.to_date)+""" '
-                    and sp.is_bank_submit != True and sp.frieght_paid != True
+                from stock_picking sp
+                where sp.state = 'done'
+                and sp.delivery_date_function::date >= '"""+str(case.from_date)+"""' and sp.delivery_date_function::date <= '"""+str(case.from_date)+"""'
+                and sp.is_bank_submit != True and sp.frieght_paid != True
+                and sp.partner_id  in """+str(partner_ids)+"""
+                and sp.state_id in """+str(state_ids)+"""
 
             """)
             pick_ids = [x[0] for x in cr.fetchall()]
+            _logger.info('Picking IDs ==============> %s',pick_ids)
             if pick_ids:
                 data['variables'] = {
                                      'pick_ids' : pick_ids
