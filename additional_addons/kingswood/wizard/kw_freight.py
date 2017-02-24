@@ -471,6 +471,17 @@ class bank_details_wiz(osv.osv):
 
                 temp_obj.write(cr, uid, [template.id], {'attachment_ids' : [(6, 0, [attach_ids])]}, context)
                 temp_obj.dispatch_mail(cr,uid,[template.id],attach_ids,context)
+
+
+            pick_ids = print_report['datas']['variables'].get('pick_ids')
+            if pick_ids:
+                # Calling Pay Freight Function
+                for pick in pick_obj.browse(cr, uid, pick_ids):
+                    cust_uid = user_obj.search(cr, uid, [('partner_id','=',pick.partner_id.id)])
+                    if cust_uid and pick.freight_charge > 0:
+                        pick_obj.kw_pay_freight(cr, cust_uid[0], [pick.id], context)
+
+            # Send Email to Admin
             mail_id = self.pool.get('email.template').send_mail(cr, uid, template.id, case.id, True, context=context)
             mail_state = mail_obj.read(cr, uid, mail_id, ['state'], context=context)
             try:
@@ -479,15 +490,8 @@ class bank_details_wiz(osv.osv):
             except:
                 pass
 
-            pick_ids = print_report['datas']['variables'].get('pick_ids')
-            if pick_ids:
-                cr.execute("""update stock_picking set is_bank_submit = true where id in %s""",(tuple(pick_ids),))
-                # Calling Pay Freight Function
+            cr.execute("""update stock_picking set is_bank_submit = true where id in %s""",(tuple(pick_ids),))
 
-                for pick in pick_obj.browse(cr, uid, pick_ids):
-                    cust_uid = user_obj.search(cr, uid, [('partner_id','=',pick.partner_id.id)])
-                    if cust_uid and pick.freight_charge > 0:
-                        pick_obj.kw_pay_freight(cr, cust_uid[0], [pick.id], context)
 
 
         return print_report
@@ -522,6 +526,19 @@ class bank_details_wiz(osv.osv):
                 state_ids = state_obj.search(cr, uid, [])
                 state_ids = tuple(state_ids)
 
+
+            print "=============>", """
+                            select
+
+                distinct(sp.id) as pick_id
+
+                from stock_picking sp
+                where sp.state = 'done'
+                and sp.delivery_date_function::date >= '"""+str(case.from_date)+"""' and sp.delivery_date_function::date <= '"""+str(case.from_date)+"""'
+                and sp.is_bank_submit != True and sp.frieght_paid != True and sp.freight_balance > 0
+                and sp.partner_id  in """+str(partner_ids)+"""
+                and sp.state_id in """+str(state_ids)+""" """
+
             cr.execute("""
                 select
 
@@ -530,7 +547,7 @@ class bank_details_wiz(osv.osv):
                 from stock_picking sp
                 where sp.state = 'done'
                 and sp.delivery_date_function::date >= '"""+str(case.from_date)+"""' and sp.delivery_date_function::date <= '"""+str(case.from_date)+"""'
-                and sp.is_bank_submit != True and sp.frieght_paid != True
+                and sp.is_bank_submit != True and sp.frieght_paid != True and sp.freight_balance > 0
                 and sp.partner_id  in """+str(partner_ids)+"""
                 and sp.state_id in """+str(state_ids)+"""
 
