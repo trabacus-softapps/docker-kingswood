@@ -4375,7 +4375,6 @@ class stock_picking_out(osv.osv):
         service = netsvc.LocalService(report_service)
         (result, format) = service.create(cr, uid, ids, {'model': 'stock.picking.out','variables':variables}, context)        
         result = base64.b64encode(result)
-        _logger.info('result==========================> %s',result)
         if ids:
             for case in self.browse(cr,uid,[ids[0]]):            
     #                 (result, format) = service.create(cr, uid, ids, {'model': 'stock.picking.out'}, context)        
