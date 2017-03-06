@@ -10,6 +10,10 @@ from dateutil.relativedelta import relativedelta
 from dateutil import parser
 from lxml import etree
 from openerp.osv.orm import setup_modifiers
+from xlrd import open_workbook
+import xml.etree.cElementTree as ET
+import tempfile
+import base64
 
 class vat_wizard(osv.osv_memory):
     _name = 'vat.wizard'
@@ -778,7 +782,63 @@ class fac_billing_cyle(osv.osv_memory):
 
 fac_billing_cyle()
 
-    
+class delivery_import(osv.osv_memory):
+    _name = 'delivery.import'
+
+    _columns= {
+            'dc_file'       :   fields.binary("DC File")
+            }
+
+
+    def confirm(self, cr, uid, ids, context=None):
+        if not context:
+            context = {}
+        pick_obj = self.pool.get("stock.picking.out")
+        for case in self.browse(cr, uid, ids):
+            if case.dc_file:
+                out_filename = tempfile.mktemp(suffix=".xls", prefix="webkit.tmp.")
+                fp = open(out_filename, 'wb+')
+                fp.write((base64.b64decode(case.dc_file)))
+                fp.close()
+
+                book = open_workbook(out_filename)
+                print "book",book
+                sheet = book.sheet_by_index(0)
+
+                # read header values into the list
+                keys = [sheet.cell(0, col_index).value for col_index in xrange(sheet.ncols)]
+
+                dict_list = []
+                for row_index in xrange(1, sheet.nrows):
+                    d = {keys[col_index]: sheet.cell(row_index, col_index).value
+                         for col_index in xrange(sheet.ncols)}
+                    dict_list.append(d)
+
+                print "dict_list..............", dict_list
+                for dc in dict_list:
+                    cr.execute("select id from stock_picking where name='"+str(dc.get('DC Number'))+"' ")
+                    pick_id = [x[0] for x in cr.fetchall()]
+                    if pick_id:
+                        pick_id = pick_id[0]
+                        cr.execute(""" update stock_move set unloaded_qty="""+str(dc.get('Delivered Qty'))+""",
+                                        rejected_qty ="""+str(dc.get('Rejected Qty'))+""",
+                                        delivery_date = '""" +str(dc.get('Delivery Date'))+ """',
+                                        deduction_amt = """+str(dc.get('Deduction Amount'))+"""
+                                        where picking_id ="""+str(pick_id)+"""
+                                  """)
+                        pick_obj.deliver(cr, uid, [pick_id], context=context)
+                        print "=============>",pick_id
+
+
+        res = {}
+
+        return res
+
+
+
+delivery_import()
+
+
     
 # class stock_partial_picking(osv.osv):
 #     _inherit = 'stock.partial.picking'
