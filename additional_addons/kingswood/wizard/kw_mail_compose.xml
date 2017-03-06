@@ -2,7 +2,6 @@
 <openerp>
 	<data>
 
-
 	<!-- Email template for Sending Kingwood Rate Mails Incoming Shipments-->
         <record id="kw_send_mail_prod_rate_ship" model="email.template">
             <field name="name">Kingwood Rate Mail Shipments</field>
@@ -368,8 +367,40 @@
             </field>
         </record>
 
+
+                	<!-- Email template for Unsuccessful DC's Mails to Admin-->
+        <record id="kw_dc_file" model="email.template">
+            <field name="name">Unsucessfull DCs</field>
+            <field name="model_id" ref="model_stock_picking"/>
+            <field name="email_from">info@kingswood.in</field>
+            <field name="email_to"></field>
+            <field name="subject">Unsucessfull DCs for Delivery Process</field>
+            <field name="body_html">
+                <![CDATA[
+
+                    <p>
+                        Dear Kingswood Administrator,<br/><br/>
+                        Please Find The Attached Document. List of Unsucessfull DCs for Delivery Process.
+                        <br/>
+                        <br/>
+                        <br/>
+
+                        <b><p>Kingswood Suppliers Pvt.Ltd,</p></b>
+
+                        <h6>(Scheduled Email Generated from OpenERP)</h6>
+                     </p>
+
+
+                ]]>
+            </field>
+        </record>
+
+
 	</data>
 </openerp>
+
+
+
 
 <!--
 <![CDATA[
