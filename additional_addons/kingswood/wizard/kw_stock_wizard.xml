@@ -2,6 +2,51 @@
 <openerp>
     <data>
 
+        <!--####################################################### DC Upload Files ############################################################# -->
+
+        <record id="kw_dc_upload_form" model="ir.ui.view">
+            <field name="name">kw.dc.upload.form</field>
+            <field name="model">delivery.import</field>
+            <field name="arch" type="xml">
+                <form string="Upload File" version="7.0">
+                    <group>
+                        <group col="4" colspan="2">
+                            <field name="dc_file" required="1"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="confirm" type="object" string="Ok" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link"
+                            special="cancel" />
+                    </footer>
+
+                </form>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="kw_dc_upload_action">
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">delivery.import</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+
+	        <record model="ir.actions.act_window.view" id="kw_dc_upload_action_form">
+	        	<field name="view_mode">form</field>
+	        	<field eval="2" name="sequence"/>
+	        	<field name="view_id" ref="kw_dc_upload_form"/>
+	        	<field name="act_window_id" ref="kw_dc_upload_action"/>
+	        </record>
+
+        <menuitem action="kw_dc_upload_action" id="dc_upload_action_id" name="Upload Files"
+                  parent="stock.menu_stock_warehouse_mgmt" groups="base.group_no_one,kingswood.kw_admin_service" sequence="5"/>
+
                 <!--####################################################### Vat Form ############################################################# -->
 
         <record id="kw_vat_form" model="ir.ui.view">

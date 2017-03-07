@@ -10,6 +10,14 @@ from dateutil.relativedelta import relativedelta
 from dateutil import parser
 from lxml import etree
 from openerp.osv.orm import setup_modifiers
+from xlrd import open_workbook
+import xml.etree.cElementTree as ET
+import tempfile
+import base64
+import logging
+_logger = logging.getLogger(__name__)
+from xlsxwriter.workbook import Workbook
+
 
 class vat_wizard(osv.osv_memory):
     _name = 'vat.wizard'
@@ -778,7 +786,147 @@ class fac_billing_cyle(osv.osv_memory):
 
 fac_billing_cyle()
 
-    
+class delivery_import(osv.osv_memory):
+    _name = 'delivery.import'
+
+    _columns= {
+            'dc_file'       :   fields.binary("DC File")
+            }
+
+
+    def confirm(self, cr, uid, ids, context=None):
+        if not context:
+            context = {}
+        pick_obj = self.pool.get("stock.picking.out")
+        mail_obj = self.pool.get('mail.mail')
+        email_obj = self.pool.get('email.template')
+        temp_obj = self.pool.get('email.template')
+        partner_obj = self.pool.get('res.partner')
+        partners = ''
+
+        today = time.strftime('%Y/%m/%d')
+        print "today............",today
+        datafile = 'DC_FILE.xlsx'
+        p_id = 0
+        workbook1 = Workbook(datafile)
+        sheet1 = workbook1.add_worksheet()
+
+        left_size = workbook1.add_format({'align': 'left', 'bold': False})
+        left_size.set_font_name('Serif')
+        left_size.set_font_size(10)
+
+        bold_left = workbook1.add_format({'align': 'left', 'bold': True})
+        bold_left.set_font_name('Serif')
+        bold_left.set_font_size(12)
+
+
+        for case in self.browse(cr, uid, ids):
+            if case.dc_file:
+                out_filename = tempfile.mktemp(suffix=".xls", prefix="webkit.tmp.")
+                fp = open(out_filename, 'wb+')
+                fp.write((base64.b64decode(case.dc_file)))
+                fp.close()
+
+                book = open_workbook(out_filename)
+                print "book",book
+                sheet = book.sheet_by_index(0)
+
+                # read header values into the list
+                keys = [sheet.cell(0, col_index).value for col_index in xrange(sheet.ncols)]
+
+                dict_list = []
+                for row_index in xrange(1, sheet.nrows):
+                    d = {keys[col_index]: sheet.cell(row_index, col_index).value
+                         for col_index in xrange(sheet.ncols)}
+                    dict_list.append(d)
+
+                print "dict_list..............", dict_list
+                r = 2
+                cl = 0
+                sheet1.write(r-2, cl, 'DC Number', bold_left)
+                sheet1.write(r-2, cl+1, 'Error', bold_left)
+
+                for dc in dict_list:
+                    cr.execute("select id from stock_picking where name='"+str(dc.get('DC Number'))+"' ")
+                    pick_id = [x[0] for x in cr.fetchall()]
+                    if pick_id:
+                        pick_id = pick_id[0]
+                        pick = pick_obj.browse(cr, uid, pick_id)
+                        if pick.state != 'in_transit':
+                            raise osv.except_osv(_('Warning'),_('Delivery Order "%s" Should Be In Transit State')% (pick.name,))
+                        if dc.get('Delivery Date') > today:
+                            raise osv.except_osv(_('Warning'),_('Please enter the Valid Delivery Date for Delivery Order "%s", ')% (pick.name,))
+
+                        cr.execute(""" update stock_move set unloaded_qty="""+str(dc.get('Delivered Qty'))+""",
+                                        rejected_qty ="""+str(dc.get('Rejected Qty'))+""",
+                                        delivery_date = '""" +str(dc.get('Delivery Date'))+ """',
+                                        deduction_amt = """+str(dc.get('Deduction Amount'))+"""
+                                        where picking_id ="""+str(pick_id)+"""
+
+                                  """)
+                        try:
+                            pick_obj.deliver(cr, uid, [pick_id], context=context)
+                            print "=============>",pick_id
+                        except Exception as e:
+                            _logger.info('Error reason %s',e,pick.name)
+                            sheet1.write(r,cl, pick.name, left_size)
+                            sheet1.write(r,cl+1, e.value, left_size)
+                            p_id = pick.id
+                            r += 1
+
+                if p_id > 0:
+                    workbook1.close()
+                    fp = open(datafile, 'rb')
+                    contents = fp.read()
+                    result = base64.b64encode(contents)
+                    template = self.pool.get('ir.model.data').get_object(cr, uid, 'kingswood', 'kw_dc_file')
+                    file_name = 'DC_FILES.xls'
+
+                    cr.execute(""" select ru.partner_id
+                                    from res_groups_users_rel gu
+                                    inner join res_groups g on g.id = gu.gid
+                                    inner join res_users ru on ru.id = gu.uid
+                                    where g.name = 'KW_Admin'""")
+
+                    for p in cr.fetchall():
+                        p = partner_obj.browse(cr, uid,p[0])
+                        if p.email and p.email not in partners:
+                            partners += (p.email and p.email or "") + ","
+
+
+
+                    _logger.info('DC Mail Before==========================> %s',partners[0:-1])
+                    if partners:
+                        email_obj.write(cr, uid, [template.id], {'email_to':partners[0:-1]})
+
+
+                    attach_ids = self.pool.get('ir.attachment').create(cr, uid,
+                                                              {
+                                                               'name': file_name,
+                                                               'datas': result,
+                                                               'datas_fname': file_name,
+                                                               'res_model': 'stock.picking.out',
+                                                               'res_id': p_id,
+                                                               'type': 'binary'
+                                                              },
+                                                              context=context)
+
+
+                    temp_obj.dispatch_mail(cr,uid,[template.id],attach_ids,context)
+                    print "template ......",template.id
+                    mail_id = self.pool.get('email.template').send_mail(cr, uid, template.id, p_id, True, context=context)
+                cr.execute("delete from email_template_attachment_rel where email_template_id="+str(template.id))
+                cr.execute("delete from ir_attachment where lower(datas_fname) like '%DC_FILES%'")
+
+        res = {}
+
+        return res
+
+
+
+delivery_import()
+
+
     
 # class stock_partial_picking(osv.osv):
 #     _inherit = 'stock.partial.picking'
