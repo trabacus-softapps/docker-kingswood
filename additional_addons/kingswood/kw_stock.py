@@ -2035,7 +2035,7 @@ class stock_picking_out(osv.osv):
     
     def deliver(self, cr, uid, ids, context = None):
         move_obj = self.pool.get('stock.move')
-        today = time.strftime('%Y-%m-%d %H:%M:%S')
+        today = time.strftime('%Y-%m-%d')
         move_ids=[]
         freight_balance = 0.0
         state_id = False
@@ -5207,7 +5207,7 @@ class stock_picking(osv.osv):
 
               # Bank details
                 'bank_name'     :   fields.char("Bank Name", size=100),
-                'ifsc_code'     :   fields.char("IFSC Cde", size=11),
+                'ifsc_code'     :   fields.char("IFSC Code", size=11),
                 'ac_holder'     :   fields.char("Beneficiary Name", size=100),
                 'ac_number'     :   fields.char("Account Number", size=30),
                 'bank_addr'     :   fields.text("Bank Address"),

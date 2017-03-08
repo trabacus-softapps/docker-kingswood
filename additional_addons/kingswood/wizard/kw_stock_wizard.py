@@ -857,6 +857,9 @@ class delivery_import(osv.osv_memory):
                         if dc.get('Delivery Date') > today:
                             raise osv.except_osv(_('Warning'),_('Please enter the Valid Delivery Date for Delivery Order "%s", ')% (pick.name,))
 
+                        if (dc.get('Delivered Qty')>0 and dc.get('Rejected Qty')>0) and  dc.get("Deduction Amount") <=0 :
+                            raise osv.except_osv(_('Warning'),_('Enter Deduction Amount for "%s", ')% (pick.name,))
+
                         cr.execute(""" update stock_move set unloaded_qty="""+str(dc.get('Delivered Qty'))+""",
                                         rejected_qty ="""+str(dc.get('Rejected Qty'))+""",
                                         delivery_date = '""" +str(dc.get('Delivery Date'))+ """',
@@ -915,8 +918,8 @@ class delivery_import(osv.osv_memory):
                     temp_obj.dispatch_mail(cr,uid,[template.id],attach_ids,context)
                     print "template ......",template.id
                     mail_id = self.pool.get('email.template').send_mail(cr, uid, template.id, p_id, True, context=context)
-                cr.execute("delete from email_template_attachment_rel where email_template_id="+str(template.id))
-                cr.execute("delete from ir_attachment where lower(datas_fname) like '%DC_FILES%'")
+                    cr.execute("delete from email_template_attachment_rel where email_template_id="+str(template.id))
+                    cr.execute("delete from ir_attachment where lower(datas_fname) like '%DC_FILES%'")
 
         res = {}
 
