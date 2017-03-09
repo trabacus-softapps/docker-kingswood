@@ -5,7 +5,6 @@ import time
 from openerp import tools
 from openerp.tools.safe_eval import safe_eval as eval
 import calendar
-from dateutil import parser
 from dateutil.relativedelta import relativedelta
 from dateutil import parser
 from lxml import etree
@@ -17,6 +16,8 @@ import base64
 import logging
 _logger = logging.getLogger(__name__)
 from xlsxwriter.workbook import Workbook
+import xlrd
+import re
 
 
 class vat_wizard(osv.osv_memory):
@@ -860,9 +861,11 @@ class delivery_import(osv.osv_memory):
                         if (dc.get('Delivered Qty')>0 and dc.get('Rejected Qty')>0) and  dc.get("Deduction Amount") <=0 :
                             raise osv.except_osv(_('Warning'),_('Enter Deduction Amount for "%s", ')% (pick.name,))
 
+                        dt = xlrd.xldate.xldate_as_datetime(dc.get('Delivery Date'),book.datemode)
+                        delivery_date = parser.parse(''.join((re.compile('\d')).findall(dt.strftime('%Y-%m-%d HH:MM:SS' )))).strftime('%Y-%m-%d')
                         cr.execute(""" update stock_move set unloaded_qty="""+str(dc.get('Delivered Qty'))+""",
                                         rejected_qty ="""+str(dc.get('Rejected Qty'))+""",
-                                        delivery_date = '""" +str(dc.get('Delivery Date'))+ """',
+                                        delivery_date = '""" +str(delivery_date)+ """',
                                         deduction_amt = """+str(dc.get('Deduction Amount'))+"""
                                         where picking_id ="""+str(pick_id)+"""
 
