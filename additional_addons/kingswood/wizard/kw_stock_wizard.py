@@ -869,7 +869,6 @@ class delivery_import(osv.osv_memory):
                                   """)
                         try:
                             pick_obj.deliver(cr, uid, [pick_id], context=context)
-                            print "=============>",pick_id
                         except Exception as e:
                             _logger.info('Error reason %s',e,pick.name)
                             sheet1.write(r,cl, pick.name, left_size)
@@ -916,7 +915,6 @@ class delivery_import(osv.osv_memory):
 
 
                     temp_obj.dispatch_mail(cr,uid,[template.id],attach_ids,context)
-                    print "template ......",template.id
                     mail_id = self.pool.get('email.template').send_mail(cr, uid, template.id, p_id, True, context=context)
                     cr.execute("delete from email_template_attachment_rel where email_template_id="+str(template.id))
                     cr.execute("delete from ir_attachment where lower(datas_fname) like '%DC_FILES%'")
