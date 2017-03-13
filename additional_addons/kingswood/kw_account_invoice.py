@@ -2084,6 +2084,7 @@ class account_invoice(osv.osv):
                     inv_done_to=self.get_month(cr,uid,[],inv_done_m.date_invoice,{'month':1}) #inv_done
                     if last_date_to != inv_done_to:
                         inv_date = last_date                    
+                    self.do_merge(cr, uid, invoices_ids, context)
                     merged_ids=context.get('inv_ids',[])
                     for merged_inv in merged_ids:
                         _logger.error('Inside the Merge Invoice.....',merged_inv)
