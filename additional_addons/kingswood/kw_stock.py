@@ -280,7 +280,7 @@ class stock_picking_out(osv.osv):
                                 
                                 
                         # Picking Qty > Product Qty
-                        if case.truck_id:
+                        if case.truck_id and ln.unloaded_qty> 0.00:
                               if ln.unloaded_qty < ln.product_qty and (ln.product_qty  - ln.unloaded_qty) > (tol_qty/1000):
                                   deduction += ((ln.product_qty - (tol_qty/1000)) - ln.unloaded_qty) *1000 * tol_rate
 #                             if ((ln.product_qty - ln.unloaded_qty) * 1000) > (ln.product_qty * truck_id.tol_qty) :
@@ -4865,7 +4865,7 @@ class stock_picking(osv.osv):
                                 
                                 
                         # Picking Qty > Product Qty
-                        if case.truck_id:
+                        if case.truck_id and ln.unloaded_qty> 0.00:
                               if ln.unloaded_qty < ln.product_qty and (ln.product_qty  - ln.unloaded_qty) > (tol_qty/1000):
                                   deduction += ((ln.product_qty - (tol_qty/1000)) - ln.unloaded_qty) *1000 * tol_rate
 #                             if ((ln.product_qty - ln.unloaded_qty) * 1000) > (ln.product_qty * truck_id.tol_qty) :
