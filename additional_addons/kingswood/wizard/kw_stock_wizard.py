@@ -803,6 +803,8 @@ class delivery_import(osv.osv_memory):
         email_obj = self.pool.get('email.template')
         temp_obj = self.pool.get('email.template')
         partner_obj = self.pool.get('res.partner')
+        move_obj = self.pool.get("stock.move")
+
         partners = ''
 
         today = time.strftime('%Y/%m/%d')
@@ -853,6 +855,7 @@ class delivery_import(osv.osv_memory):
                     if pick_id:
                         pick_id = pick_id[0]
                         pick = pick_obj.browse(cr, uid, pick_id)
+                        move_id = move_obj.search(cr, uid, [('picking_id','=',pick.id)])
                         if pick.state != 'in_transit':
                             raise osv.except_osv(_('Warning'),_('Delivery Order "%s" Should Be In Transit State')% (pick.name,))
                         if dc.get('Delivery Date') > today:
@@ -863,13 +866,13 @@ class delivery_import(osv.osv_memory):
 
                         dt = xlrd.xldate.xldate_as_datetime(dc.get('Delivery Date'),book.datemode)
                         delivery_date = parser.parse(''.join((re.compile('\d')).findall(dt.strftime('%Y-%m-%d HH:MM:SS' )))).strftime('%Y-%m-%d')
-                        cr.execute(""" update stock_move set unloaded_qty="""+str(dc.get('Delivered Qty'))+""",
-                                        rejected_qty ="""+str(dc.get('Rejected Qty'))+""",
-                                        delivery_date = '""" +str(delivery_date)+ """',
-                                        deduction_amt = """+str(dc.get('Deduction Amount'))+"""
-                                        where picking_id ="""+str(pick_id)+"""
+                        move_obj.write(cr, uid, move_id, {'unloaded_qty'  :   dc.get('Delivered Qty'),
+                                                            'rejected_qty'  :   dc.get('Rejected Qty'),
+                                                            'delivery_date' :   delivery_date,
+                                                            'deduction_amt' :   dc.get('Deduction Amount')
 
-                                  """)
+                                                            }, context=context)
+                        pick_obj.write(cr, uid, [pick_id], {'unloaded_qty'  :   dc.get('Delivered Qty')}, context)
                         try:
                             pick_obj.deliver(cr, uid, [pick_id], context=context)
                         except Exception as e:

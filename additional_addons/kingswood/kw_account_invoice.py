@@ -1963,7 +1963,7 @@ class account_invoice(osv.osv):
             stock_ids_out = stock_obj.search(cr,uid,[('id','in',order_id),('paying_agent_id','not in',dummy_ids),('type','=','out')])
 
             stock_ids_in = stock_in_obj.search(cr,uid,[('id','in',in_shipment_ids),('partner_id','not in',dummy_ids),('type','=','in')]) 
-            
+
             invoice_rate_out = stock_obj.get_supplier_rate(cr,uid,stock_ids_out,False,context=context)
             
             invoice_rate_in = stock_in_obj.get_supplier_rate(cr,uid,stock_ids_in,False,context=context)
@@ -2087,7 +2087,7 @@ class account_invoice(osv.osv):
                     self.do_merge(cr, uid, invoices_ids, context)
                     merged_ids=context.get('inv_ids',[])
                     for merged_inv in merged_ids:
-                        _logger.error('Inside the Merge Invoice.....',merged_inv)
+                        _logger.error('Inside the Merge Invoice.....%s',merged_inv)
                         cr.execute("""update account_invoice set back_date=True where id = %s """,(merged_inv,))                        
                         self.write(cr,uid,[merged_inv],{'date_invoice':inv_date,'back_date':True})
                         wf_service.trg_validate(uid, 'account.invoice', merged_inv, 'invoice_open', cr)
@@ -2134,15 +2134,19 @@ class account_invoice(osv.osv):
                         billing_cycle=billing_obj.create(cr,uid,billing,context)
                         billing_obj.generate_report(cr,uid,[billing_cycle],context)
             if stock_ids_out:
-                cr.execute("""update stock_picking set sup_invoice=True where state = 'out' and id in
-                (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner 
-                join account_invoice ac on ac.id=dr.invoice_id WHERE ac.state <>'cancel' and ac.type ='in_invoice') and id in %s """,(tuple(stock_ids_out),))
+                # cr.execute("""update stock_picking set sup_invoice=True where state = 'out' and id in
+                # (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner
+                # join account_invoice ac on ac.id=dr.invoice_id WHERE ac.state <>'cancel' and ac.type ='in_invoice') and id in %s """,(tuple(stock_ids_out),))
+
+                cr.execute("""update stock_picking set sup_invoice=True where type = 'out' and id in %s """,(tuple(stock_ids_out),))
+
 
             if stock_ids_in:    
-                cr.execute("""update stock_picking set sup_invoice=True where state = 'in' and id in 
-                (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner 
-                join account_invoice ac on ac.id=dr.invoice_id WHERE ac.state <>'cancel' and ac.type ='in_invoice' )and id in %s """,(tuple(stock_ids_in),))
-                    
+                # cr.execute("""update stock_picking set sup_invoice=True where state = 'in' and id in
+                # (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner
+                # join account_invoice ac on ac.id=dr.invoice_id WHERE ac.state <>'cancel' and ac.type ='in_invoice' )and id in %s """,(tuple(stock_ids_in),))
+                cr.execute("""update stock_picking set sup_invoice=True where type = 'in' and id in %s """,(tuple(stock_ids_in),))
+
             
             
             merged_ids=self.search(cr,uid,[('state','=','draft'),('id','in',merged_invoice)]) 
