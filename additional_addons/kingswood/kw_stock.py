@@ -1633,7 +1633,7 @@ class stock_picking_out(osv.osv):
 
         except Exception as e:
             _logger.info('Error reason %s',e)
-            raise osv.except_osv(_('Esugam Site Is Down'),_('Please Try After Some Time'))
+            raise osv.except_osv(_('JJ Form Site Is Down'),_('Please Try After Some Time'))
 
         return True
 

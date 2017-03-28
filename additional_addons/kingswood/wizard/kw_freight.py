@@ -533,7 +533,7 @@ class bank_details_wiz(osv.osv):
 
                 from stock_picking sp
                 where sp.state = 'done'
-                and sp.delivery_date_function::date >= '"""+str(case.from_date)+"""' and sp.delivery_date_function::date <= '"""+str(case.from_date)+"""'
+                and sp.delivery_date_function::date >= '"""+str(case.from_date)+"""' and sp.delivery_date_function::date <= '"""+str(case.to_date)+"""'
                 and sp.is_bank_submit != True and sp.frieght_paid != True and sp.freight_balance > 0
                 and sp.partner_id  in """+str(partner_ids)+"""
                 and sp.state_id in """+str(state_ids)+"""
