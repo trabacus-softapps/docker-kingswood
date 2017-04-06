@@ -400,6 +400,7 @@
                			<field name='attachment'/>
                			<field name="farmer_declaration"/>
  						<field name='toll_free' />
+				   		<field name="digi_sign"/>
  				</field>	
  				
  			

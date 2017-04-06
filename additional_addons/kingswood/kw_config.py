@@ -28,7 +28,8 @@ class res_company(osv.osv):
     _description = 'Companies'
     _columns = {
                 'commodity'     : fields.char("Commodity Code",size=8),
-                'esugam_ids'    : fields.one2many('esugam.master','company_id','E-Sugam')
+                'esugam_ids'    : fields.one2many('esugam.master','company_id','E-Sugam'),
+                'digi_sign'     : fields.binary("Digital Signature"),
                 }
     _defaults = {
                  'commodity'   : '99.99'
