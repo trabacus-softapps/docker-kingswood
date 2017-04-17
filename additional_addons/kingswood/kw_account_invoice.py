@@ -4734,8 +4734,8 @@ class account_move_line(osv.osv):
                           } 
             res[case.id]['balance'] = case.debit - case.credit
             
-            cr.execute("""select id from account_move_line where partner_id ="""+str(case.partner_id.id)+"""and company_id = 
-                       """+str(case.company_id.id)+"""and account_id="""+str(case.account_id.id))
+            cr.execute("""select id from account_move_line where partner_id ="""+str(case.partner_id.id)+""" and company_id =
+                       """+str(case.company_id.id)+""" and account_id="""+str(case.account_id.id))
             line_id=cr.fetchall()
             if line_id:
                 line_id=zip(*line_id)[0]             
