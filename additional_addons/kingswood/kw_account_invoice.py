@@ -4729,20 +4729,20 @@ class account_move_line(osv.osv):
         
         for case in self.browse(cr, uid, ids):
             total_balance = 0.00
+            line_id = []
             res[case.id]={
                           'balance':0.00,'total_balance':0.00
                           } 
             res[case.id]['balance'] = case.debit - case.credit
             
-            cr.execute("""select id from account_move_line where partner_id ="""+str(case.partner_id.id)+""" and company_id =
-                       """+str(case.company_id.id)+""" and account_id="""+str(case.account_id.id))
-            line_id=cr.fetchall()
+            if case.partner_id:
+                cr.execute("""select id from account_move_line where partner_id ="""+str(case.partner_id.id)+""" and company_id =
+                           """+str(case.company_id.id)+""" and account_id="""+str(case.account_id.id))
+                line_id=cr.fetchall()
             if line_id:
                 line_id=zip(*line_id)[0]             
 #             line_id = self.search(cr,uid,[('partner_id','=',case.partner_id.id),('company_id','=',case.company_id.id),('account_id','=',case.account_id.id)])    
-            print case.partner_id.name
-            print 'line',len(line_id)
-            
+
             if line_id:
                 cr.execute("""select sum(debit - credit) from account_move_line where id in %s""",(tuple(line_id),))      
                 total_balance = cr.fetchone() 
