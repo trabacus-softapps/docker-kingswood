@@ -1844,7 +1844,8 @@ class account_invoice(osv.osv):
         stock_obj = self.pool.get('stock.picking.out')
         stock_in_obj = self.pool.get('stock.picking.in')
         billing_obj = self.pool.get('billing.cycle') 
-        partner_obj = self.pool.get('res.partner') 
+        partner_obj = self.pool.get('res.partner')
+        state_obj = self.pool.get("res.country.state")
         stock_ids = []
         in_shipment_ids = []
         invoice_create_out = True
@@ -1859,6 +1860,17 @@ class account_invoice(osv.osv):
         if not context.get('facilitator'):
             shedular_date =  shedular_date - relativedelta(days=int(2))
         shedular_date = shedular_date.strftime('%Y-%m-%d')
+
+        from_date = context.get("from_date", False)
+        partner_ids = context.get("partner_ids",[])
+        state_ids = context.get("state_id",[])
+        # if state_ids:
+        #     state = state_obj.browse(cr, uid, state_ids)
+        #     fac_state = state.name
+        # else:
+        #     raise osv.except_osv(_('Error!'), _('Please define the State'))
+        if not shedular_date and not from_date and not state_ids:
+            raise osv.except_osv(_('Error!'), _('Please define From and To Date & State'))
         
         day_to = self.get_month(cr,uid,[],date_day,{'day':1}) 
         last_date = datetime.strptime(date_day, '%Y-%m-%d') - relativedelta(days=int(day_to))
@@ -1887,13 +1899,15 @@ class account_invoice(osv.osv):
 
         query_out = """select distinct sp.id from stock_picking sp 
                         left outer join res_country_state rs on rs.id = sp.state_id
-                        where sp.date::date >= '2017-03-01' and type = 'out'
+                        where sp.date::date >= '"""+str(from_date)+"""'::date and type = 'out'
                         and sp.date::date <= '"""+str(shedular_date)+"""'::date and sup_invoice = False
                         and sp.state in ('done','freight_paid') and sp.del_quantity>0
                         and lower(rs.name) ilike '%"""+fac_state+"""%'"""
                         
         if context.get('facilitator'):
             query_out += ' and sp.paying_agent_id ='+str(context.get('facilitator'))
+        if context.get("partner_ids"):
+            query_out += 'and sp.partner_id in '+str(context.get('partner_ids'))
             
         
         cr.execute(query_out) 
@@ -1923,13 +1937,15 @@ class account_invoice(osv.osv):
         
         query_in = """select distinct sp.id from stock_picking sp 
                         left outer join res_country_state rs on rs.id = sp.state_id
-                        where sp.date::date >= '2017-03-01' and type = 'in'
-                        and sp.date::date <= '"""+str(shedular_date)+"""'::date and sup_invoice = False                        
+                        where sp.date::date >= '"""+str(from_date)+"""'::date and type = 'in'
+                        and sp.date::date <= '"""+str(shedular_date)+"""'::date and sup_invoice = False
                         and sp.state in ('done','freight_paid') and lower(sp.name) ilike '%"""+in_fac_state+"""%'"""
         
         if context.get('facilitator'):
             query_in += ' and sp.partner_id ='+str(context.get('facilitator'))
-        
+        if context.get("partner_ids"):
+            query_in += 'and sp.partner_id in '+str(context.get('partner_ids'))
+
         cr.execute(query_in)
  
         stock_ids_in=cr.fetchall()
@@ -1943,7 +1959,7 @@ class account_invoice(osv.osv):
             #cr.execute("""update stock_picking set user_id = 1 where id in %s""",(tuple(stock_ids_in),))  
         if stock_ids_out or stock_ids_in:
             if stock_ids_out:
-                cr.execute("""select sp.id from stock_picking sp where sp.date::date >= '2017-03-01'::date and sp.id not in (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner
+                cr.execute("""select sp.id from stock_picking sp where sp.date::date >= '"""+str(from_date)+"""'::date and sp.id not in (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner
                 join account_invoice ac on ac.id=dr.invoice_id WHERE dr.del_ord_id  IN %s and ac.state <>'cancel') and sp.id in %s""",(tuple(stock_ids_out),tuple(stock_ids_out)))    
 #                 order_id = cr.fetchall()
                 order_id=cr.fetchall()
@@ -1953,7 +1969,7 @@ class account_invoice(osv.osv):
                  
 
             if stock_ids_in:
-                cr.execute("""select sp.id from stock_picking sp where sp.date::date >= '2017-03-01'::date and sp.id not in
+                cr.execute("""select sp.id from stock_picking sp where sp.date::date >= '"""+str(from_date)+"""'::date and sp.id not in
                 (SELECT dr.in_shipment_id FROM incoming_shipment_invoice_rel dr inner
                 join account_invoice ac on ac.id=dr.invoice_id WHERE dr.in_shipment_id  IN  %s and ac.state <>'cancel')and sp.id in %s""",(tuple(stock_ids_in),tuple(stock_ids_in)))    
                 in_shipment_ids = cr.fetchall()
@@ -4812,4 +4828,88 @@ account_move_line()
         
 # 
 
-    
+class kw_scheduler(osv.osv):
+    _name = "kw.scheduler"
+
+    _columns = {
+
+        'partner_id'    :   fields.many2one("res.partner", "Customer"),
+        'state_id'      :   fields.many2one("res.country.state", "State"),
+        'from_date'     :   fields.date("From Date"),
+        'to_date'       :   fields.date("To Date"),
+        'exec_date'     :   fields.datetime("Execution Date"),
+        'is_active'     :   fields.boolean("Active"),
+
+
+    }
+
+    def create(self, cr, uid, vals, context=None):
+        res = {}
+        cron_obj = self.pool.get("ir.cron")
+        state_obj = self.pool.get("res.country.state")
+        if vals.get("state_id"):
+            sched_ids = self.browse(cr, uid, [('state_id','=',vals.get('state_id'))])
+            if sched_ids:
+                raise osv.except_osv(_('Warning!'), _("Duplications is not allowed"))
+        res = super(kw_scheduler, self).create(cr, uid, vals, context)
+        cr.execute("select name from res_country_state where id ="+str(vals.get('state_id'))+" ")
+        state_name =[ x[0] for x in cr.fetchall()]
+        if state_name:
+            state_name = state_name[0]
+        cr.execute("select id from ir_cron where name='KW Create Invoice Scheduler' ")
+        cron_ids = [x[0] for x in cr.fetchall()]
+
+        if cron_ids:
+            cron_obj.write(cr, uid, cron_ids, {'nextcall':vals.get('exec_date'),'active':vals.get('is_active'),'args':"(False, False, {'state': "+str(state_name)+",'id':" +str(res)+"})"}, context)
+        return res
+
+    def write(self, cr, uid, ids, vals, context=None):
+        res = {}
+        if not context:
+            context = {}
+
+        cron_obj = self.pool.get("ir.cron")
+        state_obj = self.pool.get("res.country.state")
+        res = super(kw_scheduler, self).write(cr, uid, ids, vals, context)
+        for case in self.browse(cr, uid, ids):
+            if vals.get("state_id"):
+                sched_ids = self.browse(cr, uid, [('state_id','=',vals.get('state_id', case.state_id.id))])
+                if sched_ids:
+                    raise osv.except_osv(_('Warning!'), _("Duplications is not allowed"))
+            cr.execute("select name from res_country_state where id ="+str(vals.get('state_id', case.state_id.id))+" ")
+            state_name =[ x[0] for x in cr.fetchall()]
+            if state_name:
+                state_name = state_name[0]
+            cr.execute("select id from ir_cron where name='KW Create Invoice Scheduler' ")
+            cron_ids = [x[0] for x in cr.fetchall()]
+            print "===========.",vals.get('is_active')
+            print "...........",case.is_active
+            if cron_ids:
+                cron_obj.write(cr, uid, cron_ids, {'nextcall':vals.get('exec_date'),'active':vals.get('is_active', case.is_active),'args':"(False, False, {'state': '"+str(state_name)+"','id':" +str(case.id)+"})"}, context)
+        return res
+
+    #Schedular for Create Facilitator Invoices
+    def create_kw_scheduler_fac_invoice(self, cr, uid, automatic=False, use_new_cursor=False, context=None):
+        if not context:
+            context={}
+        part_obj = self.pool.get("res.partner")
+        sched_obj = self.pool.get("kw.scheduler")
+        acc_obj = self.pool.get("account.invoice")
+        state_id1 = context.get(1,False)
+        state_id2 = context.get(2,False)
+        partner_ids = []
+        for sched in sched_obj.browse(cr, uid, [context.get('id')]):
+            if sched.partner_id:
+                partner_ids = sched.partner_id and sched.partner_id.id
+            context.update({
+                'partner_id'    :   partner_ids,
+                'state_id'      :   sched.state_id and sched.state_id.id,
+                'from_date'     :   sched.from_date,
+                'shedular_date' :   sched.to_date,
+            })
+            print "==============.",context
+            res = acc_obj.create_facilitator_inv(cr,uid,[uid],context)
+
+        return res
+
+kw_scheduler()

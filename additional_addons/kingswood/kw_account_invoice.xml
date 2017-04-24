@@ -1708,7 +1708,86 @@
         </record>
         <record id="account.action_invoice_tree4" model="ir.actions.act_window">
             <field name="context">{'default_type': 'in_refund', 'type': 'in_refund', 'journal_type': 'purchase_refund','back_date':True}</field>
-		</record>        
+		</record>
+
+
+		<!-- ******************************************************************************
+										KW Scheduler Object
+		****************************************************************************** -->
+
+		<record id="view_kw_scheduler_form" model="ir.ui.view">
+			<field name="name">view.kw_scheduler.form</field>
+			<field name="model">kw.scheduler</field>
+			<field name="arch" type="xml">
+				<form string="Scheduler" version="7.0">
+					<sheet>
+
+						<group col="4" colspan="2">
+								<field name="partner_id" options='{"no_open":True,"create": false, "create_edit": false}'
+								context="{'create_edit':False}"
+										domain="[('customer','=', True)]"/>
+
+								<field name="state_id" required='1' options='{"no_open":True,"create": false, "create_edit": false}'
+									context="{'create_edit':False}"/>
+								<field name="from_date" required="1"/>
+								<field name="to_date" required="1"/>
+								<field name="exec_date" required="1"/>
+								<field name="is_active" />
+						</group>
+
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="view_kw_scheduler_search">
+			<field name="name">view.kw_scheduler.search</field>
+			<field name="model">kw.scheduler</field>
+			<field name="arch" type="xml">
+				<search >
+					<field name="partner_id" />
+					<field name="state_id"/>
+					<field name="from_date" />
+					<field name="to_date" />
+					<field name="exec_date" />
+					<field name="is_active" />
+				</search>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="view_kw_scheduler_tree">
+		            <field name="name">view.kw_scheduler.tree</field>
+		            <field name="model">kw.scheduler</field>
+		            <field name="arch" type="xml">
+						<tree  string="District" >
+							<field name="partner_id" />
+							<field name="state_id"/>
+							<field name="from_date" />
+							<field name="to_date" />
+							<field name="exec_date" />
+							<field name="is_active" />
+						</tree>
+		            </field>
+		 </record>
+
+	<record id="view_kw_scheduler_action" model="ir.actions.act_window">
+            <field name="name">Scheduler</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">kw.scheduler</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_kw_scheduler_search"/>
+			 <field name="help" type="html">
+
+            </field>
+        </record>
+
+
+	 <menuitem action="view_kw_scheduler_action" id="menu_kw_scheduler"
+            parent="kingswood.kw_dispatch_report"  sequence="4"
+			groups="base.group_no_one,base.group_system"/>
+
 </data>
 </openerp>
 
