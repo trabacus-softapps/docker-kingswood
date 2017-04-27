@@ -397,7 +397,8 @@ class bank_details_wiz(osv.osv):
                 'from_date'     :   fields.date("From Date"),
                 'to_date'       :   fields.date("To Date"),
                 'partner_id'    :   fields.many2one("res.partner", "Customer"),
-                'state_id'      :   fields.many2one("res.country.state", "State")
+                'state_id'      :   fields.many2one("res.country.state", "State"),
+                'picking_id'    :   fields.many2one("stock.picking", "DC Number")
                 }
 
 
@@ -552,5 +553,29 @@ class bank_details_wiz(osv.osv):
         'report_name': report_name,
         'datas': data,
             }
+
+    def print_dc_bank(self, cr, uid, ids, context=None):
+        if not context:
+            cntext={}
+        report_data = []
+
+        for case in self.browse(cr, uid, ids):
+            report_name = 'Individual DC Bank Details'
+            data={}
+            data['ids'] = ids
+            data['model'] = context.get('active_model','ir.ui.menu')
+            data['output_type'] = 'xls'
+
+            if case.picking_id:
+                data['variables'] = {
+                                     'picking_id'   : case.picking_id and case.picking_id.id or False,
+                                     }
+        return {
+        'type': 'ir.actions.report.xml',
+        'report_name': report_name,
+        'datas': data,
+            }
+
+
 
 bank_details_wiz()
