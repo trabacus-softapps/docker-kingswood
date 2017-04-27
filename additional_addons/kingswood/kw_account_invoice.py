@@ -1906,8 +1906,8 @@ class account_invoice(osv.osv):
                         
         if context.get('facilitator'):
             query_out += ' and sp.paying_agent_id ='+str(context.get('facilitator'))
-        if context.get("partner_ids"):
-            query_out += 'and sp.partner_id in '+str(context.get('partner_ids'))
+        if context.get("partner_id"):
+            query_out += 'and sp.partner_id = '+str(context.get('partner_id'))
             
         
         cr.execute(query_out) 
@@ -1943,8 +1943,8 @@ class account_invoice(osv.osv):
         
         if context.get('facilitator'):
             query_in += ' and sp.partner_id ='+str(context.get('facilitator'))
-        if context.get("partner_ids"):
-            query_in += 'and sp.partner_id in '+str(context.get('partner_ids'))
+        if context.get("partner_id"):
+            query_in += 'and sp.partner_id = '+str(context.get('partner_id'))
 
         cr.execute(query_in)
  
@@ -4885,10 +4885,11 @@ class kw_scheduler(osv.osv):
             print "===========.",vals.get('is_active')
             print "...........",case.is_active
             if cron_ids:
+                cron_obj._try_lock(cr, uid, cron_ids, context=context)
                 cron_obj.write(cr, uid, cron_ids, {'nextcall':vals.get('exec_date'),'active':vals.get('is_active', case.is_active),'args':"(False, False, {'state': '"+str(state_name)+"','id':" +str(case.id)+"})"}, context)
         return res
 
-    #Schedular for Create Facilitator Invoices
+    #Schedular for Create Facilitator Invoices Automatically
     def create_kw_scheduler_fac_invoice(self, cr, uid, automatic=False, use_new_cursor=False, context=None):
         if not context:
             context={}
