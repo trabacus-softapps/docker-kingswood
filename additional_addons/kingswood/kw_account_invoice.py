@@ -4848,7 +4848,7 @@ class kw_scheduler(osv.osv):
         cron_obj = self.pool.get("ir.cron")
         state_obj = self.pool.get("res.country.state")
         if vals.get("state_id"):
-            sched_ids = self.browse(cr, uid, [('state_id','=',vals.get('state_id'))])
+            sched_ids = self.search(cr, uid, [('state_id','=',vals.get('state_id'))])
             if sched_ids:
                 raise osv.except_osv(_('Warning!'), _("Duplications is not allowed"))
         res = super(kw_scheduler, self).create(cr, uid, vals, context)
@@ -4860,7 +4860,7 @@ class kw_scheduler(osv.osv):
         cron_ids = [x[0] for x in cr.fetchall()]
 
         if cron_ids:
-            cron_obj.write(cr, uid, cron_ids, {'nextcall':vals.get('exec_date'),'active':vals.get('is_active'),'args':"(False, False, {'state': "+str(state_name)+",'id':" +str(res)+"})"}, context)
+            cron_obj.write(cr, uid, cron_ids, {'nextcall':vals.get('exec_date'),'active':vals.get('is_active'),'args':"(False, False, {'state': '"+str(state_name)+"','id':" +str(res)+"})"}, context)
         return res
 
     def write(self, cr, uid, ids, vals, context=None):
@@ -4873,7 +4873,7 @@ class kw_scheduler(osv.osv):
         res = super(kw_scheduler, self).write(cr, uid, ids, vals, context)
         for case in self.browse(cr, uid, ids):
             if vals.get("state_id"):
-                sched_ids = self.browse(cr, uid, [('state_id','=',vals.get('state_id', case.state_id.id))])
+                sched_ids = self.search(cr, uid, [('state_id','=',vals.get('state_id', case.state_id.id))])
                 if sched_ids:
                     raise osv.except_osv(_('Warning!'), _("Duplications is not allowed"))
             cr.execute("select name from res_country_state where id ="+str(vals.get('state_id', case.state_id.id))+" ")
@@ -4882,11 +4882,9 @@ class kw_scheduler(osv.osv):
                 state_name = state_name[0]
             cr.execute("select id from ir_cron where name='KW Create Invoice Scheduler' ")
             cron_ids = [x[0] for x in cr.fetchall()]
-            print "===========.",vals.get('is_active')
-            print "...........",case.is_active
             if cron_ids:
                 cron_obj._try_lock(cr, uid, cron_ids, context=context)
-                cron_obj.write(cr, uid, cron_ids, {'nextcall':vals.get('exec_date'),'active':vals.get('is_active', case.is_active),'args':"(False, False, {'state': '"+str(state_name)+"','id':" +str(case.id)+"})"}, context)
+                cron_obj.write(cr, uid, cron_ids, {'nextcall':vals.get('exec_date', case.exec_date),'active':vals.get('is_active', case.is_active),'args':"(False, False, {'state': '"+str(state_name)+"','id':" +str(case.id)+"})"}, context)
         return res
 
     #Schedular for Create Facilitator Invoices Automatically
