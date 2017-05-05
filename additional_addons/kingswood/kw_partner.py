@@ -216,6 +216,7 @@ class res_partner(osv.osv):
 
                 'show_jjform'          :   fields.boolean('Show JJform',track_visibility='onchange'),
                 'gen_jjform'           :   fields.boolean('Generate JJform.',track_visibility='onchange'),
+                'ftbal_deduct'         :   fields.float("Freiht Balance Deduct", digits=(16,2))
               }
     _defaults={
                'customer':True,
