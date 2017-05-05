@@ -241,7 +241,7 @@
 			 						<field name='show_freight'  attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
 			 						<field name="pay_freight" 	attrs="{'invisible': [('customer','=', False)]}" />
 			 						<field name='representative_id'  domain="[('supplier','=',True),('representative','=',True)]" attrs="{'required':[('pay_freight','=',False),('customer','=',True)],'invisible':['|',('pay_freight','=',True),('customer','=',False)]}"/>
-			                    	
+
 			 				 </group>     
 			 				 <group name="Report" string="Report">
 				 					<field name="product_change" 
@@ -269,15 +269,15 @@
  					<field name='tin_no' attrs="{'required':[('customer','!=',False)]}"/>
  					<field name='sup_num' string="Reference"/>
 					<field name='user_log' string="User" invisible='1'/>
+					<field name='ftbal_deduct' attrs="{'invisible': [('customer','=', False)]}"/>
  				</field>
  				
  				<field name="website" position="after">
 
-						 <field name="handling_charges" attrs="{'invisible': [('supplier','=', False)]}" />
+					<field name="handling_charges" attrs="{'invisible': [('supplier','=', False)]}" />
+					<field name='representative' attrs="{'invisible': [('supplier','=', False)]}"/>
+					<field name='billing_cycle' attrs="{'invisible': [('supplier','=', False)]}"/>
 
-							<field name='representative' attrs="{'invisible': [('supplier','=', False)]}"/>
-
-							<field name='billing_cycle' attrs="{'invisible': [('supplier','=', False)]}"/>	 					 
 	 					
  				</field> 				
  				
