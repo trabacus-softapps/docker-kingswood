@@ -3576,6 +3576,9 @@ class stock_picking_out(osv.osv):
         if 'move_lines' in vals:
             if vals['move_lines']==[]:
                 raise osv.except_osv(_('Warning'),_("Add Goods Details"))
+        if vals.get('truck_no').lower().replace('-','').replace('.','').replace(' ','') in ('ka53b0553','ka05ad4447','ka51b9744'):
+            raise osv.except_osv(_('Warning'),_("You can't Create DC for this Vehicle No."))
+
         for ml in vals['move_lines']:
                 vals['product_id']=ml[2]['product_id']
                 context.update({'location_id':ml[2]['location_id']})
@@ -3810,7 +3813,10 @@ class stock_picking_out(osv.osv):
             cr.execute("select id from res_partner where lower(name) like 'kingswood%'")
             king=cr.fetchall()
             king=zip(*king)[0]            
-            for case in self.browse(cr, uid, ids): 
+            for case in self.browse(cr, uid, ids):
+                if vals.get('truck_no',case.truck_no).lower().replace('-','').replace('.','').replace(' ','') in ('ka53b0553','ka05ad4447','ka51b9744'):
+                    raise osv.except_osv(_('Warning'),_("You can't Create DC for this Vehicle No."))
+
                 count_partner = vals.get('partner_id',case.partner_id.id)
                 count_facilitator = vals.get('paying_agent_id',case.paying_agent_id.id)
                 count_product = vals.get('product_id',case.product_id.id)
