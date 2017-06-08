@@ -115,7 +115,7 @@ class kw_freight(osv.osv_memory):
                              'customer_id':customer_id,
                              'facilitator_id':facilitator_id,
                              'product_id' : product_id,
-                              #'pick_type' : pick_type
+                             'pick_type' : pick_type
                              }
         print "date",data['variables']
         data['ids'] = stock_ids
