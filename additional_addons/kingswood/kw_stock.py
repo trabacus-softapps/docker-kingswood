@@ -1462,24 +1462,25 @@ class stock_picking_out(osv.osv):
         time.sleep(2)
         browser.get(url)
         _logger.info('URL....... %s',url)
-        browser.find_element_by_xpath("//a[contains(.,'Go to New Portal ')]").click()
+        # browser.find_element_by_xpath("//a[contains(.,'Go to New Portal ')]").click()
+        #
+        # time.sleep(2)
 
-        time.sleep(2)
-
-        if len(browser.window_handles):
-            browser.switch_to.window(browser.window_handles[-1])
-        time.sleep(1)
-        try:
-            browser.find_element_by_link_text('e-Registration').click()
-        except:
-            browser.find_element_by_link_text('Home').click()
-            browser.find_element_by_link_text('e-Registration').click()
-
-
-        time.sleep(2)
-        browser.window_handles
-        if len(browser.window_handles):
-            browser.switch_to.window(browser.window_handles[-1])
+        # if len(browser.window_handles):
+        #     browser.switch_to.window(browser.window_handles[-1])
+        # time.sleep(1)
+        # try:
+        #     browser.find_element_by_link_text('e-Registration').click()
+        # except:
+        #     time.sleep(2)
+        #     # browser.find_element_by_link_text('Home').click()
+        #     browser.find_element_by_link_text('e-Registration').click()
+        #
+        #
+        # time.sleep(2)
+        # browser.window_handles
+        # if len(browser.window_handles):
+        #     browser.switch_to.window(browser.window_handles[-1])
 
         try:
             error = "Invalid Captcha."
