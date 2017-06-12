@@ -1198,6 +1198,11 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_css_selector('.Menu1_3').click()
                     browser.find_element_by_css_selector('.Menu1_3').send_keys(Keys.RIGHT)
                     browser.find_element_by_css_selector('.Menu1_5').click()
+                    try:
+                        browser.find_element_by_id('ctl00_MasterContent_btn_ok').click()
+                    except:
+                        pass
+
                     
                 except:
                     browser.find_element_by_id('chkConfirmation').click()
@@ -1206,10 +1211,18 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_css_selector('.Menu1_3').click()
                     browser.find_element_by_css_selector('.Menu1_3').send_keys(Keys.RIGHT)
                     browser.find_element_by_css_selector('.Menu1_5').click()
+                    try:
+                        browser.find_element_by_id('ctl00_MasterContent_btn_ok').click()
+                    except:
+                        pass
             else:
                 browser.find_element_by_css_selector('.Menu1_3').click()
                 browser.find_element_by_css_selector('.Menu1_3').send_keys(Keys.RIGHT)
                 browser.find_element_by_css_selector('.Menu1_5').click()
+                try:
+                    browser.find_element_by_id('ctl00_MasterContent_btn_ok').click()
+                except:
+                    pass
             #browser.find_by_id('ctl00_MasterContent_rbl_doctype_5').click()
             #browser.find_by_id('ctl00_MasterContent_btnContinue').click()
             #browser.find_by_id('LinkButton1').click()
@@ -1468,21 +1481,21 @@ class stock_picking_out(osv.osv):
         #
         # time.sleep(2)
 
-        # if len(browser.window_handles):
-        #     browser.switch_to.window(browser.window_handles[-1])
-        # time.sleep(1)
-        # try:
-        #     browser.find_element_by_link_text('e-Registration').click()
-        # except:
-        #     time.sleep(2)
-        #     # browser.find_element_by_link_text('Home').click()
-        #     browser.find_element_by_link_text('e-Registration').click()
-        #
-        #
-        # time.sleep(2)
-        # browser.window_handles
-        # if len(browser.window_handles):
-        #     browser.switch_to.window(browser.window_handles[-1])
+        if len(browser.window_handles):
+            browser.switch_to.window(browser.window_handles[-1])
+        time.sleep(1)
+        try:
+            browser.find_element_by_link_text('e-Registration').click()
+        except:
+            time.sleep(2)
+            browser.find_element_by_link_text('Home').click()
+            browser.find_element_by_link_text('e-Registration').click()
+
+
+        time.sleep(2)
+        browser.window_handles
+        if len(browser.window_handles):
+            browser.switch_to.window(browser.window_handles[-1])
 
         try:
             error = "Invalid Captcha."
