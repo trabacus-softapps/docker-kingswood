@@ -1110,7 +1110,9 @@ class stock_picking_out(osv.osv):
         browser = webdriver.PhantomJS()
         #browser = webdriver.Firefox()
         url_status1 = browser.get(url1)
-        
+        _logger.info('url_status1....... %s',url_status1)
+
+
         try:
             # check URL1
             try:
