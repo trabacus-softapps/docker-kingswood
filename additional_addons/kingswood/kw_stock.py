@@ -1093,11 +1093,22 @@ class stock_picking_out(osv.osv):
             for t in product_id.taxes_id:
                 if t.state_id.name == 'Karnataka':
                     tax_amount += t.amount * price * qty
+                else:
+                    # for CST Taxes
+                    for t in product_id.cst_taxes_id:
+                        tax_amount += t.amount * price * qty
+
         else:
             # for CST Taxes
             for t in product_id.cst_taxes_id:
                 tax_amount += t.amount * price * qty
-        
+
+        cr.execute("select tin_no from res_partner where name ilike '%Kingswood Suppliers Pvt. Ltd.(TN)%' ")
+        tn_tin = [x[0] for x in cr.fetchall()]
+        if tn_tin:
+            tn_tin = tn_tin[0]
+        else:
+            tn_tin = 33944481896
         
         
         today = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -1233,6 +1244,7 @@ class stock_picking_out(osv.osv):
             time.sleep(2)
             browser.find_element_by_name('ctl00$MasterContent$txtFromAddrs').send_keys(case.city_id.name)
             browser.find_element_by_name('ctl00$MasterContent$txtToAddrs').send_keys(case.partner_id.city)
+            browser.find_element_by_name('ctl00$MasterContent$ddl_commoditycode').send_keys('OTHERS')
             browser.find_element_by_name('ctl00$MasterContent$txt_commodityname').send_keys(desc)
             browser.find_element_by_name('ctl00$MasterContent$txtQuantity').send_keys(str(qty))
             browser.find_element_by_name('ctl00$MasterContent$txtNetValue').send_keys(str(price * qty))
@@ -1255,16 +1267,27 @@ class stock_picking_out(osv.osv):
             #Document Type Others
             #browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_5').click()
             #Document Type Invoice
+            if context.get('confirm_esugam'):
+                browser.find_element_by_id('ctl00_MasterContent_rdoStatCat_1').click()
+                browser.find_element_by_id('ctl00_MasterContent_rdoListGoods_1').click()
+                time.sleep(1)
+
+
             browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_0').click()
-            if case.partner_id.state_id.name == 'Karnataka':
+            if case.partner_id.state_id.name == 'Karnataka' and not context.get('confirm_esugam'):
                 browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(case.partner_id.tin_no)
+                browser.find_element_by_name('ctl00$MasterContent$txtNameAddrs').send_keys(str(case.partner_id.name))
             else:
-                browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(case.partner_id.tin_no)
+                if context.get('confirm_esugam'):
+                    browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(tn_tin)
+                    browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(Keys.TAB)
+                    browser.find_element_by_id('ctl00_MasterContent_txtNameAddrs').send_keys(str(case.company_id.name))
                 browser.find_element_by_name('ctl00$MasterContent$txtVehicleOwner').send_keys(veh_owner)
                 time.sleep(5)
-                browser.find_element_by_name('ctl00$MasterContent$txtNameAddrs').send_keys(case.partner_id.name)
+
             #browser.find_element_by_id('ctl00_MasterContent_btnSave').click()
             browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click()
+            time.sleep(2)
             browser.find_element_by_id('ctl00_MasterContent_btn_savecumsubmit').click()
             time.sleep(12)
             #esugam = browser.find_element_by_id('ctl00_MasterContent_lbl_serialno').text
