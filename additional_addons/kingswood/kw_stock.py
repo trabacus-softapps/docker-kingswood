@@ -1168,7 +1168,7 @@ class stock_picking_out(osv.osv):
                 browser.find_element_by_id('Password')
                 
                 captcha = self.get_captcha(cr, uid, [], browser, context)
-                print "captcha.........",captcha
+                _logger.info('captcha....... %s',captcha)
                 if re.match("^([a-zA-Z0-9']{0,5})$",captcha) == None:
                     continue
                     
@@ -1284,7 +1284,7 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_id('ctl00_MasterContent_txtNameAddrs').send_keys(str(case.company_id.name))
                 browser.find_element_by_name('ctl00$MasterContent$txtVehicleOwner').send_keys(veh_owner)
                 time.sleep(5)
-
+            _logger.info('Final Page....... ')
             #browser.find_element_by_id('ctl00_MasterContent_btnSave').click()
             browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click()
             time.sleep(2)
