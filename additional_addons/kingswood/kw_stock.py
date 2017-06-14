@@ -1280,7 +1280,9 @@ class stock_picking_out(osv.osv):
             else:
                 if context.get('confirm_esugam'):
                     browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(tn_tin)
+                    time.sleep(1)
                     browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(Keys.TAB)
+                    time.sleep(1)
                     browser.find_element_by_id('ctl00_MasterContent_txtNameAddrs').send_keys(str(case.company_id.name))
                 browser.find_element_by_name('ctl00$MasterContent$txtVehicleOwner').send_keys(veh_owner)
                 time.sleep(5)
