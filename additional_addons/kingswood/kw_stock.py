@@ -1580,7 +1580,7 @@ class stock_picking_out(osv.osv):
                 raise osv.except_osv(_('Warning'),_('Please enter the Consignee Tin Number.'))
 
             browser.find_element_by_name('dealerName').send_keys(case.partner_id and case.partner_id.name or '')
-            browser.find_element_by_name('dealerCity').send_keys(case.city_id and case.city_id.name or '')
+            browser.find_element_by_name('dealerCity').send_keys(str(case.partner_id.city_id.name) + ', ' + str(case.partner_id.zip))
             time.sleep(1)
             if case.company_id:
                 cr.execute("""
