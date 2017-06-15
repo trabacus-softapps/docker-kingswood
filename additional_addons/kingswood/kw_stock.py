@@ -1237,7 +1237,7 @@ class stock_picking_out(osv.osv):
             #browser.find_by_id('ctl00_MasterContent_rbl_doctype_5').click()
             #browser.find_by_id('ctl00_MasterContent_btnContinue').click()
             #browser.find_by_id('LinkButton1').click()
-            if case.partner_id.state_id.name == 'Karnataka':
+            if case.partner_id.state_id.id == case.state_id.id:
                 browser.find_element_by_id('ctl00_MasterContent_rdoStatCat_0').click()
             else:
                 browser.find_element_by_id('ctl00_MasterContent_rdoStatCat_1').click()
@@ -1274,8 +1274,9 @@ class stock_picking_out(osv.osv):
 
 
             browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_0').click()
-            if case.partner_id.state_id.name == 'Karnataka' and not context.get('confirm_esugam'):
+            if (case.partner_id.state_id.name == 'Karnataka' or case.state_id.name =='Karnataka') and not context.get('confirm_esugam'):
                 browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(case.partner_id.tin_no)
+                browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(Keys.TAB)
                 browser.find_element_by_name('ctl00$MasterContent$txtNameAddrs').send_keys(str(case.partner_id.name))
             else:
                 if context.get('confirm_esugam'):
