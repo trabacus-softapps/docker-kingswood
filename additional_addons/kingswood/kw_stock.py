@@ -1501,6 +1501,13 @@ class stock_picking_out(osv.osv):
         veh_owner = case.driver_name and case.driver_name or ''
         inv_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%d/%m/%Y')
 
+        truck_no = case.truck_no
+        truck_no = truck_no.replace('-','')
+        truck_no = truck_no.replace(' ','')
+        truck_no = truck_no.replace('.','')
+        truck_no = truck_no.replace('/','')
+        _logger.info('Truck Number...... %s',truck_no)
+
         # browser = webdriver.Chrome()
         browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
         time.sleep(2)
@@ -1625,7 +1632,9 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_name('vatCstCharges').send_keys(int(round(tax_amount)))
             time.sleep(1)
             browser.find_element_by_name('transportMode').send_keys('By Road')
-            browser.find_element_by_name('vehRegNoIfAny').send_keys(case.truck_no)
+            browser.find_element_by_name('transportMode').send_keys(Keys.TAB)
+            browser.find_element_by_name('vehRegNoIfAny').send_keys(truck_no)
+
             browser.find_element_by_name('lspName').send_keys(case.transporter_id and case.transporter_id.name or '')
             time.sleep(1)
             browser.find_element_by_id('a_gisInvoiceVehicleDtls').click()
