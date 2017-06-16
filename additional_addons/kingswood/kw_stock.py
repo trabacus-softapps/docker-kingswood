@@ -1277,9 +1277,10 @@ class stock_picking_out(osv.osv):
             if (case.partner_id.state_id.name == 'Karnataka' or case.state_id.name =='Karnataka') and not context.get('confirm_esugam'):
                 browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(case.partner_id.tin_no)
                 time.sleep(1)
-                browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(Keys.TAB)
-                time.sleep(1)
-                browser.find_element_by_name('ctl00$MasterContent$txtNameAddrs').send_keys(str(case.partner_id.name))
+                if case.partner_id.state_id.name != case.state_id.name:
+                    browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(Keys.TAB)
+                    time.sleep(1)
+                    browser.find_element_by_name('ctl00$MasterContent$txtNameAddrs').send_keys(str(case.partner_id.name))
             else:
                 if context.get('confirm_esugam'):
                     browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(tn_tin)
