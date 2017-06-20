@@ -1435,9 +1435,18 @@ class stock_picking_out(osv.osv):
                         url1 = e.url1
                         url2 = e.url2
                         url3 = e.url3
-                        if context.get("confirm_esugam"):
-                            username = case.partner_id.es_username
-                            password = case.partner_id.es_password
+
+                if context.get("confirm_esugam"):
+                    cr.execute("""select e.url1, e.url2, e.url3 from esugam_master e
+                               inner join res_country_state rcs on rcs.id = e.state_id
+                               where  rcs.code='KA' and e.company_id = 1""")
+                    urls = cr.dictfetchall()
+                    urls = urls[0]
+                    url1 = urls.get("url1")
+                    url2 = urls.get("url2")
+                    url3 = urls.get("url3")
+                    username = case.partner_id.es_username
+                    password = case.partner_id.es_password
 
                 """ Esugam Site security reason commented"""
                 esugam = self.generate_esugam(cr,uid,desc, qty, price, product_id, username, password, url1,url2, url3, case, context)
