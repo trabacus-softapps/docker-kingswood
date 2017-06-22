@@ -1095,8 +1095,9 @@ class stock_picking_out(osv.osv):
                     tax_amount += t.amount * price * qty
                 else:
                     # for CST Taxes
-                    for t in product_id.cst_taxes_id:
-                        tax_amount += t.amount * price * qty
+                    if context.get('confirm_esugam'):
+                        for t in product_id.cst_taxes_id:
+                            tax_amount += t.amount * price * qty
 
         else:
             # for CST Taxes
