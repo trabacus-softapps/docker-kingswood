@@ -141,8 +141,9 @@
 				<xpath expr="//field[@name='default_code']" position='after'>
 					<field name="cft" string="CFT"/>
 					<field name="product_rate" invisible='1'/>
-				</xpath>            	
-            				
+					<field name="hsn_sac" required="1" on_change="onchange_hsn_sac_code(hsn_sac, context)"/>
+				</xpath>
+
 				<xpath expr="//notebook/page[@string='Information']/field[@name='description']" position='before'>
 					<separator string="Customers Goods Rate"/>
 					<field name="customer_ids" widget="one2many_list" version="7.0" context="{'default_type':'customer','default_list_price':list_price}" options="{'limit':2}">
