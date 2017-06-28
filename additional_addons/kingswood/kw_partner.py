@@ -38,31 +38,7 @@ class res_partner(osv.osv):
     
     _inherit = 'res.partner'
 
-#     def fields_view_get(self, cr, uid, view_id=None, view_type='form', context=None, toolbar=False, submenu=False):
-#         user = self.pool.get('res.users').browse(cr,uid,uid)
-#         
-#         if context is None:context = {}
-#         res = super(res_partner, self).fields_view_get(cr, uid, view_id=view_id, view_type=view_type, context=context, toolbar=toolbar,submenu=False)
-#         doc = etree.XML(res['arch'])
-#         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#         # For Supplier Groups: Filtering related Customers in OUT
-#         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
-#         cr.execute("select true from res_groups_users_rel gu \
-#                     inner join res_groups g on g.id = gu.gid \
-#                     where g.name = 'KW_Supplier' and uid ="+str(uid))
-#         is_supp = cr.fetchone()
-#         
-#         if (is_supp and is_supp[0] == True) and not user.billing_cycle:
-#             if view_type == 'form':
-#                     for node in doc.xpath("//form"):
-#                         node.set('invisible', '1')
-#             if view_type == 'tree':
-#                     for node in doc.xpath("//tree"):
-#                         node.set('invisible', '1')                    
-#         
-#         return res    
-    
+
     def _get_user(self, cr, uid, ids, args, field_name, context = None):
         if not context:
             context={}
@@ -235,6 +211,20 @@ class res_partner(osv.osv):
                 'user_log'     :_get_default_user,
 
                }
+
+    def onchange_country_id(self, cr, uid, ids, country_id, context=None):
+        if not context:
+            context = {}
+        res = {}
+        country_obj = self.pool.get("res.country")
+        if country_id:
+            cntry = country_obj.browse(cr, uid, country_id)
+            if cntry.code != 'IN':
+                res.update({'is_india' : False})
+            else:
+                res.update({'is_india' : True})
+
+        return {'value' : res}
 
     def onchange_gstin_code(self, cr, uid, ids, gstin_code, context=None):
         if not context:
