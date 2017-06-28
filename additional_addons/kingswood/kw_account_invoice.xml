@@ -721,10 +721,10 @@
 			<field name="model">account.tax</field>
             <field name="name">kw.account.tax</field>
             <field name="inherit_id" ref="account.view_tax_form"/>
-            
             <field name="arch" type="xml" >
 				<xpath expr="//field[@name='description']" position="after">
 					<field name='state_id' required='1'/>
+					<field name="gst_categ" required="1"/>
 				</xpath>
 				
 				
