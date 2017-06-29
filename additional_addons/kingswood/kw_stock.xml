@@ -328,7 +328,7 @@
             					groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service,kingswood.kw_customer_service"
             					class="oe_highlight" />
 
-            				<button name="print_gst_dc" type="object" string="Delivery Challan"
+            				<button name="print_gst_dc" type="object" string="GSTIN Delivery Challan"
             					groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service,kingswood.kw_customer_service"
             					class="oe_highlight" />
 
