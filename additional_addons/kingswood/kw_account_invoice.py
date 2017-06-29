@@ -1761,6 +1761,41 @@ class account_invoice(osv.osv):
             if case.company_id:
                 cr.execute("update account_invoice_line set company_id=%s where invoice_id=%s",(case.company_id.id,case.id,))       
         res=super(account_invoice, self).write(cr, uid, ids,vals, context=context)
+        for temp in self.browse(cr, uid, ids):
+            inv_line_id = []
+            cr.execute("select id from account_invoice_line where invoice_id="+str(temp.id))
+            inv_line_id = [x[0] for x in cr.fetchall()]
+            if inv_line_id:
+                if len(inv_line_id) == 1:
+                    inv_line_id = '(' + str(inv_line_id[0]) + ')'
+                else:
+                    inv_line_id = tuple(inv_line_id)
+            if inv_line_id and temp.date_invoice>= '2017-07-01':
+                if temp.partner_id.state_id.id == temp.branch_state.id:
+                    cr.execute("""
+                         select
+                            lt.tax_id
+
+                        from account_invoice_line_tax lt
+                        inner join account_tax t on t.id = lt.tax_id
+                        where lt.invoice_line_id in """+str(inv_line_id)+""" and t.gst_categ = 'inter'
+                        """)
+                    diff_tax = [x[0] for x in cr.fetchall()]
+                    if diff_tax:
+                        raise osv.except_osv(_('Warning!'), _("Please Select only CGST and SGST Tax"))
+                if temp.partner_id.state_id.id != temp.branch_state.id:
+                    cr.execute("""
+                         select
+                            lt.tax_id
+
+                        from account_invoice_line_tax lt
+                        inner join account_tax t on t.id = lt.tax_id
+                        where lt.invoice_line_id in """+str(inv_line_id)+""" and t.gst_categ = 'intra'
+                        """)
+                    diff_tax = [x[0] for x in cr.fetchall()]
+                    if diff_tax:
+                        raise osv.except_osv(_('Warning!'), _("Please Select only IGST Tax"))
+
         return res
     
     
@@ -4648,7 +4683,8 @@ account_account()
 class account_tax(osv.osv):
      _inherit="account.tax"
      _columns={
-                'state_id'        : fields.many2one('res.country.state','State'),
+                'state_id'      : fields.many2one('res.country.state','State'),
+                'gst_categ'     : fields.selection([("inter","Inter State"),("intra","Intra State")],"GST Category")
                
               }
 account_tax()

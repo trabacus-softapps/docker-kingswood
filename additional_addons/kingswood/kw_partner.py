@@ -4,6 +4,7 @@ from lxml import etree
 import time
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+import re
 
 
 class kw_farmers(osv.osv):
@@ -37,31 +38,7 @@ class res_partner(osv.osv):
     
     _inherit = 'res.partner'
 
-#     def fields_view_get(self, cr, uid, view_id=None, view_type='form', context=None, toolbar=False, submenu=False):
-#         user = self.pool.get('res.users').browse(cr,uid,uid)
-#         
-#         if context is None:context = {}
-#         res = super(res_partner, self).fields_view_get(cr, uid, view_id=view_id, view_type=view_type, context=context, toolbar=toolbar,submenu=False)
-#         doc = etree.XML(res['arch'])
-#         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#         # For Supplier Groups: Filtering related Customers in OUT
-#         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
-#         cr.execute("select true from res_groups_users_rel gu \
-#                     inner join res_groups g on g.id = gu.gid \
-#                     where g.name = 'KW_Supplier' and uid ="+str(uid))
-#         is_supp = cr.fetchone()
-#         
-#         if (is_supp and is_supp[0] == True) and not user.billing_cycle:
-#             if view_type == 'form':
-#                     for node in doc.xpath("//form"):
-#                         node.set('invisible', '1')
-#             if view_type == 'tree':
-#                     for node in doc.xpath("//tree"):
-#                         node.set('invisible', '1')                    
-#         
-#         return res    
-    
+
     def _get_user(self, cr, uid, ids, args, field_name, context = None):
         if not context:
             context={}
@@ -216,7 +193,12 @@ class res_partner(osv.osv):
 
                 'show_jjform'          :   fields.boolean('Show JJform',track_visibility='onchange'),
                 'gen_jjform'           :   fields.boolean('Generate JJform.',track_visibility='onchange'),
-                'ftbal_deduct'         :   fields.float("Freiht Balance Deduct", digits=(16,2))
+                'ftbal_deduct'         :   fields.float("Freiht Balance Deduct", digits=(16,2)),
+
+                'gstin_code'        :   fields.char("GST IN Code", size=20),
+                'un_reged_vendor'   :   fields.boolean("Un Reged Vendor"),
+
+
               }
     _defaults={
                'customer':True,
@@ -229,7 +211,38 @@ class res_partner(osv.osv):
                 'user_log'     :_get_default_user,
 
                }
-    
+
+    def onchange_country_id(self, cr, uid, ids, country_id, context=None):
+        if not context:
+            context = {}
+        res = {}
+        country_obj = self.pool.get("res.country")
+        if country_id:
+            cntry = country_obj.browse(cr, uid, country_id)
+            if cntry.code != 'IN':
+                res.update({'is_india' : False})
+            else:
+                res.update({'is_india' : True})
+
+        return {'value' : res}
+
+    def onchange_gstin_code(self, cr, uid, ids, gstin_code, context=None):
+        if not context:
+            context = {}
+        warning = {}
+        res = {}
+        if gstin_code:
+            if not re.match('^[a-z_A-Z0-9]+$',gstin_code):
+                warning = {
+                    'title': _('Warning!'),
+                    'message': _('Special Charecters not allowed in GST Code.')
+                      }
+                res.update({'gstin_code':False})
+            else:
+                res.update({'gstin_code':gstin_code})
+
+        return {'value':res, 'warning' : warning}
+
     def onchange_pay_freight(self, cr, uid, ids, pay_freight=False,context=None):
         res ={}
         stock_obj=self.pool.get('stock.picking.out')
@@ -457,17 +470,34 @@ customer_contracts()
 class res_company(osv.osv):
     _inherit='res.company'
     _columns={
-                'tin'   :   fields.char('Tin Number',size=20),
-                'toll_free' : fields.char("Toll Free No.",size=15), 
-                'attachment': fields.binary("APMC Attachment"),
-                'farmer_declaration' : fields.binary("Farmer Declaration")
-                
+                'tin'               :   fields.char('Tin Number',size=20),
+                'toll_free'         :   fields.char("Toll Free No.",size=15),
+                'attachment'        :   fields.binary("APMC Attachment"),
+                'farmer_declaration':   fields.binary("Farmer Declaration"),
+                'gstin_code'        :   fields.char("GST IN Code", size=20),
              }
     _defaults={
                
                'country_id' : 105,
                
                }
+    def onchange_gstin_code(self, cr, uid, ids, gstin_code, context=None):
+        if not context:
+            context = {}
+        warning = {}
+        res = {}
+        if gstin_code:
+            if not re.match('^[a-z_A-Z0-9]+$',gstin_code):
+                warning = {
+                    'title': _('Warning!'),
+                    'message': _('Special Charecters not allowed in GST Code.')
+                      }
+                res.update({'gstin_code':False})
+            else:
+                res.update({'gstin_code':gstin_code})
+
+        return {'value':res, 'warning' : warning}
+
 res_company()
 
 
@@ -851,9 +881,15 @@ billing_cycle()
 class res_country_state(osv.osv):
     _inherit='res.country.state'
     _columns={
-              'branch_office'   :   fields.boolean('Branch Office'),
+        'branch_office' :   fields.boolean('Branch Office'),
+        "is_union"      :   fields.boolean("Is Union Territory"),
               }
-res_country_state
+
+    _sql_constraints = [
+        ('code_uniq', 'unique (code)',
+            'The code of the State must be unique !')
+    ]
+res_country_state()
 
 
 class goods_trucks(osv.osv):

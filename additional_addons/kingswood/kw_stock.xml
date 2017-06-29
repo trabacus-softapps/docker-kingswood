@@ -326,8 +326,13 @@
             				
             				<button name="print_freight_advice" type="object" string="Print Freight Advice" attrs="{'invisible': [('freight', '=', False),('gen_freight','=',False)]}"
             					groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service,kingswood.kw_customer_service"
-            					class="oe_highlight" />	
-            				
+            					class="oe_highlight" />
+
+            				<button name="print_gst_dc" type="object" string="GSTIN Delivery Challan"
+            					groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service,kingswood.kw_customer_service"
+            					class="oe_highlight" />
+
+
             				<button name="print_dc_lr" type="object" string="ITC DC-LR Report"
             					attrs="{'invisible': [('report','!=',True)]}" class="oe_highlight"/>
             				        					

@@ -2221,6 +2221,18 @@ class stock_picking_out(osv.osv):
                     res = rep_obj.pentaho_report_action(cr, uid, 'Freight Advice', ids,None,None)
         return res
         
+    def print_gst_dc(self,cr,uid,ids,context=None):
+        rep_obj = self.pool.get('ir.actions.report.xml')
+        res={}
+        partner=False
+        data = {}
+        data2 ={}
+        attachment_obj = self.pool.get('ir.attachment')
+
+        for case in self.browse(cr,uid,ids):
+            res = rep_obj.pentaho_report_action(cr, uid, 'GST Delivery Challan', ids,None,None)
+        return res
+
 
     
     
@@ -3369,26 +3381,53 @@ class stock_picking_out(osv.osv):
                        tax_obj=[]
                        for k in tax_state:
                             tax.append(k[0])
-                        
-                       if case.partner_id.state_id.id in tax or case.paying_agent_id.state_id.name in tax:
-                           if case.partner_id.state_id.name == case.paying_agent_id.state_id.name:
-                               cr.execute("select id from account_tax where state_id=%s",(case.partner_id.state_id.id,))
-                               tax_id=cr.fetchone()[0]
-                               if tax_id:      
-                                   cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id=%s",(ln.product_id.id,tax_id))
-                                   tax_obj=cr.fetchall()
-                               else:
-                                   raise osv.except_osv(_('Warning'),_('No State Taxes Mappend in Account Taxes For The Customer State "%s" Or Supplier State "%s"')% (case.partner_id.state_id.name,case.paying_agent_id.state_id.name))
-                              
-                       if case.partner_id.state_id.name != case.paying_agent_id.state_id.name:
-                            cr.execute("select tax_id from product_csttaxes_rel where prod_id=%s",(ln.product_id.id,))
-                            tax_obj = cr.fetchall()
-                       
-                           
-                       if tax_obj: 
-                           val.update({
+                       if case.date <='2017-07-01 00:00:00':
+                           if case.partner_id.state_id.id in tax or case.paying_agent_id.state_id.name in tax:
+                               if case.partner_id.state_id.name == case.paying_agent_id.state_id.name:
+                                   cr.execute("select id from account_tax where state_id=%s",(case.partner_id.state_id.id,))
+                                   tax_id=cr.fetchone()[0]
+                                   if tax_id:
+                                       cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id=%s",(ln.product_id.id,tax_id))
+                                       tax_obj=cr.fetchall()
+                                   else:
+                                       raise osv.except_osv(_('Warning'),_('No State Taxes Mappend in Account Taxes For The Customer State "%s" Or Supplier State "%s"')% (case.partner_id.state_id.name,case.paying_agent_id.state_id.name))
+
+                           if case.partner_id.state_id.name != case.paying_agent_id.state_id.name:
+                                cr.execute("select tax_id from product_csttaxes_rel where prod_id=%s",(ln.product_id.id,))
+                                tax_obj = cr.fetchall()
+
+                           if tax_obj:
+                               val.update({
                                                'invoice_line_tax_id': [(6, 0,list(tax_obj[0]))]
                                        })
+
+                       else:
+                           if case.state_id.id == case.partner_id.state_id.id:
+                               cr.execute("select id from account_tax where gst_categ='intra' ")
+                               intra_tax_id= [x[0] for x in cr.fetchall()]
+                               intra_tax_id = tuple(intra_tax_id)
+                               if intra_tax_id:
+                                   cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id in %s",(ln.product_id.id,intra_tax_id))
+                                   tx_ids = [x[0] for x in cr.fetchall()]
+                               else:
+                                   raise osv.except_osv(_('Warning'),_('Map proper Taxes for Intra State'))
+
+                           else:
+                               cr.execute("select id from account_tax where gst_categ='inter' ")
+                               inter_tax_id= [x[0] for x in cr.fetchall()]
+                               inter_tax_id = tuple(inter_tax_id)
+                               if inter_tax_id:
+                                   cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id in %s",(ln.product_id.id,inter_tax_id))
+                                   tx_ids = [x[0] for x in cr.fetchall()]
+                               else:
+                                   raise osv.except_osv(_('Warning'),_('Map proper Taxes for Inter State'))
+                           print "tax_id...................",tx_ids
+                           if tx_ids:
+                               val.update({
+                                               'invoice_line_tax_id': [(6, 0,tx_ids)]
+                                       })
+
+
                        
                        i=[]
                        
@@ -3515,6 +3554,7 @@ class stock_picking_out(osv.osv):
                                              })
                             
                             inv1=inv_obj.create(cr, uid, inv_vals)
+                            inv_obj.button_reset_taxes(cr, uid, [inv1], {})
                             
                             #for creating Freight Invoice
                             inv_vals.update({
@@ -3544,6 +3584,7 @@ class stock_picking_out(osv.osv):
                                                          
                                 #partner.append(p)
                                 inv2=inv_obj.create(cr, uid, inv_vals)
+                                inv_obj.button_reset_taxes(cr, uid, [inv2], {})
                             
                               
                                        
@@ -3567,6 +3608,7 @@ class stock_picking_out(osv.osv):
                                              'journal_id' : cust_journal_id,
                                              })
                             inv3=inv_obj.create(cr, uid, inv_vals)
+                            inv_obj.button_reset_taxes(cr, uid, [inv3], {})
                             partner.append(p)
                             
                               

@@ -3,6 +3,7 @@ from openerp.tools.translate import _
 from datetime import datetime
 import time
 import operator
+import re
 
 class kw_product_price(osv.osv):
     _name = 'kw.product.price'
@@ -654,7 +655,10 @@ class product_template(osv.osv):
                                     domain=[('parent_id','=',False),('type_tax_use','in',['sale','all'])]),
                 'work_order_ids'  : fields.one2many('work.order','product_id','Work Orders'),
                 'cft'  : fields.boolean("CFT"), 
-               'product_rate'  :   fields.boolean('Product Rate'),                  
+               'product_rate'  :   fields.boolean('Product Rate'),
+
+                'hsn_sac'           : fields.char("HSN/SAC", size=8),
+
                 #UPDATE PURPOSE
 #                 'update'    :   fields.function(_get_update,type="boolean",string="location_id",store=True),
               }
@@ -663,6 +667,23 @@ class product_template(osv.osv):
                  'uom_id':_get_uom_id,
      
                }
+
+    def onchange_hsn_sac_code(self, cr, uid, ids, hsn_sac, context=None):
+        if not context:
+            context = {}
+        warning = {}
+        res = {}
+        if hsn_sac:
+            if not re.match('^[a-z_A-Z]+$',hsn_sac):
+                warning = {
+                    'title': _('Warning!'),
+                    'message': _('Special Charecters not allowed in GST Code.')
+                      }
+                res.update({'hsn_sac':False})
+            else:
+                res.update({'hsn_sac':hsn_sac})
+
+        return {'value':res, 'warning' : warning}
     
     def create_inv(self,cr,uid,ids,context=None):
         inv_obj = self.pool.get('account.invoice')
@@ -813,7 +834,25 @@ class product_product(osv.osv):
         inv = inv_obj.create_facilitator_inv(cr,uid,[uid],context)
         
         return True   
-     
+
+    def onchange_hsn_sac_code(self, cr, uid, ids, hsn_sac, context=None):
+        if not context:
+            context = {}
+        warning = {}
+        res = {}
+        if hsn_sac:
+            if not re.match('^[0-9]+$',hsn_sac):
+                warning = {
+                    'title': _('Warning!'),
+                    'message': _('Special Charecters not allowed in HSN/SAC Code.')
+                      }
+                res.update({'hsn_sac':False})
+            else:
+                res.update({'hsn_sac':hsn_sac})
+
+        return {'value':res, 'warning' : warning}
+
+
 product_product()    
     
     

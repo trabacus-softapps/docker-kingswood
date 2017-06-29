@@ -270,6 +270,9 @@
  					<field name='sup_num' string="Reference"/>
 					<field name='user_log' string="User" invisible='1'/>
 					<field name='ftbal_deduct' attrs="{'invisible': [('customer','=', False)]}"/>
+					<field name="gstin_code" attrs="{'required' :[('un_reged_vendor','=',False)]}"
+							on_change="onchange_gstin_code(gstin_code, context)"/>
+					<field name="un_reged_vendor"/>
  				</field>
  				
  				<field name="website" position="after">
@@ -395,12 +398,15 @@
             <field name="model">res.company</field>
             <field name="arch" type="xml" >
                <field name="company_registry" position="after">
-						<field name='tin'/>
-               			<field name='commodity'/>
-               			<field name='attachment'/>
-               			<field name="farmer_declaration"/>
- 						<field name='toll_free' />
-				   		<field name="digi_sign"/>
+					<field name='tin'/>
+					<field name='commodity'/>
+					<field name='attachment'/>
+					<field name="farmer_declaration"/>
+					<field name='toll_free' />
+					<field name="digi_sign"/>
+				    <field name="gstin_code" required="1"
+							on_change="onchange_gstin_code(gstin_code, context)"/>
+
  				</field>	
  				
  			
@@ -749,14 +755,31 @@
 		
 	<!-- ***********************************To add Branch-Office Field to States************************************** -->
 	<record id="kw_partner_form_state" model="ir.ui.view">
-			<field name="name">kw_country_state_form</field>
-			<field name="inherit_id" ref="base.view_country_state_form"/>
-			<field name="model">res.country.state</field>
-			<field name="arch" type="xml" >
+		<field name="name">kw_country_state_form</field>
+		<field name="inherit_id" ref="base.view_country_state_form"/>
+		<field name="model">res.country.state</field>
+		<field name="arch" type="xml" >
 			<xpath expr="//field[@name='country_id']" position="after">
- 					<field name="branch_office"/>
- 				</xpath>	
+				<field name="branch_office"/>
+				<field name="is_union"/>
+			</xpath>
+			<xpath expr="//field[@name='code']" position="attributes">
+				<attribute name="string">State/UT Code</attribute>
+			</xpath>
+
+
+		</field>
+	</record>
+
+	<record id="kw_view_country_state_tree" model="ir.ui.view">
+		<field name="name">kw.res.country.state.tree</field>
+		<field name="model">res.country.state</field>
+		<field name="inherit_id" ref="base.view_country_state_tree"/>
+		<field name="arch" type="xml">
+			<field name="code" position="attributes">
+				<attribute name="string">State/UT Code</attribute>
 			</field>
+		</field>
 	</record>
 	
 	<menuitem action="base.action_country_state" id="kw_menu_country_state_partner" parent="stock.menu_stock_configuration" sequence="4" groups="base.group_no_one,kingswood.kw_admin_service"/>
@@ -917,7 +940,8 @@
                                     <field name="state_id" class="oe_no_button" placeholder="State" style="width: 37%%" options='{"no_open": True}' on_change="onchange_state(state_id)" attrs="{'readonly': [('use_parent_address','=',True)]}"/>
                                     <field name="zip" placeholder="ZIP" style="width: 20%%" attrs="{'readonly': [('use_parent_address','=',True)]}"/>
                                 </div>
-                                <field name="country_id" placeholder="Country" class="oe_no_button" options='{"no_open": True}' attrs="{'readonly': [('use_parent_address','=',True)]}"/>
+                                <field name="country_id" placeholder="Country" class="oe_no_button" options='{"no_open": True}' attrs="{'readonly': [('use_parent_address','=',True)]}"
+										on_change="onchange_country_id(country_id, context)"/>
                             </div>
                             <field name="website" widget="url" placeholder="e.g. www.openerp.com"/>
 						 <field name="handling_charges" attrs="{'invisible': [('supplier','=', False)]}" />
