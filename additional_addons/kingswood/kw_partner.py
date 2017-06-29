@@ -232,7 +232,7 @@ class res_partner(osv.osv):
         warning = {}
         res = {}
         if gstin_code:
-            if not re.match('^[a-z_A-Z]+$',gstin_code):
+            if not re.match('^[a-z_A-Z0-9]+$',gstin_code):
                 warning = {
                     'title': _('Warning!'),
                     'message': _('Special Charecters not allowed in GST Code.')
@@ -487,7 +487,7 @@ class res_company(osv.osv):
         warning = {}
         res = {}
         if gstin_code:
-            if not re.match('^[a-z_A-Z]+$',gstin_code):
+            if not re.match('^[a-z_A-Z0-9]+$',gstin_code):
                 warning = {
                     'title': _('Warning!'),
                     'message': _('Special Charecters not allowed in GST Code.')
