@@ -2221,6 +2221,18 @@ class stock_picking_out(osv.osv):
                     res = rep_obj.pentaho_report_action(cr, uid, 'Freight Advice', ids,None,None)
         return res
         
+    def print_gst_dc(self,cr,uid,ids,context=None):
+        rep_obj = self.pool.get('ir.actions.report.xml')
+        res={}
+        partner=False
+        data = {}
+        data2 ={}
+        attachment_obj = self.pool.get('ir.attachment')
+
+        for case in self.browse(cr,uid,ids):
+            res = rep_obj.pentaho_report_action(cr, uid, 'GST Delivery Challan', ids,None,None)
+        return res
+
 
     
     
