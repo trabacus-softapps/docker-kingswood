@@ -3793,10 +3793,18 @@ class stock_picking_out(osv.osv):
                 vals['state_id']=user.state_id.id
         if not year:
             raise osv.except_osv(_('Warning'),_('Please Create Fiscal Year For "%s"')%(today))
-        if state_code:
-            format = 'DC/' + year + '/' + str(state_code) +'/'
+        if vals.get("date") <='2017-07-01 00:00:00':
+            if state_code:
+                format = 'DC/' + year + '/' + str(state_code) +'/'
+            else:
+                format = 'DC/' + year + '/' + user.state_id.code +'/'
+        # New DC Number
         else:
-            format = 'DC/' + year + '/' + user.state_id.code +'/'
+            if state_code:
+                format =  str(state_code) +'/' + year + '/'
+            else:
+                format = user.state_id.code +'/' + year + '/'
+
         cr.execute("select name from stock_picking where name like '"+format+"'|| '%' order by to_number(substr(name,(length('"+format+"')+1)),'99999') desc limit 1")
         prev_format = cr.fetchone()
         if not prev_format:

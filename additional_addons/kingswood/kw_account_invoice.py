@@ -291,7 +291,8 @@ class account_invoice(osv.osv):
         'loading_acc_id'  : fields.many2one('account.account','Account'),
         'transport_ref'   : fields.char("Reference"),
         'loading_ref'   : fields.char("Reference"),  
-        
+
+        'create_date'   :   fields.datetime("Create Date"),
     
               
                       
@@ -627,7 +628,10 @@ class account_invoice(osv.osv):
             if case.company_id.id==company:
                 
                 if case.type == 'out_invoice':
-                    format = 'CI/KL/'
+                    if case.create_date <='2017-07-01 00:00:00':
+                        format = 'CI/KL/'
+                    else:
+                        format = 'CI/'
                     self.generate_sequence(cr, uid,case.date_invoice, case, format, context)
                 if case.type == 'in_invoice':
                     format = 'SI/KL/'
@@ -640,7 +644,10 @@ class account_invoice(osv.osv):
                     self.generate_sequence(cr, uid,case.date_invoice, case, format, context)
             else:
                 if case.type == 'out_invoice':
-                    format = 'CI/KS/'
+                    if case.create_date <='2017-07-01 00:00:00':
+                        format = 'CI/KS/'
+                    else:
+                        format = 'CI/'
                     self.generate_sequence(cr, uid,case.date_invoice, case, format, context)
                 if case.type == 'in_invoice':
                     format = 'SI/KS/'
