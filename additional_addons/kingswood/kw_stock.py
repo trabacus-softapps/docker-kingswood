@@ -3381,10 +3381,11 @@ class stock_picking_out(osv.osv):
                        tax_obj=[]
                        for k in tax_state:
                             tax.append(k[0])
+                       tx_ids = []
                        if case.date <='2017-07-01 00:00:00':
                            if case.partner_id.state_id.id in tax or case.paying_agent_id.state_id.name in tax:
                                if case.partner_id.state_id.name == case.paying_agent_id.state_id.name:
-                                   cr.execute("select id from account_tax where state_id=%s",(case.partner_id.state_id.id,))
+                                   cr.execute("select id from account_tax where gst_categ is null and state_id=%s",(case.partner_id.state_id.id,))
                                    tax_id=cr.fetchone()[0]
                                    if tax_id:
                                        cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id=%s",(ln.product_id.id,tax_id))
@@ -3421,7 +3422,7 @@ class stock_picking_out(osv.osv):
                                    tx_ids = [x[0] for x in cr.fetchall()]
                                else:
                                    raise osv.except_osv(_('Warning'),_('Map proper Taxes for Inter State'))
-                           print "tax_id...................",tx_ids
+                           _logger.info('Tax Ids==========================> %s',tx_ids)
                            if tx_ids:
                                val.update({
                                                'invoice_line_tax_id': [(6, 0,tx_ids)]
