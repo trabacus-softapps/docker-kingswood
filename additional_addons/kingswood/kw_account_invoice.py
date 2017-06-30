@@ -987,6 +987,23 @@ class account_invoice(osv.osv):
              
         return True
 
+    def validate_hc_invoice(self,cr,uid,ids,context=None):
+        if not context:
+            context={}
+        res = {}
+        wf_service = netsvc.LocalService('workflow')
+        # cr.execute("""select
+        #                 id
+        #             from account_invoice
+        #             where date_invoice >= '2016-04-01' and date_invoice <='2017-03-31' and handling_charges = true order by id desc limit 20 """)
+        # inv_ids=[x[0] for x in cr.fetchall()]
+        # print "Validate===================>",inv_ids
+        # for j in inv_ids:
+        #     print "Validate......", j
+        wf_service.trg_validate(uid, 'account.invoice', j, 'invoice_open', cr)
+
+        return res
+
 
 
     def do_merge_old_inv(self, cr, uid, ids, context=None):
