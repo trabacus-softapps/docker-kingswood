@@ -551,6 +551,7 @@ class account_invoice(osv.osv):
     def invoice_validate(self, cr, uid, ids, context=None):
         if not context:
             context={}
+        print "Context...........", context
         stock_obj=self.pool.get('stock.picking')
         kwprod_obj=self.pool.get('kw.product.price')
         voucher_obj=self.pool.get('account.voucher')
@@ -628,7 +629,7 @@ class account_invoice(osv.osv):
             if case.company_id.id==company:
                 
                 if case.type == 'out_invoice':
-                    if case.create_date <='2017-07-01 00:00:00':
+                    if case.date_invoice <'2017-07-01':
                         format = 'CI/KL/'
                     else:
                         format = 'CI/'
@@ -644,7 +645,7 @@ class account_invoice(osv.osv):
                     self.generate_sequence(cr, uid,case.date_invoice, case, format, context)
             else:
                 if case.type == 'out_invoice':
-                    if case.create_date <='2017-07-01 00:00:00':
+                    if case.date_invoice <'2017-07-01':
                         format = 'CI/KS/'
                     else:
                         format = 'CI/'
