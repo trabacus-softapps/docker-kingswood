@@ -293,8 +293,8 @@
             				<button name="deliver" states="in_transit" string="Goods Accepted" type="object" class="oe_highlight" groups="kingswood.kw_customer_service,kingswood.kw_admin_service"/>
             				<button name="%(kw_action_confirm_id)d" states="draft" string="Confirm" type="action" 
             					class="oe_highlight" groups="kingswood.kw_supplier_service,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_freight_service"/>
-							<button name="%(kw_vat_action_id)d"  string="Generate Esugam" type="action" class="oe_highlight"
-									attrs="{'invisible' : ['|','|',('state','not in',('in_transit')),('es_active','=',False),('jjform_no','=',False)]}"/>
+							<!--<button name="%(kw_vat_action_id)d"  string="Generate Esugam" type="action" class="oe_highlight"
+									attrs="{'invisible' : ['|','|',('state','not in',('in_transit')),('es_active','=',False),('jjform_no','=',False)]}"/> -->
 
 							<button name="send_monthly_dispatch_mail" string="Monthly Dispatch" type="object" class="oe_highlight" invisible='1'/>
             				<button name="send_daily_dispatch_mail" string="Daily Dispatch" type="object" class="oe_highlight" invisible='1'/>
@@ -321,14 +321,14 @@
             				
             					
             				<button name="print_delivery_challan" string="Print Proforma Invoice / DC" type="object"
-            					groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service,kingswood.kw_customer_service"
-            					class="oe_highlight" />
+            					groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service,kingswood.kw_customer_service"/>
+
             				
             				<button name="print_freight_advice" type="object" string="Print Freight Advice" attrs="{'invisible': [('freight', '=', False),('gen_freight','=',False)]}"
             					groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service,kingswood.kw_customer_service"
             					class="oe_highlight" />
 
-            				<button name="print_gst_dc" type="object" string="GSTIN Delivery Challan"
+            				<button name="print_gst_dc" type="object" string="GST Invoice"
             					groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service,kingswood.kw_customer_service"
             					class="oe_highlight" />
 
@@ -713,8 +713,8 @@
 					<form string="Delivery challan" version="7.0">
             			<header>
             				<button name="%(kw_action_confirm_id)d" states="draft" string="Confirm" type="object" class="oe_highlight" groups="kingswood.kw_supplier_service,kingswood.kw_depot_service,kingswood.kw_freight_service"/>
-							<button name="%(kw_vat_action_id)d"  string="Generate Esugam" type="action" class="oe_highlight"
-									attrs="{'invisible' : ['|','|',('state','not in',('in_transit')),('es_active','=',False),('jjform_no','=',False)]}"/>
+							<!--<button name="%(kw_vat_action_id)d"  string="Generate Esugam" type="action" class="oe_highlight"
+									attrs="{'invisible' : ['|','|',('state','not in',('in_transit')),('es_active','=',False),('jjform_no','=',False)]}"/> -->
 
             				<button name="deliver" states="in_transit" string="Goods Accepted" type="object" class="oe_highlight" groups="kingswood.kw_customer_service"/>
             				<button name="kw_pay_freight" states="done" string="Pay Freight" type="object" class="oe_highlight"/>
