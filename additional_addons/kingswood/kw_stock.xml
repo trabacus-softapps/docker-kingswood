@@ -320,7 +320,7 @@
             				
             				
             					
-            				<button name="print_delivery_challan" string="Print Proforma Invoice / DC" type="object"
+            				<button name="print_delivery_challan" string="GST Delivery Challan" type="object"
             					groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service,kingswood.kw_customer_service"/>
 
             				
