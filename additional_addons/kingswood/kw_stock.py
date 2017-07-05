@@ -2232,7 +2232,7 @@ class stock_picking_out(osv.osv):
         attachment_obj = self.pool.get('ir.attachment')
 
         for case in self.browse(cr,uid,ids):
-            res = rep_obj.pentaho_report_action(cr, uid, 'GST Invoive', ids,None,None)
+            res = rep_obj.pentaho_report_action(cr, uid, 'GST Invoice', ids,None,None)
         return res
 
 
