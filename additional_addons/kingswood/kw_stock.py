@@ -2163,11 +2163,13 @@ class stock_picking_out(osv.osv):
         attachment_obj = self.pool.get('ir.attachment') 
 #         pwriter = PdfFileWriter()
 #         os.makedirs('/home/serveradmin/Desktop/temp')
-        
-        res = rep_obj.pentaho_report_action(cr, uid, 'Proforma Invoice', ids,None,None)
-        for case in self.browse(cr,uid,ids):
-            if case.partner_id.dc_report == True:
-                res = rep_obj.pentaho_report_action(cr, uid, 'DC', ids,None,None)
+
+        res = rep_obj.pentaho_report_action(cr, uid, 'GST Delivery Challan', ids,None,None)
+        # Commented as per the GST Changes
+        # res = rep_obj.pentaho_report_action(cr, uid, 'Proforma Invoice', ids,None,None)
+        # for case in self.browse(cr,uid,ids):
+        #     if case.partner_id.dc_report == True:
+        #         res = rep_obj.pentaho_report_action(cr, uid, 'DC', ids,None,None)
     
 
         return res
@@ -2230,7 +2232,7 @@ class stock_picking_out(osv.osv):
         attachment_obj = self.pool.get('ir.attachment')
 
         for case in self.browse(cr,uid,ids):
-            res = rep_obj.pentaho_report_action(cr, uid, 'GST Delivery Challan', ids,None,None)
+            res = rep_obj.pentaho_report_action(cr, uid, 'GST Invoive', ids,None,None)
         return res
 
 
