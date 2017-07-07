@@ -1303,6 +1303,7 @@ class stock_picking_out(osv.osv):
 
 
             # browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_0').click()
+            browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_4').click()
             if (case.partner_id.state_id.name == 'Karnataka' or case.state_id.name =='Karnataka') and not context.get('confirm_esugam'):
                 browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(case.partner_id.tin_no)
                 time.sleep(1)
@@ -1319,7 +1320,7 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_id('ctl00_MasterContent_txtNameAddrs').send_keys(str(case.company_id.name))
                 browser.find_element_by_name('ctl00$MasterContent$txtVehicleOwner').send_keys(veh_owner)
                 time.sleep(5)
-            browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_4').click()
+
             _logger.info('Final Page....... ')
             #browser.find_element_by_id('ctl00_MasterContent_btnSave').click()
             browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click()
