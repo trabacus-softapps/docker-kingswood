@@ -1325,7 +1325,7 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click()
             time.sleep(2)
             browser.find_element_by_id('ctl00_MasterContent_btn_savecumsubmit').click()
-            time.sleep(12)
+            time.sleep(15)
             #esugam = browser.find_element_by_id('ctl00_MasterContent_lbl_serialno').text
             all_cookies = browser.get_cookies()
             URL = browser.current_url.replace('Vat505_Etrans.aspx?mode=new','e_trans_pdf.aspx?mode=ack')
@@ -1348,12 +1348,14 @@ class stock_picking_out(osv.osv):
             
             #for creating file
             current_file = '/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf'
+            _logger.info('Final Page Before PDF ....... ')
             pdf_data = self.convert_pdf(current_file)
             fp = open(current_file,'rb')
             esugam = pdf_data[pdf_data.find('Sl.No')-20:pdf_data.find('Sl.No')-9]
             result = base64.b64encode(fp.read())
             file_name = 'esugam_' + esugam
             file_name += ".pdf"
+            _logger.info('Final Page After PDF ....... ')
             self.pool.get('ir.attachment').create(cr, uid,
                                                   {
                                                    'name': file_name,
