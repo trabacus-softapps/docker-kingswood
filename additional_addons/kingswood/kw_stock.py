@@ -1127,7 +1127,7 @@ class stock_picking_out(osv.osv):
                     tax_amount += tx.amount * price * qty
 
 
-        cr.execute("select gstin_code from res_partner where name ilike '%Kingswood Suppliers Pvt. Ltd.(TN)%' ")
+        cr.execute("select tin_no from res_partner where name ilike '%Kingswood Suppliers Pvt. Ltd.(TN)%' ")
         tn_tin = [x[0] for x in cr.fetchall()]
         if tn_tin:
             tn_tin = tn_tin[0]
@@ -1304,7 +1304,7 @@ class stock_picking_out(osv.osv):
 
             # browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_0').click()
             if (case.partner_id.state_id.name == 'Karnataka' or case.state_id.name =='Karnataka') and not context.get('confirm_esugam'):
-                browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(case.partner_id.gstin_code)
+                browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(case.partner_id.tin_no)
                 time.sleep(1)
                 if case.partner_id.state_id.name != case.state_id.name:
                     browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(Keys.TAB)
