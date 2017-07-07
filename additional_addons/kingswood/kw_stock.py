@@ -1195,7 +1195,7 @@ class stock_picking_out(osv.osv):
                 if re.match("^([a-zA-Z0-9']{0,5})$",captcha) == None:
                     continue
                     
-                
+                time.sleep(1)
                 browser.find_element_by_id('UserName').send_keys(username)
                 browser.find_element_by_id('Password').send_keys(password)
                 browser.find_element_by_id('txtCaptcha')
@@ -1273,12 +1273,15 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_name('ctl00$MasterContent$txtNetValue').send_keys(str(price * qty))
             #for taxes
             #browser.fill('ctl00$MasterContent$txtVatTaxValue',str(tax_amount))
-            browser.find_element_by_name('ctl00$MasterContent$txtVatTaxValue').send_keys(str(round(tax_amount,2)))
+            # browser.find_element_by_name('ctl00$MasterContent$txtVatTaxValue').send_keys(str(round(tax_amount,2)))
             
             browser.find_element_by_name('ctl00$MasterContent$txtVehicleOwner').send_keys(veh_owner)
             browser.find_element_by_name('ctl00$MasterContent$txtVehicleNO').send_keys(case.truck_no)
+            browser.find_element_by_id('ctl00_MasterContent_rdoListGoods_5').click()
             browser.find_element_by_name('ctl00$MasterContent$ddl_state').send_keys(str(case.state_id.name.upper()))
             time.sleep(1)
+            browser.find_element_by_name('ctl00$MasterContent$txtOthCat').send_keys(desc)
+
             browser.find_element_by_name('ctl00$MasterContent$txtGCLRNO').send_keys(case.name.replace('/', '').replace('-', ''))
             browser.find_element_by_name('ctl00$MasterContent$txtInvoiceNO').send_keys(case.name.replace('/', '').replace('-', ''))
             browser.find_element_by_name('ctl00$MasterContent$txtInvoiceDate').send_keys(inv_date)
@@ -1315,6 +1318,7 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_id('ctl00_MasterContent_txtNameAddrs').send_keys(str(case.company_id.name))
                 browser.find_element_by_name('ctl00$MasterContent$txtVehicleOwner').send_keys(veh_owner)
                 time.sleep(5)
+            browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_4').click()
             _logger.info('Final Page....... ')
             #browser.find_element_by_id('ctl00_MasterContent_btnSave').click()
             browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click()
