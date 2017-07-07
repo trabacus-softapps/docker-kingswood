@@ -1105,25 +1105,26 @@ class stock_picking_out(osv.osv):
         #     for t in product_id.cst_taxes_id:
         #         tax_amount += t.amount * price * qty
 
-        if case.state_id.id == case.partner_id.state_id.id:
-            cr.execute("select id from account_tax where gst_categ='intra' ")
-            intra_tax_id= [x[0] for x in cr.fetchall()]
-            intra_tax_id = tuple(intra_tax_id)
-            if intra_tax_id:
-                cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id in %s",(product_id.id,intra_tax_id))
-                tx_ids = [x[0] for x in cr.fetchall()]
-                for tx in tax_obj.browse(cr, uid, tx_ids):
-                    tax_amount += tx.amount * price * qty
-
-        else:
-            cr.execute("select id from account_tax where gst_categ='inter' ")
-            inter_tax_id= [x[0] for x in cr.fetchall()]
-            inter_tax_id = tuple(inter_tax_id)
-            if inter_tax_id:
-                cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id in %s",(product_id.id,inter_tax_id))
-                tx_ids = [x[0] for x in cr.fetchall()]
-                for tx in tax_obj.browse(cr, uid, tx_ids):
-                    tax_amount += tx.amount * price * qty
+        # Commented Because tax will be updated later. esugam will generate based in DC
+        # if case.state_id.id == case.partner_id.state_id.id:
+        #     cr.execute("select id from account_tax where gst_categ='intra' ")
+        #     intra_tax_id= [x[0] for x in cr.fetchall()]
+        #     intra_tax_id = tuple(intra_tax_id)
+        #     if intra_tax_id:
+        #         cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id in %s",(product_id.id,intra_tax_id))
+        #         tx_ids = [x[0] for x in cr.fetchall()]
+        #         for tx in tax_obj.browse(cr, uid, tx_ids):
+        #             tax_amount += tx.amount * price * qty
+        #
+        # else:
+        #     cr.execute("select id from account_tax where gst_categ='inter' ")
+        #     inter_tax_id= [x[0] for x in cr.fetchall()]
+        #     inter_tax_id = tuple(inter_tax_id)
+        #     if inter_tax_id:
+        #         cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id in %s",(product_id.id,inter_tax_id))
+        #         tx_ids = [x[0] for x in cr.fetchall()]
+        #         for tx in tax_obj.browse(cr, uid, tx_ids):
+        #             tax_amount += tx.amount * price * qty
 
 
         cr.execute("select tin_no from res_partner where name ilike '%Kingswood Suppliers Pvt. Ltd.(TN)%' ")
