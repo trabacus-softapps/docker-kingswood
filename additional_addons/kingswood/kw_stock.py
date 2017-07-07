@@ -1086,23 +1086,45 @@ class stock_picking_out(osv.osv):
     
 
     def generate_esugam(self, cr, uid, desc, qty, price, product_id, username, password, url1,url2, url3, case,context):
-    #for calulating taxes
+        tax_obj = self.pool.get("account.tax")
         tax_amount = 0
         esugam = 0
-        if case.partner_id.state_id.name == 'Karnataka':
-            for t in product_id.taxes_id:
-                if t.state_id.name == 'Karnataka':
-                    tax_amount += t.amount * price * qty
-                else:
-                    # for CST Taxes
-                    if context.get('confirm_esugam'):
-                        for t in product_id.cst_taxes_id:
-                            tax_amount += t.amount * price * qty
+        # Commented for GST
+        # if case.partner_id.state_id.name == 'Karnataka':
+        #     for t in product_id.taxes_id:
+        #         if t.state_id.name == 'Karnataka':
+        #             tax_amount += t.amount * price * qty
+        #         else:
+        #             # for CST Taxes
+        #             if context.get('confirm_esugam'):
+        #                 for t in product_id.cst_taxes_id:
+        #                     tax_amount += t.amount * price * qty
+        #
+        # else:
+        #     # for CST Taxes
+        #     for t in product_id.cst_taxes_id:
+        #         tax_amount += t.amount * price * qty
+
+        if case.state_id.id == case.partner_id.state_id.id:
+            cr.execute("select id from account_tax where gst_categ='intra' ")
+            intra_tax_id= [x[0] for x in cr.fetchall()]
+            intra_tax_id = tuple(intra_tax_id)
+            if intra_tax_id:
+                cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id in %s",(product_id.id,intra_tax_id))
+                tx_ids = [x[0] for x in cr.fetchall()]
+                for tx in tax_obj.browse(cr, uid, tx_ids):
+                    tax_amount += tx.amount * price * qty
 
         else:
-            # for CST Taxes
-            for t in product_id.cst_taxes_id:
-                tax_amount += t.amount * price * qty
+            cr.execute("select id from account_tax where gst_categ='inter' ")
+            inter_tax_id= [x[0] for x in cr.fetchall()]
+            inter_tax_id = tuple(inter_tax_id)
+            if inter_tax_id:
+                cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id in %s",(product_id.id,inter_tax_id))
+                tx_ids = [x[0] for x in cr.fetchall()]
+                for tx in tax_obj.browse(cr, uid, tx_ids):
+                    tax_amount += tx.amount * price * qty
+
 
         cr.execute("select tin_no from res_partner where name ilike '%Kingswood Suppliers Pvt. Ltd.(TN)%' ")
         tn_tin = [x[0] for x in cr.fetchall()]
@@ -1255,6 +1277,8 @@ class stock_picking_out(osv.osv):
             
             browser.find_element_by_name('ctl00$MasterContent$txtVehicleOwner').send_keys(veh_owner)
             browser.find_element_by_name('ctl00$MasterContent$txtVehicleNO').send_keys(case.truck_no)
+            browser.find_element_by_name('ctl00$MasterContent$ddl_state').send_keys(str(case.state_id.name.upper()))
+            time.sleep(1)
             browser.find_element_by_name('ctl00$MasterContent$txtGCLRNO').send_keys(case.name.replace('/', '').replace('-', ''))
             browser.find_element_by_name('ctl00$MasterContent$txtInvoiceNO').send_keys(case.name.replace('/', '').replace('-', ''))
             browser.find_element_by_name('ctl00$MasterContent$txtInvoiceDate').send_keys(inv_date)
