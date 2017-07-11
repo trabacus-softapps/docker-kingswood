@@ -1286,7 +1286,7 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_name('ctl00$MasterContent$txtInvoiceNO').send_keys(case.name.replace('/', '').replace('-', ''))
             browser.find_element_by_name('ctl00$MasterContent$txtInvoiceDate').send_keys(inv_date)
             browser.find_element_by_name('ctl00$MasterContent$txtDeliveryDate').send_keys(del_date)
-            browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click() # for pdfprint
+            # browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click() # for pdfprint
             #  for others
             #browser.find_element_by_id('ctl00_MasterContent_rdoListGoods_9').click()
             #browser.find_element_by_id('ctl00_MasterContent_rdoListGoods_0').click()
@@ -1322,7 +1322,7 @@ class stock_picking_out(osv.osv):
 
             _logger.info('Final Page....... ')
             #browser.find_element_by_id('ctl00_MasterContent_btnSave').click()
-            browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click()
+            browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click() # for pdfprint
             time.sleep(2)
             browser.find_element_by_id('ctl00_MasterContent_btn_savecumsubmit').click()
             time.sleep(10)
