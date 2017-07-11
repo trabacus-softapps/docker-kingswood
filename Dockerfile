@@ -2,8 +2,7 @@
 #Inspiration 2: https://github.com/justnidleguy/
 #Inspiration 3: https://bitbucket.org/xcgd/ubuntu4b
 
-#FROM softapps/docker-openerpbase-kings
-FROM docker/openerpbase-kings
+FROM softapps/docker-openerpbase-kings
 MAINTAINER Arun T K <arun.kalikeri@xxxxxxxx.com>
 
 
