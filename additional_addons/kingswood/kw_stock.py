@@ -1280,7 +1280,7 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_name('ctl00$MasterContent$txtVehicleNO').send_keys(case.truck_no)
             browser.find_element_by_id('ctl00_MasterContent_rdoListGoods_5').click()
             browser.find_element_by_name('ctl00$MasterContent$ddl_state').send_keys(str(case.state_id.name.upper()))
-            browser.find_element_by_name('ctl00$MasterContent$txtOthCat').send_keys(desc.replace('/', '').replace('-', ''))
+            browser.find_element_by_name('ctl00$MasterContent$txtOthCat').send_keys(case.product_id.name.replace('/', '').replace('-', ''))
 
             browser.find_element_by_name('ctl00$MasterContent$txtGCLRNO').send_keys(case.name.replace('/', '').replace('-', ''))
             browser.find_element_by_name('ctl00$MasterContent$txtInvoiceNO').send_keys(case.name.replace('/', '').replace('-', ''))
