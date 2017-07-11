@@ -1351,6 +1351,7 @@ class stock_picking_out(osv.osv):
             #for creating file
             current_file = '/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf'
             _logger.info('Final Page Before PDF ....... ')
+            browser.save_screenshot('/tmp/final_page.png')
             pdf_data = self.convert_pdf(current_file)
             fp = open(current_file,'rb')
             esugam = pdf_data[pdf_data.find('Sl.No')-20:pdf_data.find('Sl.No')-9]
