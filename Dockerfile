@@ -1,12 +1,21 @@
-FROM softapps/docker-openerpbase-kings
-MAINTAINER Arun T K <arun.kalikeri@xxxxxxxx.com>
-ADD additional_addons/pentaho_reports /opt/odoo/additional_addons/pentaho_reports
-ADD additional_addons/account_financial_report_webkit /opt/odoo/additional_addons/account_financial_report_webkit
-ADD additional_addons/report_xls /opt/odoo/additional_addons/report_xls
-ADD additional_addons/account_financial_report_webkit_xls /opt/odoo/additional_addons/account_financial_report_webkit_xls
-ADD additional_addons/web_m2x_options /opt/odoo/additional_addons/web_m2x_options
-ADD additional_addons/report_webkit /opt/odoo/additional_addons/report_webkit
-ADD additional_addons/account_invoice_merge /opt/odoo/additional_addons/account_invoice_merge
-ADD additional_addons/kingswood /opt/odoo/additional_addons/kingswood
+#Inspiration 1: DotCloud
+#Inspiration 2: https://github.com/justnidleguy/
+#Inspiration 3: https://bitbucket.org/xcgd/ubuntu4b
 
-RUN chown -R odoo:odoo /opt/odoo/additional_addons/
+#FROM softapps/docker-openerpbase-kings
+FROM docker/openerpbase-kings
+MAINTAINER Arun T K <arun.kalikeri@xxxxxxxx.com>
+
+
+ADD . /pd_build
+
+RUN /pd_build/install.sh
+
+# Execution environment
+USER 0
+
+VOLUME ["/opt/odoo/var", "/opt/odoo/etc", "/opt/odoo/additional_addons", "/opt/odoo/data"]
+
+# Set the default entrypoint (non overridable) to run when starting the container
+ENTRYPOINT ["/app/bin/boot"]
+CMD ["help"]

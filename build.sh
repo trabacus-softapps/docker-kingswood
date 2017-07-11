@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build --rm -t docker/kingswooddemo .
+docker build --rm -t softapps/docker-kingswood .
