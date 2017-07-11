@@ -1280,9 +1280,7 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_name('ctl00$MasterContent$txtVehicleNO').send_keys(case.truck_no)
             browser.find_element_by_id('ctl00_MasterContent_rdoListGoods_5').click()
             browser.find_element_by_name('ctl00$MasterContent$ddl_state').send_keys(str(case.state_id.name.upper()))
-            time.sleep(1)
-            browser.find_element_by_name('ctl00$MasterContent$ddl_state').click()
-            browser.find_element_by_name('ctl00$MasterContent$txtOthCat').send_keys(desc)
+            browser.find_element_by_name('ctl00$MasterContent$txtOthCat').send_keys(desc.replace('/', '').replace('-', ''))
 
             browser.find_element_by_name('ctl00$MasterContent$txtGCLRNO').send_keys(case.name.replace('/', '').replace('-', ''))
             browser.find_element_by_name('ctl00$MasterContent$txtInvoiceNO').send_keys(case.name.replace('/', '').replace('-', ''))
@@ -1327,7 +1325,7 @@ class stock_picking_out(osv.osv):
             browser.find_element_by_id('ctl00_MasterContent_RadioButton2').click()
             time.sleep(2)
             browser.find_element_by_id('ctl00_MasterContent_btn_savecumsubmit').click()
-            time.sleep(25)
+            time.sleep(10)
             #esugam = browser.find_element_by_id('ctl00_MasterContent_lbl_serialno').text
             all_cookies = browser.get_cookies()
             URL = browser.current_url.replace('Vat505_Etrans.aspx?mode=new','e_trans_pdf.aspx?mode=ack')
@@ -1351,7 +1349,7 @@ class stock_picking_out(osv.osv):
             #for creating file
             current_file = '/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf'
             _logger.info('Final Page Before PDF ....... ')
-            browser.save_screenshot('/tmp/final_page.png')
+            # browser.save_screenshot('/tmp/final_page.png')
             pdf_data = self.convert_pdf(current_file)
             fp = open(current_file,'rb')
             esugam = pdf_data[pdf_data.find('Sl.No')-20:pdf_data.find('Sl.No')-9]
