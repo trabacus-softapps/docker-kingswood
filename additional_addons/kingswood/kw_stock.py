@@ -1261,11 +1261,12 @@ class stock_picking_out(osv.osv):
             #browser.find_by_id('ctl00_MasterContent_rbl_doctype_5').click()
             #browser.find_by_id('ctl00_MasterContent_btnContinue').click()
             #browser.find_by_id('LinkButton1').click()
+            time.sleep(1)
             if case.partner_id.state_id.id == case.state_id.id:
                 browser.find_element_by_id('ctl00_MasterContent_rdoStatCat_0').click()
             else:
                 browser.find_element_by_id('ctl00_MasterContent_rdoStatCat_1').click()
-            time.sleep(2)
+            time.sleep(1)
             browser.find_element_by_name('ctl00$MasterContent$txtFromAddrs').send_keys(case.city_id.name)
             browser.find_element_by_name('ctl00$MasterContent$txtToAddrs').send_keys(case.partner_id.city)
             browser.find_element_by_name('ctl00$MasterContent$ddl_commoditycode').send_keys('OTHERS')
@@ -1302,7 +1303,10 @@ class stock_picking_out(osv.osv):
 
 
             # browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_0').click()
-            browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_4').click()
+            if context.get('confirm_esugam'):
+                browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_0').click()
+            else:
+                browser.find_element_by_id('ctl00_MasterContent_rbl_doctype_4').click()
             if (case.partner_id.state_id.name == 'Karnataka' or case.state_id.name =='Karnataka') and not context.get('confirm_esugam'):
                 browser.find_element_by_name('ctl00$MasterContent$txtTIN').send_keys(case.partner_id.tin_no)
                 time.sleep(1)
@@ -1349,7 +1353,7 @@ class stock_picking_out(osv.osv):
             #for creating file
             current_file = '/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf'
             _logger.info('Final Page Before PDF ....... ')
-            # browser.save_screenshot('/tmp/final_page.png')
+            browser.save_screenshot('/tmp/final_page.png')
             pdf_data = self.convert_pdf(current_file)
             fp = open(current_file,'rb')
             esugam = pdf_data[pdf_data.find('Sl.No')-20:pdf_data.find('Sl.No')-9]
