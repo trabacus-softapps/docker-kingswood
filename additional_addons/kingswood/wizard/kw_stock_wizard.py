@@ -66,6 +66,11 @@ class stock_wizard(osv.osv_memory):
     def confirm(self, cr, uid, ids, context = None):
         pick_obj = self.pool.get('stock.picking.out')
         context.update({'confirm_vat':True})
+        # For Westcost, if DC State is TN then should generate E-Sugam
+        for pick in pick_obj.browse(cr, uid, context.get('active_ids'), context=context):
+            if pick.partner_id.sup_num =='C0041' and pick.state_id.code =='TN':
+                context.update({"confirm_esugam" : True})
+
         pick_obj.kw_confirm(cr, uid, context['active_ids'],context=context)
         return True
     
