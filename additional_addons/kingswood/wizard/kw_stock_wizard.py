@@ -68,7 +68,7 @@ class stock_wizard(osv.osv_memory):
         context.update({'confirm_vat':True})
         # For Westcost, if DC State is TN then should generate E-Sugam
         for pick in pick_obj.browse(cr, uid, context.get('active_ids'), context=context):
-            if pick.partner_id.sup_num =='C0041' and pick.state_id.code =='TN':
+            if pick.partner_id.sup_num =='C0041' and pick.state_id.code =='TN' and (pick.partner_id.gen_esugam or pick.gen_esugam):
                 context.update({"confirm_esugam" : True})
 
         pick_obj.kw_confirm(cr, uid, context['active_ids'],context=context)

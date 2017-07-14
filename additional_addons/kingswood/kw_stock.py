@@ -3252,7 +3252,7 @@ class stock_picking_out(osv.osv):
         company=cr.fetchone()
         if company:
             company=company[0]
-            
+
         cr.execute("select id from res_country_state where lower(name) like 'karnataka%'")
         branch_state_id=cr.fetchone()
         if branch_state_id:
@@ -3508,7 +3508,7 @@ class stock_picking_out(osv.osv):
                                              'date_invoice': ln.delivery_date,
                                              'type':   'out_invoice',
                                              'journal_id' : cust_journal_id,
-                                             'branch_state':branch_state_id,
+                                             'branch_state':case.state_id.id or branch_state_id,
                                              'report':case.partner_id.split_invoice,
                                              'cft':ln.product_id.cft,
                                              'account_id':c_acc_id,
@@ -3637,6 +3637,7 @@ class stock_picking_out(osv.osv):
                             inv_vals.update({
                                                  'delivery_orders_ids': [(6, 0, delivery_orders[p])],
                                                   'invoice_line': [(0, 0, product_groups[p])],
+                                                 'branch_state' : case.state_id and case.state_id.id or branch_state_id
                                                 })
                             order_obj=self.pool.get('delivery_order_rel')
                             
