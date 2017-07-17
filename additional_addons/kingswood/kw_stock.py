@@ -2200,7 +2200,12 @@ class stock_picking_out(osv.osv):
 #         pwriter = PdfFileWriter()
 #         os.makedirs('/home/serveradmin/Desktop/temp')
 
-        res = rep_obj.pentaho_report_action(cr, uid, 'GST Delivery Challan', ids,None,None)
+        for case in self.browse(cr, uid, ids):
+            if case.partner_id and case.partner_id.sup_num == 'C0036':
+                res = rep_obj.pentaho_report_action(cr, uid, 'Seshasayee Proforma Invoice', ids,None,None)
+            else:
+                res = rep_obj.pentaho_report_action(cr, uid, 'GST Delivery Challan', ids,None,None)
+
         # Commented as per the GST Changes
         # res = rep_obj.pentaho_report_action(cr, uid, 'Proforma Invoice', ids,None,None)
         # for case in self.browse(cr,uid,ids):
@@ -2209,6 +2214,7 @@ class stock_picking_out(osv.osv):
     
 
         return res
+
 
     def print_dc_lr(self,cr,uid,ids,context=None):
         rep_obj = self.pool.get('ir.actions.report.xml')
