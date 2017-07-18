@@ -2327,7 +2327,7 @@ class stock_picking_out(osv.osv):
                        'branch_state':case.partner_id.state_id.id
                        }
         refund_vals.update(inv_obj.onchange_partner_id(cr, uid, ids, type, partner_id)['value'])
-        refund_ln_vals.update(inv_ln_obj.product_id_change(cr, uid, ids, ln.product_id.id, ln.product_uom, qty=0, name='', type=type, partner_id=partner_id, fposition_id=False, price_unit=False, currency_id=False, context=None, company_id=None))
+        refund_ln_vals.update(inv_ln_obj.product_id_change(cr, uid, ids, ln.product_id.id, ln.product_uom.id, qty=0, name='', type=type, partner_id=partner_id, fposition_id=False, price_unit=False, currency_id=False, context=None, company_id=None))
         refund_ln_vals.update( {'product_id':ln.product_id.id, 
             'name':ln.name, 
             'quantity':ln.rejected_qty, 
