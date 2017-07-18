@@ -1761,17 +1761,17 @@ class account_invoice(osv.osv):
                            
                            if case.company_id.id==company:
                                 if case.type == 'out_invoice':
-                                    format = 'CI/KL/'
+                                    format = 'CI/'
                             
                                 if case.type == 'out_refund':
-                                    format = 'CN/KL/'
+                                    format = 'CN/'
                             
                            else:
                                 if case.type == 'out_invoice':
-                                    format = 'CI/KS/'
+                                    format = 'CI/'
                                                            
                                 if case.type == 'out_refund':
-                                    format = 'CN/KS/'
+                                    format = 'CN/'
                            if case.date_invoice:
                                today=case.date_invoice
                            cr.execute("select code from account_fiscalyear where date_start <= '" + today + "' and date_stop >='" + today + "'")
