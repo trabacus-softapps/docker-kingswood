@@ -4356,8 +4356,10 @@ class stock_picking_out(osv.osv):
         context.update({'daily_dispatch': True})
         if 'type' in context:
             context.pop('type')
+        _logger.info('Befrore Calling Send Dispatch==========================> %s',context)
         print_report = self.send_dispatch_mail(cr,uid,[uid],context)        
-        return print_report 
+        _logger.info('Befrore Calling Send Dispatch==========================> %s',context)
+        return print_report
 
 
         # Daily Dispatch Report for ADL
@@ -4428,7 +4430,8 @@ class stock_picking_out(osv.osv):
     
     def send_dispatch_mail(self, cr, uid, ids, context=None):
         if not context:
-            context = {} 
+            context = {}
+        _logger.info('Inside ==========================> %s',context)
         rep_obj = self.pool.get('ir.actions.report.xml')
         today = time.strftime('%Y-%m-%d')      
         wzd_obj = self.pool.get('invoice.group.report')
@@ -4561,11 +4564,11 @@ class stock_picking_out(osv.osv):
             print "template ......",template.id
             mail_id = self.pool.get('email.template').send_mail(cr, uid, template.id, case.id, True, context=context)
             mail_state = mail_obj.read(cr, uid, mail_id, ['state'], context=context)
-            try:
-                if mail_state and mail_state['state'] == 'exception':
-                    mail_state=mail_state
-            except:
-                pass                 
+            # try:
+            #     if mail_state and mail_state['state'] == 'exception':
+            #         mail_state=mail_state
+            # except:
+            #     pass
             _logger.info('mail_state==========================> %s',mail_state)
         cr.execute("delete from email_template_attachment_rel where email_template_id="+str(template.id))  
         cr.execute("delete from ir_attachment where lower(datas_fname) like '%dispatch%'")        
