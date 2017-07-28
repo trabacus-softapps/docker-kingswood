@@ -4334,7 +4334,7 @@ class stock_picking_out(osv.osv):
             context= {}
         context.update({'summary': False})
         _logger.info('DC Mail Before==========================> %s',context)
-        
+
         print_report = self.send_dispatch_mail(cr,uid,[uid],context)
         _logger.info('DC Mail After==========================> %s',context)
 
