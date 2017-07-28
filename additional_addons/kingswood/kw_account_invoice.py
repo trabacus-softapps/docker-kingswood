@@ -141,12 +141,18 @@ class account_invoice(osv.osv):
        
     def _amt_in_words(self, cr, uid, ids, fields_name, args, context):
         res = {}
-        txt = '' 
+        txt = ''
+        grand_txt = ''
         qty=0
         qty_txt=''
         c_acc_id = False
+        quantity = 0.00
         stock_obj=self.pool.get('stock.picking.out')
         for case in self.browse(cr, uid, ids):
+            res[case.id] = {
+                'amt_txt'       : '',
+                'grand_tot_txt' : ''
+            }
             if case.type == 'out_invoice' and case.company_id.id == 1:
                 if (case.account_id.name == "Total Sundry Creditors") or (case.account_id.name == "Sundry Creditors") or (case.account_id.name == "Total Sundry Debtors") or (case.account_id.name == "Sundry Debtors") :
                     c_acc_id = case.partner_id.property_account_receivable and case.partner_id.property_account_receivable.id or False
@@ -165,8 +171,17 @@ class account_invoice(osv.osv):
             res[case.id]={
                           'amt_txt':'','product_id':False,'qty_txt':False,'handling_charges':False,'quantity':0.00
                           }
+            less_addl_amt = 0.00
             if case.amount_total and case.amount_total>0:
-                txt = amount_to_text_softapps._100000000_to_text(int(round(case.amount_total)))        
+                if case.partner_id.sup_num == 'C0036':
+                    for line in case.invoice_line:
+                        if line.product_id.type != 'service':
+                            less_addl_amt = line.product_id.less_addl_amt
+                            quantity += line.quantity
+                    grand_txt = amount_to_text_softapps._100000000_to_text(int(round((case.amount_total) - (less_addl_amt * quantity))))
+                    res[case.id]['grand_tot_txt'] = grand_txt
+
+                txt = amount_to_text_softapps._100000000_to_text(int(round(case.amount_total)))
                 res[case.id]['amt_txt'] = txt
             
             if case.type=='in_invoice':
@@ -290,11 +305,11 @@ class account_invoice(osv.osv):
         'loading_charges' : fields.float('Loading Charges'),
         'loading_acc_id'  : fields.many2one('account.account','Account'),
         'transport_ref'   : fields.char("Reference"),
-        'loading_ref'   : fields.char("Reference"),  
+        'loading_ref'     : fields.char("Reference"),
 
-        'create_date'   :   fields.datetime("Create Date"),
+        'create_date'     :   fields.datetime("Create Date"),
     
-              
+        'grand_tot_txt'   :   fields.function(_amt_in_words, type='text', method = True,store=True, string='Grand Total Text',multi='text'),
                       
                     
             }
