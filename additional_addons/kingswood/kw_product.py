@@ -816,9 +816,10 @@ class product_product(osv.osv):
 
     _columns = {
 
-               'product_rate'  :   fields.boolean('Product Rate'),                  
+               'product_rate'       :   fields.boolean('Product Rate'),
                 #UPDATE PURPOSE
-                'dc_state'     :   fields.char('State',size=30),
+                'dc_state'          :   fields.char('State',size=30),
+                'less_addl_amt'     :   fields.float("Less: Addl.SD Rs.", digits=(16,2)),
               }
 
     _defaults = {
