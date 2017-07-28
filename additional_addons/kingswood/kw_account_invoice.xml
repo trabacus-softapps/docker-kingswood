@@ -156,7 +156,8 @@
 						 <field name='amt_txt' invisible="1" /> 
 						 <field name='qty_txt' invisible="1" />
                     <field name="product_order" invisible='1'/>
-                    <field name="handling_order" invisible='1'/>						 
+                    <field name="handling_order" invisible='1'/>
+				   <field name="grand_tot_txt" invisible="1"/>
 						<!-- <field name='amount_total' invisible="1"/> -->
 				</field>
 			<field name="account_id" position="after">
