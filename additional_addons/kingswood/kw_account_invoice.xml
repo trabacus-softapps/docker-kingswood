@@ -213,7 +213,10 @@
             				<button name="%(kingswood.del_invoice_action1)d" type="action" string="Transport/Handling charges Report "
             					attrs="{'invisible': ['|',('freight','!=',True),'|',('report','!=',True),'|',('state','=','draft'),'|',('type','!=','out_invoice')]}" class="oe_highlight"/>            				
             						            							                		                						
-					
+            				<button name="%(kingswood.itc_gst_invoice_action)d" type="action" string="ITC GST Tax Invoice"
+            					attrs="{'invisible': ['|',('freight','!=',True),'|',('report','!=',True),'|',('state','=','draft'),'|',('type','!=','out_invoice')]}" class="oe_highlight"/>
+
+
 			</xpath> 	
 
 			<xpath expr="//field[@name='type']" position="replace">
