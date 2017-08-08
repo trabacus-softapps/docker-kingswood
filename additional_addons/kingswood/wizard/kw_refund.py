@@ -107,7 +107,11 @@ class kw_invoice(osv.osv_memory):
                 'qty_txt'           :   fields.char('Quantity text'),
                 'amt_txt'           :   fields.char('Total text'),
                 'product_order'            : fields.char('TRANSPORTATION BILL No.'),
-                'handling_order'            : fields.char('HANDLING & OTHER CHARGES BILL No.'),                
+                'handling_order'            : fields.char('HANDLING & OTHER CHARGES BILL No.'),
+
+                # For ITC GST Tax Invoice report
+                'material_cost'     :   fields.float("Material Cost", digits=(16,2)),
+                'transport_cost'    :   fields.float("Transportation Cost", digits=(16,2)),
                 }
     
 #     def default_get(self, cr, uid, fields, context=None):
@@ -160,7 +164,40 @@ class kw_invoice(osv.osv_memory):
         return res
     
     
-    
+    def print_itc_gst_tax_inv(self, cr, uid, ids, context=None):
+        if not context:
+            cntext={}
+        report_data = []
+        inv_obj = self.pool.get("account.invoice")
+        qty_txt = ''
+        qty = 0
+        for case in self.browse(cr, uid, ids):
+            for inv in inv_obj.browse(cr, uid, context.get("active_ids")):
+                for line in inv.invoice_line:
+                    line_price=line.price_unit
+                    qty=+(line.quantity)
+
+                if qty>0:
+                    qty_txt = amount_to_text_softapps._100000000_to_text(int(round(qty)))
+
+
+            report_name = 'ITC GST Tax Invoice'
+            data={}
+            data['ids'] = context.get("active_ids", [])
+            data['model'] = context.get('active_model','ir.ui.menu')
+            data['output_type'] = 'pdf'
+            data['variables'] = {
+                                 'material_cost'    : case.material_cost,
+                                 'transport_cost'   : case.transport_cost,
+                                 'qty_txt'          : qty_txt
+                                 }
+
+
+        return {
+        'type': 'ir.actions.report.xml',
+        'report_name': report_name,
+        'datas': data,
+            }
     
     
     def print_invoice(self, cr, uid, ids, context =None ):
