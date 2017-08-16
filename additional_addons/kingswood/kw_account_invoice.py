@@ -2000,8 +2000,9 @@ class account_invoice(osv.osv):
         if context.get('facilitator'):
             query_out += ' and sp.paying_agent_id ='+str(context.get('facilitator'))
             
+
         cr.execute(query_out)
-        _logger.error('Inside the Schedular Function .....%s',query_out)
+
 #                         and sp.id not in 
 #                         (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner 
 #                         join account_invoice ac on ac.id=dr.invoice_id WHERE dr.del_ord_id  IN %s and ac.state <>'cancel')""",(tuple(dummy_ids),tuple(dummy_ids),))
@@ -2009,6 +2010,7 @@ class account_invoice(osv.osv):
 #         cr.execute("""select id from stock_picking where type='out' and 
 #         date::date >= %s::date and state in ('done','freight_paid') and sup_invoice=False""",(str(shedular_date),)) 
         stock_ids_out=cr.fetchall()
+        _logger.error('Inside the Schedular Stock_out_ids ------------>%s',stock_ids_out)
         if stock_ids_out:
             stock_ids_out=zip(*stock_ids_out)[0]
             if isinstance(stock_ids_out, tuple):
