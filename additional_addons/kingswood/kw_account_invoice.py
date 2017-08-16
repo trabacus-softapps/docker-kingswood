@@ -2000,9 +2000,8 @@ class account_invoice(osv.osv):
         if context.get('facilitator'):
             query_out += ' and sp.paying_agent_id ='+str(context.get('facilitator'))
             
-        
-        cr.execute(query_out) 
- 
+        cr.execute(query_out)
+        _logger.error('Inside the Schedular Function .....%s',query_out)
 #                         and sp.id not in 
 #                         (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner 
 #                         join account_invoice ac on ac.id=dr.invoice_id WHERE dr.del_ord_id  IN %s and ac.state <>'cancel')""",(tuple(dummy_ids),tuple(dummy_ids),))
