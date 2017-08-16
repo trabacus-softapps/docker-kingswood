@@ -1915,10 +1915,10 @@ class account_invoice(osv.osv):
             wf_service.trg_validate(uid, 'account.invoice', i.id, 'invoice_open', cr)  
 
     def create_facilitator_inv(self, cr, uid, ids, context=None):
-        print "context-",context
+        _logger.error('create_facilitator_inv Context................%s',context)
         if not context:
             context={}
-            
+
         if context.get('state','Karnataka'):
             fac_state =  context.get('state','Karnataka')
         in_fac_state = ''
@@ -2276,7 +2276,7 @@ class account_invoice(osv.osv):
         
         context.update({'shedular_date':'2017-07-02'})
 
-        _logger.error('Schedular Date.....',context)
+        _logger.error('Schedular Date.....%s',context)
         res = self.create_facilitator_inv(cr,uid,[uid],context)
         
         return res
