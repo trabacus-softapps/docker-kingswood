@@ -3174,9 +3174,13 @@ class stock_picking_out(osv.osv):
                                                           
                                              'invoice_line'             : line_vals[inv],
                                              'supp_delivery_orders_ids' : [(6, 0, supp_del_orders[inv])],
-                                             'partner_id'               : case.sub_facilitator_id and case.sub_facilitator_id.id
+
                                          })
-                        
+                        if case.sub_facilitator_id:
+                            sup_inv_vals.update({
+                                            'partner_id'               : case.sub_facilitator_id and case.sub_facilitator_id.id,
+                                            'account_id'               : case.sub_facilitator_id and case.sub_facilitator_id.property_account_payable.id
+                                        })
                         sup_inv_vals.update({
         #                                                      
                                                               'journal_id' : journal_id,'back_date': back_date
