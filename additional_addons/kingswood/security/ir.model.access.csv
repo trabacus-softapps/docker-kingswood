@@ -87,6 +87,7 @@ admin_goods_trucks,goods.trucks,model_goods_trucks,kw_admin_service,1,1,1,1
 admin_purchase_order,purchase.order,purchase.model_purchase_order,kw_admin_service,1,1,1,1
 admin_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_admin_service,1,1,1,1
 admin_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_admin_service,1,1,1,1
+admin_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_admin_service,1,1,1,1
 ,,,,,,,
 supplier_account_invoice,account.invoice,account.model_account_invoice,kw_supplier_service,1,0,0,0
 supplier_account_account,account.account,account.model_account_account,kw_supplier_service,1,0,0,0
@@ -170,8 +171,9 @@ supplier_billing_cycle,billing.cycle,model_billing_cycle,kw_supplier_service,1,1
 supplier_goods_dealers,goods.dealers,model_goods_dealers,kw_supplier_service,1,0,0,0
 supplier_goods_trucks,goods.trucks,model_goods_trucks,kw_supplier_service,1,0,0,0
 supplier_purchase_order,purchase.order,purchase.model_purchase_order,kw_supplier_service,1,1,1,0
-sup_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_admin_service,1,1,1,1
-sup_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_admin_service,1,1,1,1
+sup_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_supplier_service,1,1,1,1
+sup_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_supplier_service,1,1,1,1
+sup_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_supplier_service,1,1,1,1
 ,,,,,,,
 depot_account_invoice,account.invoice,account.model_account_invoice,kw_depot_service,1,1,1,1
 depot_account_account,account.account,account.model_account_account,kw_depot_service,1,1,1,1
@@ -255,8 +257,9 @@ depot_work_order,work.order,model_work_order,kw_depot_service,1,1,1,1
 depot_billing_cycle,billing.cycle,model_billing_cycle,kw_depot_service,1,1,1,1
 depot_goods_dealers,goods.dealers,model_goods_dealers,kw_depot_service,1,1,1,1
 depot_goods_trucks,goods.trucks,model_goods_trucks,kw_depot_service,1,1,1,1
-dept_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_admin_service,1,1,1,1
-dept_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_admin_service,1,1,1,1
+dept_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_depot_service,1,1,1,1
+dept_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_depot_service,1,1,1,1
+dept_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_depot_service,1,1,1,1
 ,,,,,,,
 customer_account_invoice,account.invoice,account.model_account_invoice,kw_customer_service,1,0,0,0
 customer_account_account,account.account,account.model_account_account,kw_customer_service,1,0,0,0
@@ -340,8 +343,9 @@ customer_billing_cycle,billing.cycle,model_billing_cycle,kw_customer_service,1,0
 customer_goods_dealers,goods.dealers,model_goods_dealers,kw_customer_service,1,0,0,0
 customer_goods_trucks,goods.trucks,model_goods_trucks,kw_customer_service,1,0,0,0
 cust_purchase_order,purchase.order,purchase.model_purchase_order,kw_customer_service,1,1,1,0
-cust_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_admin_service,1,1,1,1
-cust_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_admin_service,1,1,1,1
+cust_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_customer_service,1,1,1,1
+cust_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_customer_service,1,1,1,1
+cust_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_customer_service,1,1,1,0
 ,,,,,,,
 freight_account_invoice,account.invoice,account.model_account_invoice,kw_freight_service,1,0,0,0
 freight_account_account,account.account,account.model_account_account,kw_freight_service,1,0,0,0
@@ -425,8 +429,9 @@ freight_billing_cycle,billing.cycle,model_billing_cycle,kw_freight_service,1,1,1
 freight_goods_dealers,goods.dealers,model_goods_dealers,kw_freight_service,1,1,1,1
 freight_goods_trucks,goods.trucks,model_goods_trucks,kw_freight_service,1,1,1,1
 fr_purchase_order,purchase.order,purchase.model_purchase_order,kw_freight_service,1,1,1,0
-frt_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_admin_service,1,1,1,1
-frt_kw_bank_deatils_wiz,bank.details.wiz,model_bank_details_wiz,kw_admin_service,1,1,1,1
+frt_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_freight_service,1,1,1,1
+frt_kw_bank_deatils_wiz,bank.details.wiz,model_bank_details_wiz,kw_freight_service,1,1,1,1
+frt_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_freight_service,1,1,1,1
 ,,,,,,,
 b_supplier_account_invoice,account.invoice,account.model_account_invoice,kw_supplier_billing_service,1,0,0,0
 b_supplier_account_account,account.account,account.model_account_account,kw_supplier_billing_service,1,0,0,0
@@ -510,8 +515,9 @@ b_sup_billing_cycleb,billing.cycle,model_billing_cycle,kw_supplier_billing_servi
 b_sup_goods_dealersb,goods.dealers,model_goods_dealers,kw_supplier_billing_service,1,0,0,0
 b_sup_goods_trucksb,goods.trucks,model_goods_trucks,kw_supplier_billing_service,1,0,0,0
 b_sup_purchase_orderb,purchase.order,purchase.model_purchase_order,kw_supplier_billing_service,1,1,1,0
-b_sup_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_admin_service,1,1,1,1
-b_sup_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_admin_service,1,1,1,1
+b_sup_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_supplier_billing_service,1,1,1,1
+b_sup_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_supplier_billing_service,1,1,1,1
+b_sup_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_supplier_billing_service,1,1,1,0
 ,,,,,,,
 b_sup_account_invoice,account.invoice,account.model_account_invoice,kw_facilitor_billing_service_tab,1,1,1,1
 b_sup_account_account,account.account,account.model_account_account,kw_facilitor_billing_service_tab,1,1,1,1
@@ -595,4 +601,5 @@ sup_billing_cycleb,billing.cycle,model_billing_cycle,kw_facilitor_billing_servic
 sup_goods_dealersb,goods.dealers,model_goods_dealers,kw_facilitor_billing_service_tab,1,1,1,1
 sup_goods_trucksb,goods.trucks,model_goods_trucks,kw_facilitor_billing_service_tab,1,1,1,1
 sup_purchase_orderb,purchase.order,purchase.model_purchase_order,kw_facilitor_billing_service_tab,1,1,1,1
-sup_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_admin_service,1,1,1,1
+sup_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_facilitor_billing_service_tab,1,1,1,1
+sup_kw_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_facilitor_billing_service_tab,1,1,1,0

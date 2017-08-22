@@ -16,6 +16,8 @@
                     <field name="partner_id" string="Customer" domain="[('customer','=',True)]" />
                      <!-- <field name="product" /> --> 
                     <field name="paying_agent_id" domain="[('supplier','=',True)]"/>
+					<field name="sub_facilitator_id"/>
+					<field name="purchase_amount"/>
              		<field name="transporter"/> 
                     <field name="date_function"/>
 					<field name="esugam_no"/>
@@ -441,7 +443,10 @@
 		                        		groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_freight_service" 
 		                        		attrs="{'required':['|',('user_log','=','KW_Admin'),('user_log','=','KW_Depot')],'readonly': ['|',('user_log','=','KW_Freight'),('state','not in',('draft','in_transit'))]}"/>
 		                        	<!-- domain="['|','&amp;',('supplier','=',True),('supplier','!=',True),('customer','!=',True)]" -->
-		                        	<field name="wc_num" invisible='1'/>
+		                        	<field name="sub_facilitator_id" attrs="{'required':[('is_sub_facilitator','=',True)]}"/>
+									<field name="is_sub_facilitator" invisible="1"/>
+									<field name="purchase_amount"/>
+									<field name="wc_num" invisible='1'/>
 		                     		 <field name="wc_number" attrs="{'invisible':['|',('wc_num','!=',True),('state','in',('draft'))],'readonly': [('state','not in',('in_transit'))]}"/>
 		                        </group>
 		                        
@@ -641,6 +646,8 @@
                     <field name="partner_id" string="Customer" />
                     
                     <field name="paying_agent_id"/>
+					<field name="sub_facilitator_id"/>
+					<field name="purchase_amount"/>
                     <field name="state"/>
                     <field name="date"/>
                     <field name="truck_no" />
@@ -1149,13 +1156,16 @@
             <field name="model">stock.picking.in</field>
             <field name="inherit_id" ref="stock.view_picking_form"/>
             <field name="arch" type="xml" >
-            
-            	<xpath expr="//field[@name='partner_id']" position="attributes">
+
+            	<!--<xpath expr="//field[@name='partner_id']" position="attributes">
                     <attribute name="domain">[('supplier','=',True),('representative','!=',True),('handling_charges','=',False)]</attribute>
- 				</xpath>
- 		
+ 				</xpath> -->
+
             	<xpath expr="//field[@name='partner_id']" position="after">
-            		<field name='truck_no' widget="upper_case" required='1'/>
+					<field name="sub_facilitator_id" attrs="{'required':[('is_sub_facilitator','=',True)]}"/>
+					<field name='truck_no' widget="upper_case" required='1'/>
+					<field name="purchase_amount"/>
+					<field name="is_sub_facilitator" invisible="1"/>
             	</xpath>
 
             	<xpath expr="//page[@string='Products']" position="attributes">
@@ -1163,10 +1173,11 @@
  				</xpath>
  					
  				<xpath expr="//field[@name='partner_id']" position="attributes">
- 					<attribute name="attrs"> {'readonly': [('state','not in',('draft','assigned'))]} </attribute> 
+ 					<attribute name="attrs"> {'readonly': [('state','not in',('draft','assigned'))]} </attribute>
                     <attribute name="required">1</attribute>
                     <attribute name="domain">[('supplier','=',True),('representative','!=',True),('handling_charges','=',False)]</attribute>
- 				</xpath>
+ 				 	<attribute name="on_change">onchange_partner_in(partner_id,context)</attribute>
+				</xpath>
             	
             	<xpath expr="//field[@name='min_date']" position="attributes">
                      <attribute name="invisible">1</attribute>
@@ -1240,7 +1251,8 @@
  				<xpath expr="//field[@name='partner_id']" position="attributes">
                     <attribute name="required">1</attribute>
                     <attribute name="domain">[('supplier','=',True),('representative','!=',True),('handling_charges','=',False)]</attribute>
-                </xpath>
+                 	<attribute name="on_change">onchange_partner_in(partner_id,context)</attribute>
+				</xpath>
  				
  			</field>	
 	</record> 
@@ -1291,6 +1303,7 @@
                 </xpath>
                 <xpath expr="//field[@name='partner_id']" position="attributes">
                     <attribute name="required">1</attribute>
+					 <attribute name="on_change">onchange_partner_in(partner_id,context)</attribute>
                 </xpath>
                 
             </field>

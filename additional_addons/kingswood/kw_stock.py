@@ -783,6 +783,9 @@ class stock_picking_out(osv.osv):
                 'is_bank_submit' : fields.boolean("Is Online Bank Submit",select=1),
                 'frieght_paid'   : fields.boolean("Is Freight Paid", select=True),
 
+                'sub_facilitator_id'    :   fields.many2one("res.partner", "Sub Facilitator"),
+                'purchase_amount'       :   fields.float("Purchase Amount", digits=(16,2)),
+                'is_sub_facilitator'    :   fields.boolean("Is Sub Facilitator")
               }
     
     _order = 'date desc'
@@ -862,6 +865,20 @@ class stock_picking_out(osv.osv):
         picking={}
         res['paying_agent_id'] = paying_agent_id
         user_obj = self.pool.get('res.users')
+        part_obj = self.pool.get("res.partner")
+        dom = {}
+        if paying_agent_id:
+            sub_fac = part_obj.browse(cr, uid, paying_agent_id)
+            if sub_fac.sub_facilitator_ids:
+                cr.execute("select sub_part_id from sub_facilitator where main_facilitator_id="+str(paying_agent_id))
+                sub_facilitator_id = [x[0] for x in cr.fetchall()]
+                if sub_facilitator_id:
+                    dom.update({'sub_facilitator_id':  [('id','in',sub_facilitator_id )]})
+                    res.update({'is_sub_facilitator': True})
+            else:
+                dom = {'sub_facilitator_id':  [('id','=',0 )]}
+                res.update({'is_sub_facilitator':False})
+
         cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
         gid = cr.dictfetchall()
         for x in gid:
@@ -931,7 +948,7 @@ class stock_picking_out(osv.osv):
                
                 
              
-        return{'value' : res,'warning':warning}
+        return{'value' : res,'warning':warning, 'domain':dom}
      
     
     #for reading pdf file 
@@ -1028,7 +1045,14 @@ class stock_picking_out(osv.osv):
                 res['freight']=freight
             else:
                 res['freight'] = i.freight or False
-            
+
+            if i.sub_facilitator_ids:
+                cr.execute("select sub_part_id from sub_facilitator where main_facilitator_id="+str(i.id))
+                sub_facilitator_id = [x[0] for x in cr.fetchall()]
+                if sub_facilitator_id:
+                    dom.update({'sub_facilitator_id':  [('id','in',sub_facilitator_id )]})
+                    res.update({'is_sub_facilitator': True})
+
 #             if i.work_order:
 #                 res['work_order']=i.work_order
 #             else:
@@ -1047,8 +1071,8 @@ class stock_picking_out(osv.osv):
 
 #                     print j.state_id.name
         if state_id>0:
-            dom = {'paying_agent_id':  [('state_id','=', state_id.id)]}
-        
+            dom.update( {'paying_agent_id':  [('state_id','=', state_id.id)]})
+
         return {'value':res,'domain':dom}
     
     
@@ -3148,9 +3172,10 @@ class stock_picking_out(osv.osv):
                         sup_inv_vals.update(supp_inv_group[inv])
                         sup_inv_vals.update({
                                                           
-                                             'invoice_line': line_vals[inv],
-                                             'supp_delivery_orders_ids': [(6, 0, supp_del_orders[inv])],
-                                         }) 
+                                             'invoice_line'             : line_vals[inv],
+                                             'supp_delivery_orders_ids' : [(6, 0, supp_del_orders[inv])],
+                                             'partner_id'               : case.sub_facilitator_id and case.sub_facilitator_id.id
+                                         })
                         
                         sup_inv_vals.update({
         #                                                      
@@ -3167,9 +3192,8 @@ class stock_picking_out(osv.osv):
                     freight_inv_vals.update(freight_inv_group[freight_inv])
                     freight_inv_vals.update({
                                                                          
-                                                'supp_delivery_orders_ids': [(6, 0, freight_del_orders[freight_inv])],
-                                                'invoice_line': freight_line_vals[freight_inv],
-                                                                                                                                            
+                                                'supp_delivery_orders_ids'  : [(6, 0, freight_del_orders[freight_inv])],
+                                                'invoice_line'              : freight_line_vals[freight_inv],
                                              })
                    
                     if freight_line_vals[freight_inv][0][2]['price_unit']>0:
@@ -3200,10 +3224,9 @@ class stock_picking_out(osv.osv):
                     handling_invoices.update(handling_group[handling_inv])
                     handling_invoices.update({
                                                                         
-                                                'supp_delivery_orders_ids': [(6, 0, handling_del_orders[handling_inv])],
-                                                'invoice_line': [(0,0,handling_invoices_lines[handling_inv][0])],
-                                                                                                                                            
-                                             }) 
+                                                'supp_delivery_orders_ids'  : [(6, 0, handling_del_orders[handling_inv])],
+                                                'invoice_line'              : [(0,0,handling_invoices_lines[handling_inv][0])],
+                                             })
                       
                  
                     if s_parent_id:
@@ -3959,6 +3982,7 @@ class stock_picking_out(osv.osv):
 #         if context.get('type', '') == 'out':
             voucher_obj = self.pool.get('account.voucher')
             user_obj = self.pool.get('res.users')
+            sub_part_obj = self.pool.get("sub.facilitator")
             price=0.0
             result={}
             g_ids = []
@@ -4040,6 +4064,40 @@ class stock_picking_out(osv.osv):
                                   cr.execute('UPDATE stock_move SET location_id = %s WHERE picking_id=%s',(sup_id,case.id,))
                               
             res = super(stock_picking_out,self).write(cr, uid, ids, vals, context)
+            for temp in self.browse(cr, uid, ids):
+
+                # Purchase Amount Calculation
+                cr.execute("""select id from sub_facilitator
+                                where sub_part_id="""+str(temp.sub_facilitator_id.id)+"""
+                                and '"""+str(temp.date)+"""'::date>= from_date and '"""+str(temp.date)+"""'::date <= to_date
+                            """)
+                sub_part_ids = [x[0] for x in cr.fetchall()]
+                if sub_part_ids:
+                    sub_part_ids = sub_part_ids[0]
+                    sub_part = sub_part_obj.browse(cr, uid, sub_part_ids)
+                    if sub_part.total_purchase >= float(1980000):
+                        raise osv.except_osv(_('Warning'),_('Total Purcase is exceeded for the selected Sub Facilitator.'))
+
+                cr.execute("""
+                    select kw.sub_total
+
+                    from product_supplierinfo ps
+                    inner join kw_product_price kw on ps.id = kw.supp_info_id
+                    and ps.product_id = """+str(temp.product_id.id)+"""
+
+                    and ef_date <= '"""+str(temp.date)+"""' ::date
+                    and ps.name = """+str(temp.paying_agent_id.id)+"""
+                    and (case when ps.customer_id is null then ps.depot = (select location_id from stock_move where picking_id = """+str(temp.id)+""" limit 1)
+                    else case when ps.customer_id is null and ps.depot is null then ps.city_id = """+str(temp.city_id.id)+""" else ps.customer_id = """+str(temp.partner_id.id)+""" end end)
+                    order by ef_date desc limit 1
+                """)
+                goods_rate = [x[0] for x in cr.fetchall()]
+                if goods_rate:
+                    goods_rate = goods_rate[0]
+                    purchase_amount = float(temp.qty * goods_rate) - float(temp.qty * temp.freight_charge) + float(temp.freight_advance)
+                    if purchase_amount > 0:
+                        cr.execute("update stock_picking set purchase_amount="+str(purchase_amount)+" where id="+str(temp.id))
+
             if 'move_lines' in vals:
 #               if vals['move_lines'][0][2]:
                      
@@ -4079,9 +4137,9 @@ class stock_picking_out(osv.osv):
                     sm_ids=sm_obj.browse(cr, uid, ids, context=context)
                     vals1 ={}
                     user_obj = self.pool.get('res.users')
+                    goods_rate = []
+                    purchase_amount = 0.00
                     for case in self.browse(cr, uid, ids):
-
-                                
                         for ln in case.move_lines:
                             if 'move_lines' in vals: 
                                 lines_len=len(vals['move_lines'])
@@ -5396,6 +5454,10 @@ class stock_picking(osv.osv):
                 'is_bank_submit' : fields.boolean("Is Online Bank Submit", select=True),
                 'frieght_paid'   : fields.boolean("Is Freight Paid", select=True),
 
+                'sub_facilitator_id'    :   fields.many2one("res.partner", "Sub Facilitator"),
+                'purchase_amount'       :   fields.float("Purchase Amount", digits=(16,2)),
+                'is_sub_facilitator'    :   fields.boolean("Is Sub Facilitator")
+
               }
     _order = 'date desc'
     _defaults={
@@ -5444,6 +5506,7 @@ class stock_picking(osv.osv):
     def onchange_partner_in(self, cr, uid, ids, partner_id=None, context=None):
 #         res=super(stock_picking,self).onchange_partner_in(cr, uid, ids,partner_id=False,context=None)
         res={}
+        dom = {}
         partner_obj=self.pool.get('res.partner')
         partner_ids=partner_obj.search(cr,uid,[('id','=',partner_id)])
         for i in partner_obj.browse(cr,uid,partner_ids):
@@ -5453,7 +5516,13 @@ class stock_picking(osv.osv):
                 res['work_order']=False
             if 'associate' in i.name.lower():
                 res['partner']=i.ref
-        return {'value':res}
+            if i.sub_facilitator_ids:
+                cr.execute("select sub_part_id from sub_facilitator where main_facilitator_id="+str(i.id))
+                sub_facilitator_id = [x[0] for x in cr.fetchall()]
+                if sub_facilitator_id:
+                    dom.update({'sub_facilitator_id':  [('id','in',sub_facilitator_id )]})
+                    res.update({'is_sub_facilitator': True})
+        return {'value':res,'domain':dom}
     
     def draft_force_assign(self, cr, uid, ids, *args):
         """ Confirms picking directly from draft state.
@@ -5958,8 +6027,16 @@ class stock_move(osv.osv):
             if 'associate' in i.name.lower():
                 if uid!=1:
                     res['partner']=i.ref
-        
-        return {'value':res}            
+            if i.sub_facilitator_ids:
+                cr.execute("select sub_part_id from sub_facilitator where main_facilitator_id="+str(i.id))
+                sub_facilitator_id = [x[0] for x in cr.fetchall()]
+                if sub_facilitator_id:
+                    dom.update({'sub_facilitator_id':  [('id','in',sub_facilitator_id )]})
+                    res.update({'is_sub_facilitator': True})
+            else:
+                    dom.update({'sub_facilitator_id':  [('id','in',0)]})
+                    res.update({'is_sub_facilitator': False})
+        return {'value':res, 'domain':dom}
             
         
     def default_get(self, cr, uid, fields, context=None):
@@ -6157,6 +6234,9 @@ class stock_picking_in(osv.osv):
                 'ac_holder_pan' :   fields.char("Pan Number", size=20),
                 'bene_code'     :   fields.char("Beneficiary Code", size=30),
 
+                'sub_facilitator_id'    :   fields.many2one("res.partner", "Sub Facilitator"),
+                'purchase_amount'       :   fields.float("Purchase Amount", digits=(16,2)),
+                'is_sub_facilitator'    :   fields.boolean("Is Sub Facilitator")
 
 
               }

@@ -195,9 +195,11 @@ class res_partner(osv.osv):
                 'gen_jjform'           :   fields.boolean('Generate JJform.',track_visibility='onchange'),
                 'ftbal_deduct'         :   fields.float("Freiht Balance Deduct", digits=(16,2)),
 
-                'gstin_code'        :   fields.char("GST IN Code", size=20),
-                'un_reged_vendor'   :   fields.boolean("Un Reged Vendor"),
+                'gstin_code'            :   fields.char("GST IN Code", size=20),
+                'un_reged_vendor'       :   fields.boolean("Un Reged Vendor"),
 
+                # GST Purchase
+                'sub_facilitator_ids'   :   fields.one2many("sub.facilitator", 'main_facilitator_id', "Sub Facilitators")
 
               }
     _defaults={
@@ -422,7 +424,40 @@ class res_partner(osv.osv):
         return res
 res_partner()
 
+class sub_facilitator(osv.osv):
+    _name = "sub.facilitator"
 
+    def _get_total_purchase(self, cr, uid, ids, field_name, args, context=None):
+        context = dict(context or {})
+        res = {}
+        for case in self.browse(cr, uid, ids):
+            total_purchase = 0.00
+            if case.from_date and case.to_date:
+                cr.execute("""
+                    select
+                        sum(purchase_amount)
+
+                    from stock_picking sp
+                    where sp.date::date >='"""+str(case.from_date)+"""' and sp.date::date <= '"""+str(case.to_date)+"""'
+                        and sp.sub_facilitator_id=""" +str(case.sub_part_id.id))
+                total_purchase = [x[0] for x in cr.fetchall()]
+                if total_purchase:
+                    total_purchase = total_purchase[0]
+                    if total_purchase is None:
+                       total_purchase = 0.00
+            res[case.id] = total_purchase
+        return res
+
+    _columns = {
+        'sub_part_id'           :   fields.many2one("res.partner", "Sub Facilitator"),
+        'main_facilitator_id'   :   fields.many2one("res.partner", "Main Facilitator"),
+        'from_date'             :   fields.date("From Date"),
+        'to_date'               :   fields.date("To Date"),
+        'total_purchase'        :   fields.function(_get_total_purchase, type="float", store=False, string="Total Purchase")
+
+
+    }
+sub_facilitator()
 
 class customer_contracts(osv.osv):
     _name = "customer.contracts"

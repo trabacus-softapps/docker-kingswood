@@ -128,15 +128,27 @@
 								<field name="st_date"/>
 								<field name="end_date"/>
 								<field name="open_bal" readonly="1"/>
-								<field name="uid" invisible="1"/> 
-								 <field name="user_partner" invisible="1"/>	
+								<field name="uid" invisible="1"/>
+								 <field name="user_partner" invisible="1"/>
 								<button name="generate_report" icon="gtk-print" type="object" string="Print"/>
-								 
+
 							</tree>
 						</field>
 					</page>
 					
-					
+					<page string="Sub Facilitator" attrs="{'invisible': [('supplier','=', False)]}">
+						<field name="sub_facilitator_ids"  attrs="{'invisible': [('supplier','=', False)]}" groups="kingswood.kw_admin_service,base.group_no_one">
+							<tree version="7.0" editable="top">
+								<field name="sub_part_id" required="1"/>
+								<field name="from_date" required="1"/>
+								<field name="to_date" required="1"/>
+								<field name="total_purchase" />
+
+							</tree>
+						</field>
+					</page>
+
+
 					<page string="Facilitators" attrs="{'invisible': [('customer','=', False)]}">
 						<field name="facilitator_ids" attrs="{'invisible': [('customer','=', False)]}" groups="kingswood.kw_admin_service,base.group_no_one">
 							<tree version="7.0" editable="top">
