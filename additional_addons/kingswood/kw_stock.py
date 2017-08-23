@@ -2724,7 +2724,35 @@ class stock_picking_out(osv.osv):
            stock_in.get_invoice(cr,uid,ids,False,context)
                                                                      
         if run_schedular and stock_type == 'out':           
-            for case in self.browse(cr, uid, ids):  
+            for case in self.browse(cr, uid, ids):
+                 if case.date >= '2017-07-01 00:00:00':
+                     sup_freight_ids=prod_obj.search(cr, uid, [('name_template','=','HC')])
+                 else:
+                     sup_freight_ids=prod_obj.search(cr, uid, [('name_template','=','Freight')])
+                 # Updating Tax
+                 if case.date >= '2017-07-01 00:00:00':
+                     if case.state_id.id == case.partner_id.state_id.id:
+                        cr.execute("select id from account_tax where gst_categ='intra' ")
+                        intra_tax_id= [x[0] for x in cr.fetchall()]
+                        intra_tax_id = tuple(intra_tax_id)
+                        if intra_tax_id:
+                            cr.execute("select tax_id from product_supplier_taxes_rel where prod_id=%s and tax_id in %s",(case.product_id.id,intra_tax_id))
+                            tx_ids = [x[0] for x in cr.fetchall()]
+                        else:
+                            raise osv.except_osv(_('Warning'),_('Map proper Taxes for Intra State'))
+
+                     else:
+                        cr.execute("select id from account_tax where gst_categ='inter' ")
+                        inter_tax_id= [x[0] for x in cr.fetchall()]
+                        inter_tax_id = tuple(inter_tax_id)
+                        if inter_tax_id:
+                            cr.execute("select tax_id from product_supplier_taxes_rel where prod_id=%s and tax_id in %s",(case.product_id.id,inter_tax_id))
+                            tx_ids = [x[0] for x in cr.fetchall()]
+                        else:
+                            raise osv.except_osv(_('Warning'),_('Map proper Taxes for Inter State'))
+                     _logger.info('Supplier Tax Ids==========================> %s',tx_ids)
+
+
                  stock_type = case.type
                  print case.name
                  journal_id = journal_obj.search(cr, uid, [('type', '=', 'purchase'),('company_id','=',case.company_id.id)])[0]
@@ -2839,6 +2867,7 @@ class stock_picking_out(osv.osv):
                              vals['uos_id'] = ln.product_uom.id    
                              vals['price_unit'] = 0
                              vals['move_line_id'] = ln.id
+                             vals['invoice_line_tax_id'] = [(6, 0,tx_ids)]
                               
                                   
                             #for supplier handling invoice vals
@@ -2912,10 +2941,18 @@ class stock_picking_out(osv.osv):
                                  else:
                                      print "schedular Failed"
                              #check for the key for supplier Invoices
-                             supp_key = case.paying_agent_id.id,case.partner_id.freight or case.gen_freight,ln.delivery_date
-                             freight_key = case.paying_agent_id.id, case.partner_id.id,freight_price,ln.delivery_date
-                             product_key =case.paying_agent_id.id,ln.product_id.id,ln.price_unit
-                             
+                             if tx_ids:
+                                cr.execute("select gst_categ, amount from account_tax where id in  %s ",(tuple(tx_ids),))
+                                tx = cr.dictfetchall()[0]
+                             if case.sub_facilitator_id:
+                                supp_key = case.sub_facilitator_id.id,case.partner_id.freight or case.gen_freight,ln.delivery_date or case.sub_facilitator_id.id,tx.get('gst_categ')+str(tx.get('amount'))
+                                freight_key = case.sub_facilitator_id.id, case.partner_id.id,freight_price,ln.delivery_date
+                                product_key =case.sub_facilitator_id.id,ln.product_id.id,ln.price_unit
+                             else:
+                                supp_key = case.paying_agent_id.id,case.partner_id.freight or case.gen_freight,ln.delivery_date or case.paying_agent_id.id,tx.get('gst_categ')+str(tx.get('amount'))
+                                freight_key = case.paying_agent_id.id, case.partner_id.id,freight_price,ln.delivery_date
+                                product_key =case.paying_agent_id.id,ln.product_id.id,ln.price_unit
+                             print "supp_key....................",supp_key
                              #Handling Invoice Key
                              if handling_vals['price_unit'] >0 and partner:
                             #added Handling price to handling key[If Handling price differs then create new invoice]                          
@@ -2976,12 +3013,12 @@ class stock_picking_out(osv.osv):
                                  if supp_key not in supp_inv_group :
                                      supp_del_orders[supp_key] =[case.id]
                                      supp_inv_group[supp_key] = {
-                                                                 'partner_id'     : case.paying_agent_id.id,
+                                                                 'partner_id'     : case.sub_facilitator_id and case.sub_facilitator_id.id or case.paying_agent_id.id,
                                                                  'date_invoice'   : ln.delivery_date,
                                                                  'type'           :   'in_invoice',
                                                                  'journal_id'     : journal_id,
                                                                 'branch_state'    : case.paying_agent_id.state_id.id,
-                                                                'back_date': back_date
+                                                                'back_date'       : back_date,
                                                                }
                                      supp_invoice_lines[supp_key] = [(vals.copy())]
                                      if not case.partner_id.freight and not case.gen_freight:
@@ -3005,7 +3042,7 @@ class stock_picking_out(osv.osv):
                                  if freight_key not in freight_inv_group:
                                      if case.partner_id.freight or case.gen_freight:
                                          freight_del_orders[freight_key] = [case.id]
-                                         freight_inv_group[freight_key] = {'partner_id'   : case.paying_agent_id.id,
+                                         freight_inv_group[freight_key] = {'partner_id'   : case.sub_facilitator_id and case.sub_facilitator_id.id or case.paying_agent_id.id,
                                                               'date_invoice': ln.delivery_date,
                                                               'type':   'in_invoice',
                                                               'journal_id' : journal_id_l,
@@ -3176,17 +3213,13 @@ class stock_picking_out(osv.osv):
                                              'supp_delivery_orders_ids' : [(6, 0, supp_del_orders[inv])],
 
                                          })
-                        if case.sub_facilitator_id:
-                            sup_inv_vals.update({
-                                            'partner_id'               : case.sub_facilitator_id and case.sub_facilitator_id.id,
-                                            'account_id'               : case.sub_facilitator_id and case.sub_facilitator_id.property_account_payable.id
-                                        })
                         sup_inv_vals.update({
         #                                                      
                                                               'journal_id' : journal_id,'back_date': back_date
                                                               })
                         inv2=inv_obj.create(cr, uid, sup_inv_vals,context=context) 
                         if inv2:
+                            inv_obj.button_reset_taxes(cr, uid, [inv2], {})
                             invoices.append(inv2) 
                  #for creating supplier freight invoices
                 for freight_inv in freight_line_vals:
@@ -4081,20 +4114,31 @@ class stock_picking_out(osv.osv):
                     sub_part = sub_part_obj.browse(cr, uid, sub_part_ids)
                     if sub_part.total_purchase >= float(1980000):
                         raise osv.except_osv(_('Warning'),_('Total Purcase is exceeded for the selected Sub Facilitator.'))
+                if temp.type == 'in':
+                    cr.execute("""
+                        select kw.sub_total
 
-                cr.execute("""
-                    select kw.sub_total
+                            from product_supplierinfo ps
+                            inner join kw_product_price kw on ps.id = kw.supp_info_id
+                            and ps.product_id = (select product_id from stock_picking where id ="""+str(temp.id)+""")
+                            and ps.name = (select partner_id from stock_picking where id = """+str(temp.id)+""")
+                            and ef_date <= (select date::date from stock_picking where id = """+str(temp.id)+""")
+                            order by ef_date desc limit 1
+                    """)
+                if temp.type == 'out':
+                    cr.execute("""
+                        select kw.sub_total
 
-                    from product_supplierinfo ps
-                    inner join kw_product_price kw on ps.id = kw.supp_info_id
-                    and ps.product_id = """+str(temp.product_id.id)+"""
+                        from product_supplierinfo ps
+                        inner join kw_product_price kw on ps.id = kw.supp_info_id
+                        and ps.product_id = """+str(temp.product_id.id)+"""
 
-                    and ef_date <= '"""+str(temp.date)+"""' ::date
-                    and ps.name = """+str(temp.paying_agent_id.id)+"""
-                    and (case when ps.customer_id is null then ps.depot = (select location_id from stock_move where picking_id = """+str(temp.id)+""" limit 1)
-                    else case when ps.customer_id is null and ps.depot is null then ps.city_id = """+str(temp.city_id.id)+""" else ps.customer_id = """+str(temp.partner_id.id)+""" end end)
-                    order by ef_date desc limit 1
-                """)
+                        and ef_date <= '"""+str(temp.date)+"""' ::date
+                        and ps.name = """+str(temp.paying_agent_id.id)+"""
+                        and (case when ps.customer_id is null then ps.depot = (select location_id from stock_move where picking_id = """+str(temp.id)+""" limit 1)
+                        else case when ps.customer_id is null and ps.depot is null then ps.city_id = """+str(temp.city_id.id)+""" else ps.customer_id = """+str(temp.partner_id.id)+""" end end)
+                        order by ef_date desc limit 1
+                    """)
                 goods_rate = [x[0] for x in cr.fetchall()]
                 if goods_rate:
                     goods_rate = goods_rate[0]
@@ -6462,7 +6506,7 @@ class stock_picking_in(osv.osv):
 #         journal_id = journal_obj.search(cr, uid, [('type', '=', 'purchase')])[0]
         prod_obj=self.pool.get('kw.product.price')
         kw_prod_obj = self.pool.get('product.product')
-        sup_freight_ids=kw_prod_obj.search(cr, uid, [('name_template','=','Freight')])
+
         cr.execute("select id from res_company where lower(name) like '%logistics%'")
         cr.execute("select id from res_partner where lower(name) like 'kingswood%'")
         kw_paying_agent=cr.fetchall()
@@ -6529,6 +6573,10 @@ class stock_picking_in(osv.osv):
         if run_schedular:
            
             for case in self.browse(cr, uid, ids):
+                if case.date>= '2017-07-01 00:00:00':
+                    sup_freight_ids=kw_prod_obj.search(cr, uid, [('name_template','=','HC')])
+                else:
+                    sup_freight_ids=kw_prod_obj.search(cr, uid, [('name_template','=','Freight')])
                 print "incominng", case.name
                 journal_id = journal_obj.search(cr, uid, [('type', '=', 'purchase'),('company_id','=',case.company_id.id)])[0]
     #             handling_journal_id = journal_obj.search(cr, uid, [('type', '=', 'purchase'),('company_id','=',company)])[0]
@@ -6623,8 +6671,7 @@ class stock_picking_in(osv.osv):
                                             cr.execute("update stock_picking set sup_invoice=True where id=%s ",(case.id,))
                         if handling_vals['price_unit'] >0 and partner:
                             #added Handling price to handling key[If Handling price differs then create new invoice]                          
-                                 handling_key=ln.product_id.id,partner,case.partner_id.id,handling_vals['price_unit']
-                             
+                            handling_key=ln.product_id.id,partner,case.partner_id.id,handling_vals['price_unit']
                              
                          #grouping the supplier Handling invoices based on product_id and partner
                               
@@ -6638,14 +6685,14 @@ class stock_picking_in(osv.osv):
                                  a_id=s_id[partner.id]
     
                                  handling_group[handling_key]={
-                                                                    'partner_id'      : partner.id,
+                                                                    'partner_id'     :  case.partner_id.id,
                                                                     'date_invoice'   :  case.date_function,
-                                                                    'type'           : 'in_invoice',
-                                                                     'journal_id'    : journal_id,
-                                                                    'back_date'      :back_date,
-                                                                      'freight'      : False,
-                                                                      'origin'       :  'IN',
-                                                                      'branch_state' : partner.state_id.id,
+                                                                    'type'           :  'in_invoice',
+                                                                    'journal_id'     :  journal_id,
+                                                                    'back_date'      :  back_date,
+                                                                    'freight'        :  False,
+                                                                    'origin'         :  'IN',
+                                                                    'branch_state'   :  partner.state_id.id,
                                                                 }
                                  
                                  
@@ -6668,11 +6715,15 @@ class stock_picking_in(osv.osv):
     
     
     #                     #check for the key
-                        supp_key = case.partner_id.id,case.date_function
-                        product_key =case.partner_id.id,ln.product_id.id,ln.price_unit
+                        if case.sub_facilitator_id:
+                            supp_key = case.sub_facilitator_id.id,case.date_function
+                            product_key =case.sub_facilitator_id.id,ln.product_id.id,ln.price_unit
+                        else:
+                            supp_key = case.partner_id.id,case.date_function
+                            product_key =case.partner_id.id,ln.product_id.id,ln.price_unit
                         if supp_key not in supp_inv_group:
                             supp_del_orders[supp_key] =[case.id]
-                            supp_inv_group[supp_key] = {'partner_id'   : case.partner_id.id,
+                            supp_inv_group[supp_key] = {'partner_id'   : case.sub_facilitator_id and case.sub_facilitator_id.id or case.partner_id.id,
                                                          'origin'   :   'IN',
                                                          'date_invoice': case.date_function,
                                                          'type':   'in_invoice',
@@ -6750,8 +6801,9 @@ class stock_picking_in(osv.osv):
                 handling_invoices.update(handling_group[handling_inv])
                 handling_invoices.update({
                                                                     
-                                            'incoming_shipment_ids': [(6, 0, handling_del_orders[handling_inv])],
-                                            'invoice_line': [(0,0,handling_invoices_lines[handling_inv][0])],
+                                            'incoming_shipment_ids' : [(6, 0, handling_del_orders[handling_inv])],
+                                            'invoice_line'          : [(0,0,handling_invoices_lines[handling_inv][0])],
+                                            'handling_charges'      : True
                                                                                                                                         
                                          }) 
                   
