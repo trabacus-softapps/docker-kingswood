@@ -6577,6 +6577,33 @@ class stock_picking_in(osv.osv):
                     sup_freight_ids=kw_prod_obj.search(cr, uid, [('name_template','=','HC')])
                 else:
                     sup_freight_ids=kw_prod_obj.search(cr, uid, [('name_template','=','Freight')])
+
+                # Updating Tax
+                if case.date >= '2017-07-01 00:00:00':
+                    cr.execute("select id from res_country_state where name ilike '%Karnataka%'")
+                    state_id = [x[0] for x in cr.fetchall()]
+                    if state_id:
+                        state_id = state_id[0]
+                        if state_id == case.partner_id.state_id.id:
+                           cr.execute("select id from account_tax where gst_categ='intra' ")
+                           intra_tax_id= [x[0] for x in cr.fetchall()]
+                           intra_tax_id = tuple(intra_tax_id)
+                           if intra_tax_id:
+                               cr.execute("select tax_id from product_supplier_taxes_rel where prod_id=%s and tax_id in %s",(case.product_id.id,intra_tax_id))
+                               tx_ids = [x[0] for x in cr.fetchall()]
+                           else:
+                               raise osv.except_osv(_('Warning'),_('Map proper Taxes for Intra State'))
+
+                        else:
+                           cr.execute("select id from account_tax where gst_categ='inter' ")
+                           inter_tax_id= [x[0] for x in cr.fetchall()]
+                           inter_tax_id = tuple(inter_tax_id)
+                           if inter_tax_id:
+                               cr.execute("select tax_id from product_supplier_taxes_rel where prod_id=%s and tax_id in %s",(case.product_id.id,inter_tax_id))
+                               tx_ids = [x[0] for x in cr.fetchall()]
+                           else:
+                               raise osv.except_osv(_('Warning'),_('Map proper Taxes for Inter State'))
+                        _logger.info('Supplier Tax Ids==========================> %s',tx_ids)
                 print "incominng", case.name
                 journal_id = journal_obj.search(cr, uid, [('type', '=', 'purchase'),('company_id','=',case.company_id.id)])[0]
     #             handling_journal_id = journal_obj.search(cr, uid, [('type', '=', 'purchase'),('company_id','=',company)])[0]
@@ -6589,11 +6616,12 @@ class stock_picking_in(osv.osv):
                     for ln in case.move_lines:
                         
                                     
-                        vals['product_id'] = ln.product_id.id
-                        vals['name'] = ln.name
-                        vals['quantity'] = ln.product_qty
-                        vals['uos_id'] = ln.product_uom.id    
-                        vals['price_unit'] = 0
+                        vals['product_id']          = ln.product_id.id
+                        vals['name']                = ln.name
+                        vals['quantity']            = ln.product_qty
+                        vals['uos_id']              = ln.product_uom.id
+                        vals['price_unit']          = 0
+                        vals['invoice_line_tax_id'] = [(6, 0, tx_ids)]
                         
                         
                         
@@ -6685,7 +6713,7 @@ class stock_picking_in(osv.osv):
                                  a_id=s_id[partner.id]
     
                                  handling_group[handling_key]={
-                                                                    'partner_id'     :  case.partner_id.id,
+                                                                    'partner_id'     :  partner and partner.id,
                                                                     'date_invoice'   :  case.date_function,
                                                                     'type'           :  'in_invoice',
                                                                     'journal_id'     :  journal_id,
@@ -6779,18 +6807,22 @@ class stock_picking_in(osv.osv):
                          
             #creating invoice
             for inv in line_vals:
+                print "line_vals.........",line_vals
                 sup_inv_vals.update(inv_obj.onchange_partner_id(cr, uid, ids,'in_invoice', supp_inv_group[inv]['partner_id'])['value'])
+                # Updating Tax for the Supllier Invoice Creating from Incomingshipment
+                line_vals[inv][0][2].update({"invoice_line_tax_id":[(6, 0, tx_ids)]})
                 sup_inv_vals.update(supp_inv_group[inv])
                 sup_inv_vals.update({
                                                 
                                     'invoice_line': line_vals[inv],
                                     'incoming_shipment_ids': [(6, 0, supp_del_orders[inv])],
-                                }) 
+                                })
                 
     #             if ln.location_id.name == "Suppliers":
                 context.update({'type':'in_invoice'})
                 inv1 = inv_obj.create(cr, uid, sup_inv_vals,context=context) 
                 if inv1:
+                    inv_obj.button_reset_taxes(cr, uid, [inv1], {})
                     in_invoices.append(inv1)
                 
             context.update({'in_invoices':in_invoices}) 
@@ -6810,9 +6842,10 @@ class stock_picking_in(osv.osv):
              
                 if s_parent_id:
                        
-                     context.update({'type':'in_invoice'})
-                     #to create freight invoice for supplier
-                     inv_obj.create(cr, uid, handling_invoices)    
+                    context.update({'type':'in_invoice'})
+                    #to create freight invoice for supplier
+                    handl_inv_id = inv_obj.create(cr, uid, handling_invoices)
+                    cr.execute("update account_invoice set handling_charges=true where id="+str(handl_inv_id))
         return True
     
 
