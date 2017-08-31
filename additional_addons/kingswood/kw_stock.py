@@ -783,6 +783,9 @@ class stock_picking_out(osv.osv):
                 'is_bank_submit' : fields.boolean("Is Online Bank Submit",select=1),
                 'frieght_paid'   : fields.boolean("Is Freight Paid", select=True),
 
+                'sub_facilitator_id'    :   fields.many2one("res.partner", "Sub Facilitator"),
+                'purchase_amount'       :   fields.float("Purchase Amount", digits=(16,2)),
+                'is_sub_facilitator'    :   fields.boolean("Is Sub Facilitator")
               }
     
     _order = 'date desc'
@@ -862,6 +865,20 @@ class stock_picking_out(osv.osv):
         picking={}
         res['paying_agent_id'] = paying_agent_id
         user_obj = self.pool.get('res.users')
+        part_obj = self.pool.get("res.partner")
+        dom = {}
+        if paying_agent_id:
+            sub_fac = part_obj.browse(cr, uid, paying_agent_id)
+            if sub_fac.sub_facilitator_ids:
+                cr.execute("select sub_part_id from sub_facilitator where main_facilitator_id="+str(paying_agent_id))
+                sub_facilitator_id = [x[0] for x in cr.fetchall()]
+                if sub_facilitator_id:
+                    dom.update({'sub_facilitator_id':  [('id','in',sub_facilitator_id )]})
+                    res.update({'is_sub_facilitator': True})
+            else:
+                dom = {'sub_facilitator_id':  [('id','=',0 )]}
+                res.update({'is_sub_facilitator':False})
+
         cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
         gid = cr.dictfetchall()
         for x in gid:
@@ -931,7 +948,7 @@ class stock_picking_out(osv.osv):
                
                 
              
-        return{'value' : res,'warning':warning}
+        return{'value' : res,'warning':warning, 'domain':dom}
      
     
     #for reading pdf file 
@@ -1028,7 +1045,14 @@ class stock_picking_out(osv.osv):
                 res['freight']=freight
             else:
                 res['freight'] = i.freight or False
-            
+
+            if i.sub_facilitator_ids:
+                cr.execute("select sub_part_id from sub_facilitator where main_facilitator_id="+str(i.id))
+                sub_facilitator_id = [x[0] for x in cr.fetchall()]
+                if sub_facilitator_id:
+                    dom.update({'sub_facilitator_id':  [('id','in',sub_facilitator_id )]})
+                    res.update({'is_sub_facilitator': True})
+
 #             if i.work_order:
 #                 res['work_order']=i.work_order
 #             else:
@@ -1047,8 +1071,8 @@ class stock_picking_out(osv.osv):
 
 #                     print j.state_id.name
         if state_id>0:
-            dom = {'paying_agent_id':  [('state_id','=', state_id.id)]}
-        
+            dom.update( {'paying_agent_id':  [('state_id','=', state_id.id)]})
+
         return {'value':res,'domain':dom}
     
     
@@ -2700,7 +2724,35 @@ class stock_picking_out(osv.osv):
            stock_in.get_invoice(cr,uid,ids,False,context)
                                                                      
         if run_schedular and stock_type == 'out':           
-            for case in self.browse(cr, uid, ids):  
+            for case in self.browse(cr, uid, ids):
+                 if case.date >= '2017-07-01 00:00:00':
+                     sup_freight_ids=prod_obj.search(cr, uid, [('name_template','=','HC')])
+                 else:
+                     sup_freight_ids=prod_obj.search(cr, uid, [('name_template','=','Freight')])
+                 # Updating Tax
+                 if case.date >= '2017-07-01 00:00:00':
+                     if case.state_id.id == case.partner_id.state_id.id:
+                        cr.execute("select id from account_tax where gst_categ='intra' ")
+                        intra_tax_id= [x[0] for x in cr.fetchall()]
+                        intra_tax_id = tuple(intra_tax_id)
+                        if intra_tax_id:
+                            cr.execute("select tax_id from product_supplier_taxes_rel where prod_id=%s and tax_id in %s",(case.product_id.id,intra_tax_id))
+                            tx_ids = [x[0] for x in cr.fetchall()]
+                        else:
+                            raise osv.except_osv(_('Warning'),_('Map proper Taxes for Intra State'))
+
+                     else:
+                        cr.execute("select id from account_tax where gst_categ='inter' ")
+                        inter_tax_id= [x[0] for x in cr.fetchall()]
+                        inter_tax_id = tuple(inter_tax_id)
+                        if inter_tax_id:
+                            cr.execute("select tax_id from product_supplier_taxes_rel where prod_id=%s and tax_id in %s",(case.product_id.id,inter_tax_id))
+                            tx_ids = [x[0] for x in cr.fetchall()]
+                        else:
+                            raise osv.except_osv(_('Warning'),_('Map proper Taxes for Inter State'))
+                     _logger.info('Supplier Tax Ids==========================> %s',tx_ids)
+
+
                  stock_type = case.type
                  print case.name
                  journal_id = journal_obj.search(cr, uid, [('type', '=', 'purchase'),('company_id','=',case.company_id.id)])[0]
@@ -2815,6 +2867,7 @@ class stock_picking_out(osv.osv):
                              vals['uos_id'] = ln.product_uom.id    
                              vals['price_unit'] = 0
                              vals['move_line_id'] = ln.id
+                             vals['invoice_line_tax_id'] = [(6, 0,tx_ids)]
                               
                                   
                             #for supplier handling invoice vals
@@ -2888,10 +2941,18 @@ class stock_picking_out(osv.osv):
                                  else:
                                      print "schedular Failed"
                              #check for the key for supplier Invoices
-                             supp_key = case.paying_agent_id.id,case.partner_id.freight or case.gen_freight,ln.delivery_date
-                             freight_key = case.paying_agent_id.id, case.partner_id.id,freight_price,ln.delivery_date
-                             product_key =case.paying_agent_id.id,ln.product_id.id,ln.price_unit
-                             
+                             if tx_ids:
+                                cr.execute("select gst_categ, amount from account_tax where id in  %s ",(tuple(tx_ids),))
+                                tx = cr.dictfetchall()[0]
+                             if case.sub_facilitator_id:
+                                supp_key = case.sub_facilitator_id.id,case.partner_id.freight or case.gen_freight,ln.delivery_date or case.sub_facilitator_id.id,tx.get('gst_categ')+str(tx.get('amount'))
+                                freight_key = case.sub_facilitator_id.id, case.partner_id.id,freight_price,ln.delivery_date
+                                product_key =case.sub_facilitator_id.id,ln.product_id.id,ln.price_unit
+                             else:
+                                supp_key = case.paying_agent_id.id,case.partner_id.freight or case.gen_freight,ln.delivery_date or case.paying_agent_id.id,tx.get('gst_categ')+str(tx.get('amount'))
+                                freight_key = case.paying_agent_id.id, case.partner_id.id,freight_price,ln.delivery_date
+                                product_key =case.paying_agent_id.id,ln.product_id.id,ln.price_unit
+                             print "supp_key....................",supp_key
                              #Handling Invoice Key
                              if handling_vals['price_unit'] >0 and partner:
                             #added Handling price to handling key[If Handling price differs then create new invoice]                          
@@ -2952,12 +3013,12 @@ class stock_picking_out(osv.osv):
                                  if supp_key not in supp_inv_group :
                                      supp_del_orders[supp_key] =[case.id]
                                      supp_inv_group[supp_key] = {
-                                                                 'partner_id'     : case.paying_agent_id.id,
+                                                                 'partner_id'     : case.sub_facilitator_id and case.sub_facilitator_id.id or case.paying_agent_id.id,
                                                                  'date_invoice'   : ln.delivery_date,
                                                                  'type'           :   'in_invoice',
                                                                  'journal_id'     : journal_id,
                                                                 'branch_state'    : case.paying_agent_id.state_id.id,
-                                                                'back_date': back_date
+                                                                'back_date'       : back_date,
                                                                }
                                      supp_invoice_lines[supp_key] = [(vals.copy())]
                                      if not case.partner_id.freight and not case.gen_freight:
@@ -2981,7 +3042,7 @@ class stock_picking_out(osv.osv):
                                  if freight_key not in freight_inv_group:
                                      if case.partner_id.freight or case.gen_freight:
                                          freight_del_orders[freight_key] = [case.id]
-                                         freight_inv_group[freight_key] = {'partner_id'   : case.paying_agent_id.id,
+                                         freight_inv_group[freight_key] = {'partner_id'   : case.sub_facilitator_id and case.sub_facilitator_id.id or case.paying_agent_id.id,
                                                               'date_invoice': ln.delivery_date,
                                                               'type':   'in_invoice',
                                                               'journal_id' : journal_id_l,
@@ -3148,16 +3209,17 @@ class stock_picking_out(osv.osv):
                         sup_inv_vals.update(supp_inv_group[inv])
                         sup_inv_vals.update({
                                                           
-                                             'invoice_line': line_vals[inv],
-                                             'supp_delivery_orders_ids': [(6, 0, supp_del_orders[inv])],
-                                         }) 
-                        
+                                             'invoice_line'             : line_vals[inv],
+                                             'supp_delivery_orders_ids' : [(6, 0, supp_del_orders[inv])],
+
+                                         })
                         sup_inv_vals.update({
         #                                                      
                                                               'journal_id' : journal_id,'back_date': back_date
                                                               })
                         inv2=inv_obj.create(cr, uid, sup_inv_vals,context=context) 
                         if inv2:
+                            inv_obj.button_reset_taxes(cr, uid, [inv2], {})
                             invoices.append(inv2) 
                  #for creating supplier freight invoices
                 for freight_inv in freight_line_vals:
@@ -3167,9 +3229,8 @@ class stock_picking_out(osv.osv):
                     freight_inv_vals.update(freight_inv_group[freight_inv])
                     freight_inv_vals.update({
                                                                          
-                                                'supp_delivery_orders_ids': [(6, 0, freight_del_orders[freight_inv])],
-                                                'invoice_line': freight_line_vals[freight_inv],
-                                                                                                                                            
+                                                'supp_delivery_orders_ids'  : [(6, 0, freight_del_orders[freight_inv])],
+                                                'invoice_line'              : freight_line_vals[freight_inv],
                                              })
                    
                     if freight_line_vals[freight_inv][0][2]['price_unit']>0:
@@ -3200,10 +3261,9 @@ class stock_picking_out(osv.osv):
                     handling_invoices.update(handling_group[handling_inv])
                     handling_invoices.update({
                                                                         
-                                                'supp_delivery_orders_ids': [(6, 0, handling_del_orders[handling_inv])],
-                                                'invoice_line': [(0,0,handling_invoices_lines[handling_inv][0])],
-                                                                                                                                            
-                                             }) 
+                                                'supp_delivery_orders_ids'  : [(6, 0, handling_del_orders[handling_inv])],
+                                                'invoice_line'              : [(0,0,handling_invoices_lines[handling_inv][0])],
+                                             })
                       
                  
                     if s_parent_id:
@@ -3959,6 +4019,7 @@ class stock_picking_out(osv.osv):
 #         if context.get('type', '') == 'out':
             voucher_obj = self.pool.get('account.voucher')
             user_obj = self.pool.get('res.users')
+            sub_part_obj = self.pool.get("sub.facilitator")
             price=0.0
             result={}
             g_ids = []
@@ -4040,6 +4101,51 @@ class stock_picking_out(osv.osv):
                                   cr.execute('UPDATE stock_move SET location_id = %s WHERE picking_id=%s',(sup_id,case.id,))
                               
             res = super(stock_picking_out,self).write(cr, uid, ids, vals, context)
+            for temp in self.browse(cr, uid, ids):
+
+                # Purchase Amount Calculation
+                cr.execute("""select id from sub_facilitator
+                                where sub_part_id="""+str(temp.sub_facilitator_id.id)+"""
+                                and '"""+str(temp.date)+"""'::date>= from_date and '"""+str(temp.date)+"""'::date <= to_date
+                            """)
+                sub_part_ids = [x[0] for x in cr.fetchall()]
+                if sub_part_ids:
+                    sub_part_ids = sub_part_ids[0]
+                    sub_part = sub_part_obj.browse(cr, uid, sub_part_ids)
+                    if sub_part.total_purchase >= float(1980000):
+                        raise osv.except_osv(_('Warning'),_('Total Purcase is exceeded for the selected Sub Facilitator.'))
+                if temp.type == 'in':
+                    cr.execute("""
+                        select kw.sub_total
+
+                            from product_supplierinfo ps
+                            inner join kw_product_price kw on ps.id = kw.supp_info_id
+                            and ps.product_id = (select product_id from stock_picking where id ="""+str(temp.id)+""")
+                            and ps.name = (select partner_id from stock_picking where id = """+str(temp.id)+""")
+                            and ef_date <= (select date::date from stock_picking where id = """+str(temp.id)+""")
+                            order by ef_date desc limit 1
+                    """)
+                if temp.type == 'out':
+                    cr.execute("""
+                        select kw.sub_total
+
+                        from product_supplierinfo ps
+                        inner join kw_product_price kw on ps.id = kw.supp_info_id
+                        and ps.product_id = """+str(temp.product_id.id)+"""
+
+                        and ef_date <= '"""+str(temp.date)+"""' ::date
+                        and ps.name = """+str(temp.paying_agent_id.id)+"""
+                        and (case when ps.customer_id is null then ps.depot = (select location_id from stock_move where picking_id = """+str(temp.id)+""" limit 1)
+                        else case when ps.customer_id is null and ps.depot is null then ps.city_id = """+str(temp.city_id.id)+""" else ps.customer_id = """+str(temp.partner_id.id)+""" end end)
+                        order by ef_date desc limit 1
+                    """)
+                goods_rate = [x[0] for x in cr.fetchall()]
+                if goods_rate:
+                    goods_rate = goods_rate[0]
+                    purchase_amount = float(temp.qty * goods_rate) - float(temp.qty * temp.freight_charge) + float(temp.freight_advance)
+                    if purchase_amount > 0:
+                        cr.execute("update stock_picking set purchase_amount="+str(purchase_amount)+" where id="+str(temp.id))
+
             if 'move_lines' in vals:
 #               if vals['move_lines'][0][2]:
                      
@@ -4079,9 +4185,9 @@ class stock_picking_out(osv.osv):
                     sm_ids=sm_obj.browse(cr, uid, ids, context=context)
                     vals1 ={}
                     user_obj = self.pool.get('res.users')
+                    goods_rate = []
+                    purchase_amount = 0.00
                     for case in self.browse(cr, uid, ids):
-
-                                
                         for ln in case.move_lines:
                             if 'move_lines' in vals: 
                                 lines_len=len(vals['move_lines'])
@@ -5396,6 +5502,10 @@ class stock_picking(osv.osv):
                 'is_bank_submit' : fields.boolean("Is Online Bank Submit", select=True),
                 'frieght_paid'   : fields.boolean("Is Freight Paid", select=True),
 
+                'sub_facilitator_id'    :   fields.many2one("res.partner", "Sub Facilitator"),
+                'purchase_amount'       :   fields.float("Purchase Amount", digits=(16,2)),
+                'is_sub_facilitator'    :   fields.boolean("Is Sub Facilitator")
+
               }
     _order = 'date desc'
     _defaults={
@@ -5444,6 +5554,7 @@ class stock_picking(osv.osv):
     def onchange_partner_in(self, cr, uid, ids, partner_id=None, context=None):
 #         res=super(stock_picking,self).onchange_partner_in(cr, uid, ids,partner_id=False,context=None)
         res={}
+        dom = {}
         partner_obj=self.pool.get('res.partner')
         partner_ids=partner_obj.search(cr,uid,[('id','=',partner_id)])
         for i in partner_obj.browse(cr,uid,partner_ids):
@@ -5453,7 +5564,13 @@ class stock_picking(osv.osv):
                 res['work_order']=False
             if 'associate' in i.name.lower():
                 res['partner']=i.ref
-        return {'value':res}
+            if i.sub_facilitator_ids:
+                cr.execute("select sub_part_id from sub_facilitator where main_facilitator_id="+str(i.id))
+                sub_facilitator_id = [x[0] for x in cr.fetchall()]
+                if sub_facilitator_id:
+                    dom.update({'sub_facilitator_id':  [('id','in',sub_facilitator_id )]})
+                    res.update({'is_sub_facilitator': True})
+        return {'value':res,'domain':dom}
     
     def draft_force_assign(self, cr, uid, ids, *args):
         """ Confirms picking directly from draft state.
@@ -5958,8 +6075,16 @@ class stock_move(osv.osv):
             if 'associate' in i.name.lower():
                 if uid!=1:
                     res['partner']=i.ref
-        
-        return {'value':res}            
+            if i.sub_facilitator_ids:
+                cr.execute("select sub_part_id from sub_facilitator where main_facilitator_id="+str(i.id))
+                sub_facilitator_id = [x[0] for x in cr.fetchall()]
+                if sub_facilitator_id:
+                    dom.update({'sub_facilitator_id':  [('id','in',sub_facilitator_id )]})
+                    res.update({'is_sub_facilitator': True})
+            else:
+                    dom.update({'sub_facilitator_id':  [('id','in',0)]})
+                    res.update({'is_sub_facilitator': False})
+        return {'value':res, 'domain':dom}
             
         
     def default_get(self, cr, uid, fields, context=None):
@@ -6157,6 +6282,9 @@ class stock_picking_in(osv.osv):
                 'ac_holder_pan' :   fields.char("Pan Number", size=20),
                 'bene_code'     :   fields.char("Beneficiary Code", size=30),
 
+                'sub_facilitator_id'    :   fields.many2one("res.partner", "Sub Facilitator"),
+                'purchase_amount'       :   fields.float("Purchase Amount", digits=(16,2)),
+                'is_sub_facilitator'    :   fields.boolean("Is Sub Facilitator")
 
 
               }
@@ -6378,7 +6506,7 @@ class stock_picking_in(osv.osv):
 #         journal_id = journal_obj.search(cr, uid, [('type', '=', 'purchase')])[0]
         prod_obj=self.pool.get('kw.product.price')
         kw_prod_obj = self.pool.get('product.product')
-        sup_freight_ids=kw_prod_obj.search(cr, uid, [('name_template','=','Freight')])
+
         cr.execute("select id from res_company where lower(name) like '%logistics%'")
         cr.execute("select id from res_partner where lower(name) like 'kingswood%'")
         kw_paying_agent=cr.fetchall()
@@ -6445,6 +6573,37 @@ class stock_picking_in(osv.osv):
         if run_schedular:
            
             for case in self.browse(cr, uid, ids):
+                if case.date>= '2017-07-01 00:00:00':
+                    sup_freight_ids=kw_prod_obj.search(cr, uid, [('name_template','=','HC')])
+                else:
+                    sup_freight_ids=kw_prod_obj.search(cr, uid, [('name_template','=','Freight')])
+
+                # Updating Tax
+                if case.date >= '2017-07-01 00:00:00':
+                    cr.execute("select id from res_country_state where name ilike '%Karnataka%'")
+                    state_id = [x[0] for x in cr.fetchall()]
+                    if state_id:
+                        state_id = state_id[0]
+                        if state_id == case.partner_id.state_id.id:
+                           cr.execute("select id from account_tax where gst_categ='intra' ")
+                           intra_tax_id= [x[0] for x in cr.fetchall()]
+                           intra_tax_id = tuple(intra_tax_id)
+                           if intra_tax_id:
+                               cr.execute("select tax_id from product_supplier_taxes_rel where prod_id=%s and tax_id in %s",(case.product_id.id,intra_tax_id))
+                               tx_ids = [x[0] for x in cr.fetchall()]
+                           else:
+                               raise osv.except_osv(_('Warning'),_('Map proper Taxes for Intra State'))
+
+                        else:
+                           cr.execute("select id from account_tax where gst_categ='inter' ")
+                           inter_tax_id= [x[0] for x in cr.fetchall()]
+                           inter_tax_id = tuple(inter_tax_id)
+                           if inter_tax_id:
+                               cr.execute("select tax_id from product_supplier_taxes_rel where prod_id=%s and tax_id in %s",(case.product_id.id,inter_tax_id))
+                               tx_ids = [x[0] for x in cr.fetchall()]
+                           else:
+                               raise osv.except_osv(_('Warning'),_('Map proper Taxes for Inter State'))
+                        _logger.info('Supplier Tax Ids==========================> %s',tx_ids)
                 print "incominng", case.name
                 journal_id = journal_obj.search(cr, uid, [('type', '=', 'purchase'),('company_id','=',case.company_id.id)])[0]
     #             handling_journal_id = journal_obj.search(cr, uid, [('type', '=', 'purchase'),('company_id','=',company)])[0]
@@ -6457,11 +6616,12 @@ class stock_picking_in(osv.osv):
                     for ln in case.move_lines:
                         
                                     
-                        vals['product_id'] = ln.product_id.id
-                        vals['name'] = ln.name
-                        vals['quantity'] = ln.product_qty
-                        vals['uos_id'] = ln.product_uom.id    
-                        vals['price_unit'] = 0
+                        vals['product_id']          = ln.product_id.id
+                        vals['name']                = ln.name
+                        vals['quantity']            = ln.product_qty
+                        vals['uos_id']              = ln.product_uom.id
+                        vals['price_unit']          = 0
+                        vals['invoice_line_tax_id'] = [(6, 0, tx_ids)]
                         
                         
                         
@@ -6539,8 +6699,7 @@ class stock_picking_in(osv.osv):
                                             cr.execute("update stock_picking set sup_invoice=True where id=%s ",(case.id,))
                         if handling_vals['price_unit'] >0 and partner:
                             #added Handling price to handling key[If Handling price differs then create new invoice]                          
-                                 handling_key=ln.product_id.id,partner,case.partner_id.id,handling_vals['price_unit']
-                             
+                            handling_key=ln.product_id.id,partner,case.partner_id.id,handling_vals['price_unit']
                              
                          #grouping the supplier Handling invoices based on product_id and partner
                               
@@ -6554,14 +6713,14 @@ class stock_picking_in(osv.osv):
                                  a_id=s_id[partner.id]
     
                                  handling_group[handling_key]={
-                                                                    'partner_id'      : partner.id,
+                                                                    'partner_id'     :  partner and partner.id,
                                                                     'date_invoice'   :  case.date_function,
-                                                                    'type'           : 'in_invoice',
-                                                                     'journal_id'    : journal_id,
-                                                                    'back_date'      :back_date,
-                                                                      'freight'      : False,
-                                                                      'origin'       :  'IN',
-                                                                      'branch_state' : partner.state_id.id,
+                                                                    'type'           :  'in_invoice',
+                                                                    'journal_id'     :  journal_id,
+                                                                    'back_date'      :  back_date,
+                                                                    'freight'        :  False,
+                                                                    'origin'         :  'IN',
+                                                                    'branch_state'   :  partner.state_id.id,
                                                                 }
                                  
                                  
@@ -6584,11 +6743,15 @@ class stock_picking_in(osv.osv):
     
     
     #                     #check for the key
-                        supp_key = case.partner_id.id,case.date_function
-                        product_key =case.partner_id.id,ln.product_id.id,ln.price_unit
+                        if case.sub_facilitator_id:
+                            supp_key = case.sub_facilitator_id.id,case.date_function
+                            product_key =case.sub_facilitator_id.id,ln.product_id.id,ln.price_unit
+                        else:
+                            supp_key = case.partner_id.id,case.date_function
+                            product_key =case.partner_id.id,ln.product_id.id,ln.price_unit
                         if supp_key not in supp_inv_group:
                             supp_del_orders[supp_key] =[case.id]
-                            supp_inv_group[supp_key] = {'partner_id'   : case.partner_id.id,
+                            supp_inv_group[supp_key] = {'partner_id'   : case.sub_facilitator_id and case.sub_facilitator_id.id or case.partner_id.id,
                                                          'origin'   :   'IN',
                                                          'date_invoice': case.date_function,
                                                          'type':   'in_invoice',
@@ -6644,18 +6807,22 @@ class stock_picking_in(osv.osv):
                          
             #creating invoice
             for inv in line_vals:
+                print "line_vals.........",line_vals
                 sup_inv_vals.update(inv_obj.onchange_partner_id(cr, uid, ids,'in_invoice', supp_inv_group[inv]['partner_id'])['value'])
+                # Updating Tax for the Supllier Invoice Creating from Incomingshipment
+                line_vals[inv][0][2].update({"invoice_line_tax_id":[(6, 0, tx_ids)]})
                 sup_inv_vals.update(supp_inv_group[inv])
                 sup_inv_vals.update({
                                                 
                                     'invoice_line': line_vals[inv],
                                     'incoming_shipment_ids': [(6, 0, supp_del_orders[inv])],
-                                }) 
+                                })
                 
     #             if ln.location_id.name == "Suppliers":
                 context.update({'type':'in_invoice'})
                 inv1 = inv_obj.create(cr, uid, sup_inv_vals,context=context) 
                 if inv1:
+                    inv_obj.button_reset_taxes(cr, uid, [inv1], {})
                     in_invoices.append(inv1)
                 
             context.update({'in_invoices':in_invoices}) 
@@ -6666,17 +6833,19 @@ class stock_picking_in(osv.osv):
                 handling_invoices.update(handling_group[handling_inv])
                 handling_invoices.update({
                                                                     
-                                            'incoming_shipment_ids': [(6, 0, handling_del_orders[handling_inv])],
-                                            'invoice_line': [(0,0,handling_invoices_lines[handling_inv][0])],
+                                            'incoming_shipment_ids' : [(6, 0, handling_del_orders[handling_inv])],
+                                            'invoice_line'          : [(0,0,handling_invoices_lines[handling_inv][0])],
+                                            'handling_charges'      : True
                                                                                                                                         
                                          }) 
                   
              
                 if s_parent_id:
                        
-                     context.update({'type':'in_invoice'})
-                     #to create freight invoice for supplier
-                     inv_obj.create(cr, uid, handling_invoices)    
+                    context.update({'type':'in_invoice'})
+                    #to create freight invoice for supplier
+                    handl_inv_id = inv_obj.create(cr, uid, handling_invoices)
+                    cr.execute("update account_invoice set handling_charges=true where id="+str(handl_inv_id))
         return True
     
 
