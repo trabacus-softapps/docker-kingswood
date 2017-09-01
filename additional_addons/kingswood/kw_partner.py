@@ -199,8 +199,8 @@ class res_partner(osv.osv):
                 'un_reged_vendor'       :   fields.boolean("Un Reged Vendor"),
 
                 # GST Purchase
-                'sub_facilitator_ids'   :   fields.one2many("sub.facilitator", 'main_facilitator_id', "Sub Facilitators")
-
+                'sub_facilitator_ids'   :   fields.one2many("sub.facilitator", 'main_facilitator_id', "Sub Facilitators"),
+                'sub_facilitator'       :   fields.boolean("Is Sub Facilitator"),
               }
     _defaults={
                'customer':True,
@@ -323,7 +323,8 @@ class res_partner(osv.osv):
             company=company[0]
 #         cr.execute("select id from res_company where lower(name) like '%Supplier%'")
 #         company1=cr.fetchone()
-        
+        if context.get("sub_facilitator"):
+            vals["sub_facilitator"] = True
         if supplier>0:  
             
             
@@ -414,6 +415,7 @@ class res_partner(osv.osv):
                 vals['property_account_receivable']= kw_ac_cid 
                 vals['account_rec']=kwl_cid
                 vals['sup_num']=c_sequence
+
                     
 
         return super(res_partner,self).create(cr, uid, vals, context)
