@@ -243,7 +243,7 @@
 									<field name="gen_jjform" attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
 									<field name="show_jjform" attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
 
-
+									<field name="sub_facilitator" invisible="1"/>
 				 				</group>                    	
                     	
 			                    <group name="Freight" string="Freight">
@@ -964,7 +964,8 @@
 							<field name='billing_cycle_tab' attrs="{'invisible': [('supplier','=', False)]}" invisible='1'/>
 							 <field name='user_log' invisible='1'/>     
 							  <field name='supplier' invisible='1'/> 
-							 <field name='customer' invisible='1'/> 
+							 <field name='customer' invisible='1'/>
+							<field name="sub_facilitator" invisible="1"/>
 							             
                         </group>
                         <group>
@@ -1042,7 +1043,7 @@
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">res.partner</field>
             <field name="view_type">form</field>
-            <field name="domain">[('supplier','=',True),('handling_charges','!=',True)]</field>
+            <field name="domain">[('supplier','=',True),('handling_charges','!=',True),('sub_facilitator','!=',True)]</field>
             <field name="view_mode">kanban,tree,form</field>
             <field name="context">{'search_default_supplier': 1,'default_customer': 0,'default_supplier': 1}</field>
             <field name="filter" eval="True"/>
@@ -1085,8 +1086,8 @@
       
 	<menuitem action="kw_fac_action_partner_supplier_form" name="Facilitators" id="kw_fac_menu_menu_partner_form" parent="stock.menu_stock_warehouse_mgmt" 
 		sequence="3"
-		groups="kingswood.kw_supplier_billing_service"/>        
-	
+		groups="kingswood.kw_supplier_billing_service,base.group_no_one,base.group_system"/>
+
 	<!--
 	
 	        <record id="kw_view_user_password" model="ir.ui.view">
@@ -1127,6 +1128,55 @@
         </record>-->
 
 
+		<record id="kw_sub_fac_action_partner_supplier_form" model="ir.actions.act_window">
+            <field name="name">Sub Facilitators</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_type">form</field>
+            <field name="domain">[('supplier','=',True),('handling_charges','!=',True),('sub_facilitator','=',True)]</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="context">{'search_default_supplier': 1,'default_customer': 0,'default_supplier': 1,'sub_facilitator' : 1}</field>
+            <field name="filter" eval="True"/>
+            <!-- <field name="domain">[('state_id','=',partner_state)]</field> -->
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to add a contact in your address book.
+              </p><p>
+                OpenERP helps you easily track all activities related to
+                a supplier: discussions, history of purchases,
+                documents, etc.
+              </p>
+            </field>
+        </record>
+
+        <record id="base.action_sub_partner_form_view1" model="ir.actions.act_window.view">
+            <field eval="0" name="sequence"/>
+            <field name="view_mode">kanban</field>
+            <field name="view_id" ref="base.res_partner_kanban_view"/>
+            <field name="act_window_id" ref="kw_sub_fac_action_partner_supplier_form"/>
+        </record>
+
+        <record id="kw_sub_fac_action_partner_form_view2" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="kw_sup_view_partner_form"/>
+            <field name="act_window_id" ref="kw_sub_fac_action_partner_supplier_form"/>
+        </record>
+        <record id="base.action_sub_partner_tree_view1" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="base.view_partner_tree"/>
+            <field name="act_window_id" ref="kw_sub_fac_action_partner_supplier_form"/>
+        </record>
+
+
+
+
+
+
+	<menuitem action="kw_sub_fac_action_partner_supplier_form" name="Sub Facilitators" id="kw_sub_fac_menu_menu_partner_form" parent="account.menu_finance_payables"
+		sequence="20"
+		groups="kingswood.kw_supplier_billing_service,base.group_system,base.group_no_one"/>
 	<!-- ****************************************************** Users Password ********************************************* -->
 	
 	                <!-- wizard view -->
