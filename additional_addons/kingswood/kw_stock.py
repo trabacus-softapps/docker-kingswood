@@ -2600,6 +2600,7 @@ class stock_picking_out(osv.osv):
         handling_vals['price_unit'] = 0
         supplier_freight_val['price_unit']=0.000
         freight_price=0.000
+        tx_ids = []
         prod_obj = self.pool.get('product.product')
         kwprod_obj=self.pool.get('kw.product.price')
         journal_obj = self.pool.get('account.journal')
@@ -2725,12 +2726,14 @@ class stock_picking_out(osv.osv):
                                                                      
         if run_schedular and stock_type == 'out':           
             for case in self.browse(cr, uid, ids):
-                 if case.date >= '2017-07-01 00:00:00':
+                 cr.execute("select id from stock_picking where date >= '2017-07-01 00:00:00' and id ="+str(case.id))
+                 pk_ids = [x[0] for x in cr.fetchall()]
+                 if pk_ids:
                      sup_freight_ids=prod_obj.search(cr, uid, [('name_template','=','HC')])
                  else:
                      sup_freight_ids=prod_obj.search(cr, uid, [('name_template','=','Freight')])
                  # Updating Tax
-                 if case.date >= '2017-07-01 00:00:00':
+                 if pk_ids:
                      if case.state_id.id == case.partner_id.state_id.id:
                         cr.execute("select id from account_tax where gst_categ='intra' ")
                         intra_tax_id= [x[0] for x in cr.fetchall()]
@@ -6497,6 +6500,7 @@ class stock_picking_in(osv.osv):
         line_vals = {}
         partner=False
         qty=0.000
+        tx_ids = []
         partner_name=''
         s_id={}
         s_parent_id=False
@@ -6573,13 +6577,15 @@ class stock_picking_in(osv.osv):
         if run_schedular:
            
             for case in self.browse(cr, uid, ids):
-                if case.date>= '2017-07-01 00:00:00':
+                cr.execute("select id from stock_picking where date >= '2017-07-01 00:00:00' and id ="+str(case.id))
+                pk_ids = [x[0] for x in cr.fetchall()]
+                if pk_ids:
                     sup_freight_ids=kw_prod_obj.search(cr, uid, [('name_template','=','HC')])
                 else:
                     sup_freight_ids=kw_prod_obj.search(cr, uid, [('name_template','=','Freight')])
 
                 # Updating Tax
-                if case.date >= '2017-07-01 00:00:00':
+                if pk_ids:
                     cr.execute("select id from res_country_state where name ilike '%Karnataka%'")
                     state_id = [x[0] for x in cr.fetchall()]
                     if state_id:
