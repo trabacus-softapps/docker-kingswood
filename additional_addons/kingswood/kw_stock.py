@@ -2726,7 +2726,7 @@ class stock_picking_out(osv.osv):
                                                                      
         if run_schedular and stock_type == 'out':           
             for case in self.browse(cr, uid, ids):
-                 cr.execute("select id from stock_picking where date >= '2017-07-01 00:00:00' and id ="+str(case.id))
+                 cr.execute("select id from stock_picking where delivery_date_function >= '2017-07-01 00:00:00' and id ="+str(case.id))
                  pk_ids = [x[0] for x in cr.fetchall()]
                  if pk_ids:
                      sup_freight_ids=prod_obj.search(cr, uid, [('name_template','=','HC')])
@@ -6577,7 +6577,7 @@ class stock_picking_in(osv.osv):
         if run_schedular:
            
             for case in self.browse(cr, uid, ids):
-                cr.execute("select id from stock_picking where date >= '2017-07-01 00:00:00' and id ="+str(case.id))
+                cr.execute("select id from stock_picking where delivery_date_function >= '2017-07-01 00:00:00' and id ="+str(case.id))
                 pk_ids = [x[0] for x in cr.fetchall()]
                 if pk_ids:
                     sup_freight_ids=kw_prod_obj.search(cr, uid, [('name_template','=','HC')])
