@@ -2734,7 +2734,7 @@ class stock_picking_out(osv.osv):
                      sup_freight_ids=prod_obj.search(cr, uid, [('name_template','=','Freight')])
                  # Updating Tax
                  if pk_ids:
-                     if case.state_id.id == case.partner_id.state_id.id:
+                     if case.state_id.id == case.paying_agent_id.state_id.id:
                         cr.execute("select id from account_tax where gst_categ='intra' ")
                         intra_tax_id= [x[0] for x in cr.fetchall()]
                         intra_tax_id = tuple(intra_tax_id)
