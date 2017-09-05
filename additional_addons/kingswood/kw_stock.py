@@ -6586,11 +6586,7 @@ class stock_picking_in(osv.osv):
 
                 # Updating Tax
                 if pk_ids:
-                    cr.execute("select id from res_country_state where name ilike '%Karnataka%'")
-                    state_id = [x[0] for x in cr.fetchall()]
-                    if state_id:
-                        state_id = state_id[0]
-                        if state_id == case.partner_id.state_id.id:
+                        if case.state_id and case.state_id.id == case.paying_agent_id.state_id.id:
                            cr.execute("select id from account_tax where gst_categ='intra' ")
                            intra_tax_id= [x[0] for x in cr.fetchall()]
                            intra_tax_id = tuple(intra_tax_id)

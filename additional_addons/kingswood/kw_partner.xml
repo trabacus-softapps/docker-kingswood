@@ -1176,7 +1176,7 @@
 
 	<menuitem action="kw_sub_fac_action_partner_supplier_form" name="Sub Facilitators" id="kw_sub_fac_menu_menu_partner_form" parent="account.menu_finance_payables"
 		sequence="20"
-		groups="kingswood.kw_supplier_billing_service,base.group_system,base.group_no_one"/>
+		groups="kingswood.kw_supplier_billing_service,base.group_system,base.group_no_one,kingswood.kw_admin_service"/>
 	<!-- ****************************************************** Users Password ********************************************* -->
 	
 	                <!-- wizard view -->
