@@ -4107,49 +4107,49 @@ class stock_picking_out(osv.osv):
             for temp in self.browse(cr, uid, ids):
 
                 # Purchase Amount Calculation
+                if temp.sub_facilitator_id and temp.sub_facilitator_id.id:
+                    if temp.type == 'in':
+                        cr.execute("""
+                            select kw.sub_total
 
-                if temp.type == 'in':
-                    cr.execute("""
-                        select kw.sub_total
+                                from product_supplierinfo ps
+                                inner join kw_product_price kw on ps.id = kw.supp_info_id
+                                and ps.product_id = (select product_id from stock_picking where id ="""+str(temp.id)+""")
+                                and ps.name = (select partner_id from stock_picking where id = """+str(temp.id)+""")
+                                and ef_date <= (select date::date from stock_picking where id = """+str(temp.id)+""")
+                                order by ef_date desc limit 1
+                        """)
+                    if temp.type == 'out':
+                        cr.execute("""
+                            select kw.sub_total
 
                             from product_supplierinfo ps
                             inner join kw_product_price kw on ps.id = kw.supp_info_id
-                            and ps.product_id = (select product_id from stock_picking where id ="""+str(temp.id)+""")
-                            and ps.name = (select partner_id from stock_picking where id = """+str(temp.id)+""")
-                            and ef_date <= (select date::date from stock_picking where id = """+str(temp.id)+""")
+                            and ps.product_id = """+str(temp.product_id.id)+"""
+
+                            and ef_date <= '"""+str(temp.date)+"""' ::date
+                            and ps.name = """+str(temp.paying_agent_id.id)+"""
+                            and (case when ps.customer_id is null then ps.depot = (select location_id from stock_move where picking_id = """+str(temp.id)+""" limit 1)
+                            else case when ps.customer_id is null and ps.depot is null then ps.city_id = """+str(temp.city_id.id)+""" else ps.customer_id = """+str(temp.partner_id.id)+""" end end)
                             order by ef_date desc limit 1
-                    """)
-                if temp.type == 'out':
-                    cr.execute("""
-                        select kw.sub_total
+                        """)
+                    goods_rate = [x[0] for x in cr.fetchall()]
+                    if goods_rate:
+                        goods_rate = goods_rate[0]
+                        purchase_amount = float(temp.qty * goods_rate) - float(temp.qty * temp.freight_charge) + float(temp.freight_advance)
+                        if purchase_amount > 0:
+                            cr.execute("update stock_picking set purchase_amount="+str(purchase_amount)+" where id="+str(temp.id))
 
-                        from product_supplierinfo ps
-                        inner join kw_product_price kw on ps.id = kw.supp_info_id
-                        and ps.product_id = """+str(temp.product_id.id)+"""
-
-                        and ef_date <= '"""+str(temp.date)+"""' ::date
-                        and ps.name = """+str(temp.paying_agent_id.id)+"""
-                        and (case when ps.customer_id is null then ps.depot = (select location_id from stock_move where picking_id = """+str(temp.id)+""" limit 1)
-                        else case when ps.customer_id is null and ps.depot is null then ps.city_id = """+str(temp.city_id.id)+""" else ps.customer_id = """+str(temp.partner_id.id)+""" end end)
-                        order by ef_date desc limit 1
-                    """)
-                goods_rate = [x[0] for x in cr.fetchall()]
-                if goods_rate:
-                    goods_rate = goods_rate[0]
-                    purchase_amount = float(temp.qty * goods_rate) - float(temp.qty * temp.freight_charge) + float(temp.freight_advance)
-                    if purchase_amount > 0:
-                        cr.execute("update stock_picking set purchase_amount="+str(purchase_amount)+" where id="+str(temp.id))
-
-                cr.execute("""select id from sub_facilitator
-                                where sub_part_id="""+str(temp.sub_facilitator_id.id)+"""
-                                and '"""+str(temp.date)+"""'::date>= from_date and '"""+str(temp.date)+"""'::date <= to_date
-                            """)
-                sub_part_ids = [x[0] for x in cr.fetchall()]
-                if sub_part_ids:
-                    sub_part_ids = sub_part_ids[0]
-                    sub_part = sub_part_obj.browse(cr, uid, sub_part_ids)
-                    if sub_part.total_purchase >= float(1850000):
-                        raise osv.except_osv(_('Warning'),_('Total Purcase is exceeded for the selected Sub Facilitator.'))
+                    cr.execute("""select id from sub_facilitator
+                                    where sub_part_id="""+str(temp.sub_facilitator_id.id)+"""
+                                    and '"""+str(temp.date)+"""'::date>= from_date and '"""+str(temp.date)+"""'::date <= to_date
+                                """)
+                    sub_part_ids = [x[0] for x in cr.fetchall()]
+                    if sub_part_ids:
+                        sub_part_ids = sub_part_ids[0]
+                        sub_part = sub_part_obj.browse(cr, uid, sub_part_ids)
+                        if sub_part.total_purchase >= float(1850000):
+                            raise osv.except_osv(_('Warning'),_('Total Purcase is exceeded for the selected Sub Facilitator.'))
 
             if 'move_lines' in vals:
 #               if vals['move_lines'][0][2]:
