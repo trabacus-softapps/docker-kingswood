@@ -445,7 +445,7 @@
 		                        	<!-- domain="['|','&amp;',('supplier','=',True),('supplier','!=',True),('customer','!=',True)]" -->
 		                        	<field name="sub_facilitator_id" attrs="{'required':[('is_sub_facilitator','=',True)]}"/>
 									<field name="is_sub_facilitator" invisible="1"/>
-									<field name="purchase_amount"/>
+									<field name="purchase_amount" invisible="1"/>
 									<field name="wc_num" invisible='1'/>
 		                     		 <field name="wc_number" attrs="{'invisible':['|',('wc_num','!=',True),('state','in',('draft'))],'readonly': [('state','not in',('in_transit'))]}"/>
 		                        </group>
@@ -1164,7 +1164,7 @@
             	<xpath expr="//field[@name='partner_id']" position="after">
 					<field name="sub_facilitator_id" attrs="{'required':[('is_sub_facilitator','=',True)]}"/>
 					<field name='truck_no' widget="upper_case" required='1'/>
-					<field name="purchase_amount"/>
+					<field name="purchase_amount" invisible="1"/>
 					<field name="is_sub_facilitator" invisible="1"/>
             	</xpath>
 
