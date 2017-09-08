@@ -929,6 +929,7 @@ class res_country_state(osv.osv):
     _columns={
         'branch_office' :   fields.boolean('Branch Office'),
         "is_union"      :   fields.boolean("Is Union Territory"),
+        "state_code"    :   fields.char("State Code"),
               }
 
     _sql_constraints = [

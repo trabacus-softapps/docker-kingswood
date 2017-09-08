@@ -774,6 +774,7 @@
 			<xpath expr="//field[@name='country_id']" position="after">
 				<field name="branch_office"/>
 				<field name="is_union"/>
+				<field name="state_code" />
 			</xpath>
 			<xpath expr="//field[@name='code']" position="attributes">
 				<attribute name="string">State/UT Code</attribute>
