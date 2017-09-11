@@ -4115,7 +4115,7 @@ class stock_picking_out(osv.osv):
                 if temp.sub_facilitator_id and temp.sub_facilitator_id.id:
                     if temp.type == 'in':
                         cr.execute("""
-                            select case when kw.sub_total is null then kw.product_price else 0.00 end
+                            select case when kw.sub_total is null then kw.product_price else kw.sub_total end
 
                                 from product_supplierinfo ps
                                 inner join kw_product_price kw on ps.id = kw.supp_info_id
@@ -4126,7 +4126,7 @@ class stock_picking_out(osv.osv):
                         """)
                     if temp.type == 'out':
                         cr.execute("""
-                            select case when kw.sub_total is null then kw.product_price else 0.00 end
+                            select case when kw.sub_total is null then kw.product_price else kw.sub_total end
 
                             from product_supplierinfo ps
                             inner join kw_product_price kw on ps.id = kw.supp_info_id
