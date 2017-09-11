@@ -4136,6 +4136,10 @@ class stock_picking_out(osv.osv):
                     goods_rate = [x[0] for x in cr.fetchall()]
                     if goods_rate:
                         goods_rate = goods_rate[0]
+                        _logger.error('Goods Rate=================: %s', goods_rate)
+                        _logger.error('Temp Qty=================: %s', temp.qty)
+                        _logger.error('temp.freight_charge=================: %s', temp.freight_charge)
+                        _logger.error('temp.freight_advance=================: %s', temp.freight_advance)
                         purchase_amount = float(temp.qty * goods_rate) - float(temp.qty * temp.freight_charge) + float(temp.freight_advance)
                         if purchase_amount > 0:
                             cr.execute("update stock_picking set purchase_amount="+str(purchase_amount)+" where id="+str(temp.id))
