@@ -434,7 +434,7 @@ class sub_facilitator(osv.osv):
         res = {}
         for case in self.browse(cr, uid, ids):
             total_purchase = 0.00
-            if case.from_date and case.to_date:
+            if case.from_date and case.to_date and case.sub_part_id.id:
                 cr.execute("""
                     select
                         sum(purchase_amount)
