@@ -643,12 +643,21 @@ class account_invoice(osv.osv):
                 
             if case.company_id.id==company:
                 
-                if case.type == 'out_invoice':
+                if case.type == 'out_invoice' and case.partner_id and case.partner_id.sup_num != 'C0034':
                     if case.date_invoice <'2017-07-01':
                         format = 'CI/KL/'
                     else:
                         format = 'CI/'
                     self.generate_sequence(cr, uid,case.date_invoice, case, format, context)
+
+                if case.type == 'out_invoice' and case.partner_id and case.partner_id.sup_num == 'C0034':
+                    if case.date_invoice <'2017-07-01':
+                        format = 'CI/KL/'
+                    else:
+                        format = 'BS/'
+                    self.generate_sequence(cr, uid,case.date_invoice, case, format, context)
+
+
                 if case.type == 'in_invoice':
                     if case.date_invoice <'2017-07-01':
                         format = 'SI/KL/'
@@ -668,11 +677,18 @@ class account_invoice(osv.osv):
                         format = 'DN/'
                     self.generate_sequence(cr, uid,case.date_invoice, case, format, context)
             else:
-                if case.type == 'out_invoice':
+                if case.type == 'out_invoice' and case.partner_id and case.partner_id.sup_num != 'C0034':
                     if case.date_invoice <'2017-07-01':
                         format = 'CI/KS/'
                     else:
                         format = 'CI/'
+                    self.generate_sequence(cr, uid,case.date_invoice, case, format, context)
+
+                if case.type == 'out_invoice' and case.partner_id and case.partner_id.sup_num == 'C0034':
+                    if case.date_invoice <'2017-07-01':
+                        format = 'CI/KS/'
+                    else:
+                        format = 'BS/'
                     self.generate_sequence(cr, uid,case.date_invoice, case, format, context)
                 if case.type == 'in_invoice':
                     if case.date_invoice <'2017-07-01':
@@ -680,7 +696,7 @@ class account_invoice(osv.osv):
                     else:
                         format = 'SI/'
                     self.generate_sequence(cr, uid,case.date_invoice, case, format, context)
-                if case.type == 'out_refund':
+                if case.type == 'out_refund' and case.sup_num and case.sup_num != 'C0034':
                     if case.date_invoice <'2017-07-01':
                         format = 'CN/KS/'
                     else:

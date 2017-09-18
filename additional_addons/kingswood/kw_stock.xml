@@ -443,7 +443,7 @@
 		                        		groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_freight_service" 
 		                        		attrs="{'required':['|',('user_log','=','KW_Admin'),('user_log','=','KW_Depot')],'readonly': ['|',('user_log','=','KW_Freight'),('state','not in',('draft','in_transit'))]}"/>
 		                        	<!-- domain="['|','&amp;',('supplier','=',True),('supplier','!=',True),('customer','!=',True)]" -->
-		                        	<field name="sub_facilitator_id" />
+		                        	<field name="sub_facilitator_id" groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_freight_service"/>
 									<field name="is_sub_facilitator" invisible="1"/>
 									<field name="purchase_amount" invisible="1"/>
 									<field name="wc_num" invisible='1'/>

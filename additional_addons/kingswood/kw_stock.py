@@ -2232,6 +2232,8 @@ class stock_picking_out(osv.osv):
         for case in self.browse(cr, uid, ids):
             if case.partner_id and case.partner_id.sup_num == 'C0036':
                 res = rep_obj.pentaho_report_action(cr, uid, 'Seshasayee Proforma Invoice', ids,None,None)
+            if case.partner_id and case.partner_id.sup_num == 'C0034':
+                res = rep_obj.pentaho_report_action(cr, uid, 'TNP GST Delivery Challan', ids,None,None)
             else:
                 res = rep_obj.pentaho_report_action(cr, uid, 'GST Delivery Challan', ids,None,None)
 
@@ -4107,7 +4109,7 @@ class stock_picking_out(osv.osv):
                                    
                                if location_id not in sup_id:
                                   cr.execute('UPDATE stock_move SET location_id = %s WHERE picking_id=%s',(sup_id,case.id,))
-                              
+            context.update({"report": 1})
             res = super(stock_picking_out,self).write(cr, uid, ids, vals, context)
             for temp in self.browse(cr, uid, ids):
 
