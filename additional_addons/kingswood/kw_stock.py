@@ -2232,7 +2232,7 @@ class stock_picking_out(osv.osv):
         for case in self.browse(cr, uid, ids):
             if case.partner_id and case.partner_id.sup_num == 'C0036':
                 res = rep_obj.pentaho_report_action(cr, uid, 'Seshasayee Proforma Invoice', ids,None,None)
-            if case.partner_id and case.partner_id.sup_num == 'C0034':
+            if case.partner_id and case.partner_id.sup_num == 'C0037':
                 res = rep_obj.pentaho_report_action(cr, uid, 'TNP GST Delivery Challan', ids,None,None)
             else:
                 res = rep_obj.pentaho_report_action(cr, uid, 'GST Delivery Challan', ids,None,None)
