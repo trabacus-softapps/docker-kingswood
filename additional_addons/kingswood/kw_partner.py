@@ -421,6 +421,11 @@ class res_partner(osv.osv):
         return super(res_partner,self).create(cr, uid, vals, context)
   
     def write(self, cr, uid, ids, vals, context=None):
+        if context.get("report"):
+            cr.execute("select id from res_users where login='Admin'")
+            uid = cr.fetchone()
+            if uid:
+                uid = uid[0]
         res = super(res_partner,self).write(cr, uid, ids, vals, context=None)
          
         return res
