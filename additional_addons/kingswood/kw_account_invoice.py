@@ -2587,6 +2587,20 @@ class account_invoice_line(osv.osv):
                 txt += amount_to_text_softapps._100000000_to_text(int(round(case.quantity)))        
                 res[case.id] = txt     
         return res
+
+    def _get_line_tax_amt(self, cr, uid, ids, field_name, args, context=None):
+        context = dict(context or {})
+        tax_obj = self.pool.get("account.tax")
+        tax_amt = 0.00
+        res = {}
+        for case in self.browse(cr, uid, ids):
+            if case.invoice_line_tax_id:
+                for tx in case.invoice_line_tax_id:
+                    tax_amt = tx.amount * case.quantity * case.price_unit
+                    tax_amt += tax_amt
+            res[case.id] = tax_amt
+
+        return res
     _columns={
                 'name': fields.text('Description', required=True),
                'rejected_qty'    :   fields.float('Rejected Quantity',digits=(0,3)),
@@ -2595,7 +2609,7 @@ class account_invoice_line(osv.osv):
                #for reporting purposes
                'move_line_id'                :  fields.many2one('stock.move','Move Line Id'),
 #                'price_unit'      : fields.float('Unit Price', digits_compute= dp.get_precision('Product Price'), readonly=True, states={'draft': [('readonly', False)]} ),
-     
+               'line_tax_amount'    :   fields.function(_get_line_tax_amt, type="float", string="Line Tax Amount", store=True) ,
              }
 
     def _default_account_id(self, cr, uid, context=None):
