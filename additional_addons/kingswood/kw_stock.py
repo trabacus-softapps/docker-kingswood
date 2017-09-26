@@ -2908,7 +2908,7 @@ class stock_picking_out(osv.osv):
                                              if case.partner_id.freight or case.gen_freight:
                                                  price1=j.product_price
                                              else:
-                                                 price1 = j.sub_total
+                                                 price1 = j.sub_total or (j.product_price +j.transport_price)
                                              freight_price = j.transport_price
                                              #handling_price = j.handling_charge
                                              partner = j.partner_id
@@ -6699,7 +6699,7 @@ class stock_picking_in(osv.osv):
                                     loc=1;
                                     prod_ids=prod_obj.search(cr, uid, [('ef_date','<=',case.date),('supp_info_id','=',i.id)],limit=1, order='ef_date desc')
                                     for j in prod_obj.browse(cr,uid,prod_ids):
-                                        price1 = j.sub_total
+                                        price1 = j.sub_total or (j.product_price +j.transport_price)
                                         
                                         vals['price_unit']  = price1
                                         freight_price = j.transport_price
