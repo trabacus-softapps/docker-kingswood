@@ -4012,9 +4012,9 @@ class stock_picking_out(osv.osv):
                     dc = 0
         
                                         
-            if edit:
-                if dc >= dc_count:
-                    raise osv.except_osv(_('Warning'),_('Cannot Edit DC, Quota is Completed for the day "%s"')%(today))  
+#            if edit:
+#                if dc >= dc_count:
+#                    raise osv.except_osv(_('Warning'),_('Cannot Edit DC, Quota is Completed for the day "%s"')%(today))  
             
             if dc > dc_count:
                 raise osv.except_osv(_('Warning'),_('Cannot Creat DC, Quota is Completed for the day "%s"')%(today))
