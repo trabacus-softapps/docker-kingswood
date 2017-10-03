@@ -877,10 +877,10 @@ class stock_picking_out(osv.osv):
                 cr.execute("select sub_part_id from sub_facilitator where main_facilitator_id="+str(paying_agent_id))
                 sub_facilitator_id = [x[0] for x in cr.fetchall()]
                 if sub_facilitator_id:
-                    dom.update({'sub_facilitator_id':  [('id','in',sub_facilitator_id )]})
+                    # dom.update({'sub_facilitator_id':  [('id','in',sub_facilitator_id )]})
                     res.update({'is_sub_facilitator': True})
             else:
-                dom = {'sub_facilitator_id':  [('id','=',0 )]}
+                # dom = {'sub_facilitator_id':  [('id','=',0 )]}
                 res.update({'is_sub_facilitator':False})
 
         cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
@@ -952,7 +952,7 @@ class stock_picking_out(osv.osv):
                
                 
              
-        return{'value' : res,'warning':warning, 'domain':dom}
+        return{'value' : res,'warning':warning}
      
     
     #for reading pdf file 
