@@ -444,7 +444,7 @@
 		                        		attrs="{'required':['|',('user_log','=','KW_Admin'),('user_log','=','KW_Depot')],'readonly': ['|',('user_log','=','KW_Freight'),('state','not in',('draft','in_transit'))]}"/>
 		                        	<!-- domain="['|','&amp;',('supplier','=',True),('supplier','!=',True),('customer','!=',True)]" -->
 		                        	<field name="sub_facilitator_id" groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_freight_service"
-											domain="[('main_facilitator_id','=',parent_id)]"/>
+											domain="[('parent_id','=',paying_agent_id)]" options='{"create": false, "create_edit": false}'/>
 									<field name="is_sub_facilitator" invisible="1"/>
 									<field name="purchase_amount" invisible="1"/>
 									<field name="wc_num" invisible='1'/>
@@ -1163,7 +1163,7 @@
  				</xpath> -->
 
             	<xpath expr="//field[@name='partner_id']" position="after">
-					<field name="sub_facilitator_id" domain="[('main_facilitator_id','=',parent_id)]"/>
+					<field name="sub_facilitator_id" domain="[('parent_id','=',paying_agent_id)]" options='{"create": false, "create_edit": false}'/>
 					<field name='truck_no' widget="upper_case" required='1'/>
 					<field name="purchase_amount" invisible="1"/>
 					<field name="is_sub_facilitator" invisible="1"/>
