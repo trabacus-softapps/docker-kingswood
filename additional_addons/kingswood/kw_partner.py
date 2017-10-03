@@ -464,6 +464,25 @@ class sub_facilitator(osv.osv):
 
 
     }
+
+    def create(self, cr, uid, vals, context=None):
+        if not context:
+            context = {}
+        res = super(sub_facilitator, self).create(cr, uid, vals, context)
+        if res:
+            for case in self.browse(cr, uid, [res]):
+                cr.execute("update res_partner set parent_id = "+str(case.main_facilitator_id and case.main_facilitator_id.id or False)+" where id="+str(case.sub_part_id and case.sub_part_id.id or False))
+        return res
+
+    def write(self, cr, uid, ids, vals, context=None):
+        if not context:
+            context = {}
+        res = super(sub_facilitator, self).write(cr, uid, ids, vals, context)
+        if res:
+            for case in self.browse(cr, uid, ids):
+                cr.execute("update res_partner set parent_id = "+str(case.main_facilitator_id and case.main_facilitator_id.id or False)+" where id="+str(case.sub_part_id and case.sub_part_id.id or False))
+        return res
+
 sub_facilitator()
 
 class customer_contracts(osv.osv):

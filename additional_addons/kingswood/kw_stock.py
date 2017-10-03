@@ -855,7 +855,7 @@ class stock_picking_out(osv.osv):
        
         return{'value':res ,'warning':warning}
         
-    
+
     def onchange_paying_agent(self, cr, uid, ids, paying_agent_id=False, transporter_id=False,context=None):
         res={}
         g_ids = []
