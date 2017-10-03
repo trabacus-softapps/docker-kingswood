@@ -867,6 +867,10 @@ class stock_picking_out(osv.osv):
         user_obj = self.pool.get('res.users')
         part_obj = self.pool.get("res.partner")
         dom = {}
+        if not paying_agent_id and ids:
+            case = self.browse(cr, uid, ids)
+            paying_agent_id = case.paying_agent_id and case.paying_agent_id.id or False
+
         if paying_agent_id:
             sub_fac = part_obj.browse(cr, uid, paying_agent_id)
             if sub_fac.sub_facilitator_ids:
@@ -4011,13 +4015,13 @@ class stock_picking_out(osv.osv):
                 else:
                     dc = 0
         
-                                        
-#            if edit:
-#                if dc >= dc_count:
-#                    raise osv.except_osv(_('Warning'),_('Cannot Edit DC, Quota is Completed for the day "%s"')%(today))  
-            
-            if dc > dc_count:
-                raise osv.except_osv(_('Warning'),_('Cannot Creat DC, Quota is Completed for the day "%s"')%(today))
+            if paying_agent_id not in kw_paying_agent:
+                if edit:
+                    if dc >= dc_count:
+                        raise osv.except_osv(_('Warning'),_('Cannot Edit DC, Quota is Completed for the day "%s"')%(today))
+
+                if dc > dc_count:
+                    raise osv.except_osv(_('Warning'),_('Cannot Creat DC, Quota is Completed for the day "%s"')%(today))
                     
                 
             print "dc_count",dc_count, "and-",dc
