@@ -2745,6 +2745,7 @@ class stock_picking_out(osv.osv):
                      sup_freight_ids=prod_obj.search(cr, uid, [('name_template','=','Freight')])
                  # Updating Tax
                  if pk_ids:
+                     _logger.info('Current DC==========================> %s',case.id)
                      if case.state_id.id == case.paying_agent_id.state_id.id:
                         cr.execute("select id from account_tax where gst_categ='intra' ")
                         intra_tax_id= [x[0] for x in cr.fetchall()]
@@ -2955,9 +2956,11 @@ class stock_picking_out(osv.osv):
                                  else:
                                      print "schedular Failed"
                              #check for the key for supplier Invoices
+                             _logger.info('Before the Key Supplier Invoice Current DC==========================> %s',case.id)
                              if tx_ids:
                                 cr.execute("select gst_categ, amount from account_tax where id in  %s ",(tuple(tx_ids),))
                                 tx = cr.dictfetchall()[0]
+
                              if case.sub_facilitator_id:
                                 supp_key = case.sub_facilitator_id.id,case.partner_id.freight or case.gen_freight,ln.delivery_date or case.sub_facilitator_id.id,tx.get('gst_categ')+str(tx.get('amount'))
                                 freight_key = case.sub_facilitator_id.id, case.partner_id.id,freight_price,ln.delivery_date
