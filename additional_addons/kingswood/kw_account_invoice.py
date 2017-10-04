@@ -1989,7 +1989,7 @@ class account_invoice(osv.osv):
         # 4. Mohd. Umar
         # Remove these partner
         if fac_state == 'Karnataka':
-            remove_ids = [1,1274,1545]
+            remove_ids = [1,1274,1545,2194,1214,1009,988]
         else:
             remove_ids = [0]
         dummy_ids.extend(remove_ids)
@@ -2008,13 +2008,13 @@ class account_invoice(osv.osv):
 
         query_out = """select distinct sp.id from stock_picking sp 
                         left outer join res_country_state rs on rs.id = sp.state_id
-                        where sp.date::date >= '2017-04-01' and type = 'out'
+                        where sp.date::date >= '2017-07-01' and type = 'out'
                         and sp.date::date <= '"""+str(shedular_date)+"""'::date and sup_invoice = False
                         and sp.state in ('done','freight_paid') and sp.del_quantity>0
                         and lower(rs.name) ilike '%"""+fac_state+"""%'"""
                         
         if context.get('facilitator'):
-            query_out += ' and sp.paying_agent_id ='+str(context.get('facilitator'))
+            query_out += ' and sp.paying_agent_id ='+str(context.get('facilitator'))+ 'and sp.sub_facilitator_is is not null'
             
 
         cr.execute(query_out)
@@ -2045,12 +2045,12 @@ class account_invoice(osv.osv):
         
         query_in = """select distinct sp.id from stock_picking sp 
                         left outer join res_country_state rs on rs.id = sp.state_id
-                        where sp.date::date >= '2017-04-01' and type = 'in'
+                        where sp.date::date >= '2017-07-01' and type = 'in'
                         and sp.date::date <= '"""+str(shedular_date)+"""'::date and sup_invoice = False                        
                         and sp.state in ('done','freight_paid') and lower(sp.name) ilike '%"""+in_fac_state+"""%'"""
         
         if context.get('facilitator'):
-            query_in += ' and sp.partner_id ='+str(context.get('facilitator'))
+            query_in += ' and sp.partner_id ='+str(context.get('facilitator'))+'and sp.sub_facilitator_is is not null'
         
         cr.execute(query_in)
  
@@ -2065,7 +2065,7 @@ class account_invoice(osv.osv):
             #cr.execute("""update stock_picking set user_id = 1 where id in %s""",(tuple(stock_ids_in),))  
         if stock_ids_out or stock_ids_in:
             if stock_ids_out:
-                cr.execute("""select sp.id from stock_picking sp where sp.date::date >= '2017-04-01'::date and sp.id not in (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner
+                cr.execute("""select sp.id from stock_picking sp where sp.date::date >= '2017-07-01'::date and sp.id not in (SELECT dr.del_ord_id FROM supp_delivery_invoice_rel dr inner
                 join account_invoice ac on ac.id=dr.invoice_id WHERE dr.del_ord_id  IN %s and ac.state <>'cancel') and sp.id in %s""",(tuple(stock_ids_out),tuple(stock_ids_out)))    
 #                 order_id = cr.fetchall()
                 order_id=cr.fetchall()
@@ -2075,7 +2075,7 @@ class account_invoice(osv.osv):
                  
 
             if stock_ids_in:
-                cr.execute("""select sp.id from stock_picking sp where sp.date::date >= '2017-04-01'::date and sp.id not in
+                cr.execute("""select sp.id from stock_picking sp where sp.date::date >= '2017-07-01'::date and sp.id not in
                 (SELECT dr.in_shipment_id FROM incoming_shipment_invoice_rel dr inner
                 join account_invoice ac on ac.id=dr.invoice_id WHERE dr.in_shipment_id  IN  %s and ac.state <>'cancel')and sp.id in %s""",(tuple(stock_ids_in),tuple(stock_ids_in)))    
                 in_shipment_ids = cr.fetchall()
@@ -2290,7 +2290,7 @@ class account_invoice(osv.osv):
         state_id1 = context.get(1,False) 
         state_id2 = context.get(2,False)
         
-        context.update({'shedular_date':'2017-07-02'})
+        context.update({'shedular_date':'2017-09-01'})
 
         _logger.error('Schedular Date.....%s',context)
         res = self.create_facilitator_inv(cr,uid,[uid],context)
