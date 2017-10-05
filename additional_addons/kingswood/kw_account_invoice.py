@@ -2291,7 +2291,7 @@ class account_invoice(osv.osv):
         state_id1 = context.get(1,False) 
         state_id2 = context.get(2,False)
         
-        context.update({'shedular_date':'2017-09-01'})
+        context.update({'shedular_date':'2017-10-01'})
 
         _logger.error('Schedular Date.....%s',context)
         res = self.create_facilitator_inv(cr,uid,[uid],context)
