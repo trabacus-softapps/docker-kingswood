@@ -2765,7 +2765,7 @@ class stock_picking_out(osv.osv):
                             tx_ids = [x[0] for x in cr.fetchall()]
                         else:
                             raise osv.except_osv(_('Warning'),_('Map proper Taxes for Inter State'))
-                     _logger.info('Supplier Tax Ids==========================> %s',tx_ids)
+                     # _logger.info('Supplier Tax Ids==========================> %s',tx_ids)
 
 
                  stock_type = case.type
