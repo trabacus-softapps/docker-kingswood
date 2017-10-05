@@ -2102,7 +2102,7 @@ class account_invoice(osv.osv):
                 out_shedular_month = [x[0] for x in cr.fetchall()] 
                 out_shedular_month_ids[shedular_month] = out_shedular_month
                 print "out_shedular_month",out_shedular_month
-                
+                _logger.info('out_shedular_month_ids==========================> %s',out_shedular_month_ids)
                 
                 if out_shedular_month: 
                     cr.execute("""select id from stock_picking where id not in %s and id in %s""",(tuple(out_shedular_month),tuple(stock_ids_out)))
@@ -2118,7 +2118,8 @@ class account_invoice(osv.osv):
 
                 
                 for sh_month in out_shedular_month_ids:
-                    invoice_create_out = stock_obj.get_supplier_invoice(cr,uid,out_shedular_month_ids[sh_month],False,context=context) 
+                    invoice_create_out = stock_obj.get_supplier_invoice(cr,uid,out_shedular_month_ids[sh_month],False,context=context)
+                    _logger.info('invoice_create_out==========================> %s',invoice_create_out)
                     if context.get('invoices',[]) not in invoice_created_out:
                         invoice_created_out.append(context.get('invoices',[]))
                         
