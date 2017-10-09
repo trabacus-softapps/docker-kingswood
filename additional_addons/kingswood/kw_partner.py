@@ -925,6 +925,37 @@ class billing_cycle(osv.osv):
                     )a"
             )
 
+            print "=========>","select \
+                            case when (sum(a.bal) + sum(freight))>0 then sum(a.bal) + sum(freight) else 0 end  AS debit,\
+                            case when (sum(a.bal) + sum(freight))>0 then 0 else sum(a.bal) + sum(freight) end AS credit \
+                        from\
+                        (select\
+                            case when sum(debit-credit) is null then 0 else  sum(debit-credit) end as bal,\
+                            (select case when sum(sp.freight_balance)>0 then sum(sp.freight_balance) else 0 end \
+                                from stock_picking sp \
+                                inner join account_voucher a on sp.name = a.reference   \
+                                where sp.sup_invoice is true and sp.state='freight_paid' and sp.id in \
+                                (select distinct del_ord_id from supp_delivery_invoice_rel where invoice_id in \
+                                    (select \
+                                        id  \
+                                    from account_invoice where partner_id = "+str(part)+" \
+                                    and date_invoice >='2014-04-01'::date and date_invoice <'"+case.st_date+"'::date and state not in ('draft','cancel') \
+                                    and type = 'in_invoice'))\
+                                    and a.partner_id = "+str(part)+"\
+                                    ) as freight \
+                        from account_move_line aml \
+                        inner join res_partner rp on aml.partner_id = rp.id \
+                        AND aml.account_id in \
+                                ((SELECT substr(value_reference,17)::integer \
+                                 FROM ir_property \
+                                 WHERE name = 'property_account_payable' \
+                                 AND res_id = 'res.partner,' || "+str(part)+"),rp.account_pay) \
+                            and aml.partner_id = "+str(part)+" \
+                        and aml.date <'"+case.st_date+"'::date \
+                        and aml.date>='2014-04-01'::date \
+                        and aml.ref not like 'DC%' \
+                    )a"
+
             vals = cr.fetchall()
             vals = vals and vals[0] or []
             if vals:
