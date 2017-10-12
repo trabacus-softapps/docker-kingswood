@@ -901,7 +901,7 @@ class billing_cycle(osv.osv):
                         case when sum(debit-credit) is null then 0 else  sum(debit-credit) end as bal,\
                         (select case when sum(sp.freight_balance)>0 then sum(sp.freight_balance) else 0 end \
                             from stock_picking sp \
-                            inner join account_voucher a on sp.name = a.reference   \
+                            inner join account_move a on sp.name = a.ref   \
                             where sp.sup_invoice is true and sp.state='freight_paid' and sp.id in \
                             (select distinct del_ord_id from supp_delivery_invoice_rel where invoice_id in \
                                 (select \
