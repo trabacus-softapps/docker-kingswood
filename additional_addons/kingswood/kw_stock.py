@@ -6240,7 +6240,7 @@ class stock_picking_in(osv.osv):
     def _get_inv_status(self, cr, uid, ids, field_name, args, context = None):
         res = {}
         for case in self.browse(cr, uid, ids):
-            cr.execute("SELECT invoice_id FROM incoming_shipment_invoice_rel where in_shipment_id = "+str(case.id))
+            cr.execute("select id from account_invoice where state!='cancel' and id in (SELECT invoice_id FROM incoming_shipment_invoice_rel where in_shipment_id = "+str(case.id))
             Iinv_ids = cr.fetchall()
             if Iinv_ids:
                 res[case.id] = True
