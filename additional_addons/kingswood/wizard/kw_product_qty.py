@@ -6,6 +6,7 @@ from datetime import datetime
 import logging
 import time
 from lxml import etree
+from openerp import SUPERUSER_ID
 
 class change_product_qty(osv.osv_memory):
     _name = "change.product.qty"
@@ -539,16 +540,35 @@ class change_product_qty(osv.osv_memory):
                
         return True    
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-        
-       
-    
+
 change_product_qty()
+
+class wizard(osv.osv_memory):
+    """
+        A wizard to manage the creation/removal of portal users.
+    """
+    _inherit = 'portal.wizard'
+
+    # Overriden for creating login only for main partners
+    def onchange_portal_id(self, cr, uid, ids, portal_id, context=None):
+        # for each partner, determine corresponding portal.wizard.user records
+        res_partner = self.pool.get('res.partner')
+        partner_ids = context and context.get('active_ids') or []
+        contact_ids = set()
+        user_changes = []
+        for partner in res_partner.browse(cr, SUPERUSER_ID, partner_ids, context):
+            for contact in ([partner]):
+                # make sure that each contact appears at most once in the list
+                if contact.id not in contact_ids:
+                    contact_ids.add(contact.id)
+                    in_portal = False
+                    if contact.user_ids:
+                        in_portal = portal_id in [g.id for g in contact.user_ids[0].groups_id]
+                    user_changes.append((0, 0, {
+                        'partner_id': contact.id,
+                        'email': contact.email,
+                        'in_portal': in_portal,
+                    }))
+        return {'value': {'user_ids': user_changes}}
+
+wizard()
