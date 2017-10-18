@@ -2960,15 +2960,19 @@ class stock_picking_out(osv.osv):
                              if tx_ids:
                                 cr.execute("select gst_categ, amount from account_tax where id in  %s ",(tuple(tx_ids),))
                                 tx = cr.dictfetchall()[0]
-
-                             if case.sub_facilitator_id:
-                                supp_key = case.sub_facilitator_id.id,case.partner_id.freight or case.gen_freight,ln.delivery_date or case.sub_facilitator_id.id,tx.get('gst_categ')+str(tx.get('amount'))
-                                freight_key = case.sub_facilitator_id.id, case.partner_id.id,freight_price,ln.delivery_date
-                                product_key =case.sub_facilitator_id.id,ln.product_id.id,ln.price_unit
+                             if pk_ids and tx:
+                                 if case.sub_facilitator_id:
+                                    supp_key = case.sub_facilitator_id.id,case.partner_id.freight or case.gen_freight,ln.delivery_date or case.sub_facilitator_id.id,tx.get('gst_categ')+str(tx.get('amount'))
+                                    freight_key = case.sub_facilitator_id.id, case.partner_id.id,freight_price,ln.delivery_date
+                                    product_key =case.sub_facilitator_id.id,ln.product_id.id,ln.price_unit
+                                 else:
+                                    supp_key = case.paying_agent_id.id,case.partner_id.freight or case.gen_freight,ln.delivery_date or case.paying_agent_id.id,tx.get('gst_categ')+str(tx.get('amount'))
+                                    freight_key = case.paying_agent_id.id, case.partner_id.id,freight_price,ln.delivery_date
+                                    product_key =case.paying_agent_id.id,ln.product_id.id,ln.price_unit
                              else:
-                                supp_key = case.paying_agent_id.id,case.partner_id.freight or case.gen_freight,ln.delivery_date or case.paying_agent_id.id,tx.get('gst_categ')+str(tx.get('amount'))
-                                freight_key = case.paying_agent_id.id, case.partner_id.id,freight_price,ln.delivery_date
-                                product_key =case.paying_agent_id.id,ln.product_id.id,ln.price_unit
+                                 supp_key = case.paying_agent_id.id,case.partner_id.freight or case.gen_freight,ln.delivery_date or case.paying_agent_id.id
+                                 freight_key = case.paying_agent_id.id, case.partner_id.id,freight_price,ln.delivery_date
+                                 product_key =case.paying_agent_id.id,ln.product_id.id,ln.price_unit
                              print "supp_key....................",supp_key
                              #Handling Invoice Key
                              if handling_vals['price_unit'] >0 and partner:
