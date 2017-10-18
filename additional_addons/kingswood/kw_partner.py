@@ -471,7 +471,7 @@ class sub_facilitator(osv.osv):
         res = super(sub_facilitator, self).create(cr, uid, vals, context)
         if res:
             for case in self.browse(cr, uid, [res]):
-                cr.execute("update res_partner set parent_id = "+str(case.main_facilitator_id and case.main_facilitator_id.id or False)+" where id="+str(case.sub_part_id and case.sub_part_id.id or False))
+                cr.execute("update res_partner set parent_id = "+str(case.main_facilitator_id and case.main_facilitator_id.id or False)+", sub_facilitator = true, supplier=true, handling_charges=false where id="+str(case.sub_part_id and case.sub_part_id.id or False))
         return res
 
     def write(self, cr, uid, ids, vals, context=None):
@@ -480,7 +480,7 @@ class sub_facilitator(osv.osv):
         res = super(sub_facilitator, self).write(cr, uid, ids, vals, context)
         if res:
             for case in self.browse(cr, uid, ids):
-                cr.execute("update res_partner set parent_id = "+str(case.main_facilitator_id and case.main_facilitator_id.id or False)+" where id="+str(case.sub_part_id and case.sub_part_id.id or False))
+                cr.execute("update res_partner set parent_id = "+str(case.main_facilitator_id and case.main_facilitator_id.id or False)+" sub_facilitator = true, supplier=true, handling_charges=false where id="+str(case.sub_part_id and case.sub_part_id.id or False))
         return res
 
 sub_facilitator()
