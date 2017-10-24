@@ -1865,8 +1865,10 @@ class stock_picking_out(osv.osv):
                             
                             if s.state == 'open':
                                 raise osv.except_osv(_('Warning'),_('Facilitator Invoice for this Delivery Challan is in Open State, Cannot Pay Freight'))
-                
-                partner=case.paying_agent_id and case.paying_agent_id or case.partner_id
+                if case.date >= '2017-07-01 00:00:00':
+                    partner=case.sub_facilitator_id and case.sub_facilitator_id or case.partner_id
+                else:
+                    partner=case.paying_agent_id and case.paying_agent_id or case.partner_id
                 company=case.company_id.id
                 if partner:
                     if partner.id not in dummy_id:
@@ -1874,11 +1876,13 @@ class stock_picking_out(osv.osv):
         #                 if case.partner_id.freight or case.paying_agent_id.id in kw_paying_agent:
                             freight=True
                             context.update({'freight':freight})
-                            company=False
-                            cr.execute("select id from res_company where lower(name) like '%logistics%'")
-                            company=cr.fetchone()
-                            if company:
-                                company=company[0]
+
+                            if case.date <= '2017-07-01 00:00:00':
+                                company=False
+                                cr.execute("select id from res_company where lower(name) like '%logistics%'")
+                                company=cr.fetchone()
+                                if company:
+                                    company=company[0]
                             
                         for ln in case.move_lines:
                             supplier_id = ln.supplier_id
