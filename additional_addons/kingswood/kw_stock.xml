@@ -497,7 +497,7 @@
 		                     		<field name="paying_agent" 
 		                     			invisible="1"/>
 		                    		<field name="transporter_id" domain="[('supplier','=',True)]" on_change ="onchange_transporter_id(paying_agent_id,transporter_id)"
-										attrs="{'required': [('paying_agent','=', 'kingswood')],'invisible':[('paying_agent','=','not')],'readonly':[('state','!=','draft')]}"
+										attrs="{'invisible':[('paying_agent','=','not')],'readonly':[('state','!=','draft')]}"
 										
 										
 										groups="kingswood.kw_admin_service,kingswood.kw_depot_service"/>

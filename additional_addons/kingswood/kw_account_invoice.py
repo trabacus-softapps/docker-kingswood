@@ -2089,8 +2089,8 @@ class account_invoice(osv.osv):
             invoice_rate_out = stock_obj.get_supplier_rate(cr,uid,stock_ids_out,False,context=context)
             
             invoice_rate_in = stock_in_obj.get_supplier_rate(cr,uid,stock_ids_in,False,context=context)
-            
-            
+
+
             if stock_ids_out:
                 if not invoice_rate_out:
                     return False    
@@ -2199,7 +2199,28 @@ class account_invoice(osv.osv):
                     inv_done_to=self.get_month(cr,uid,[],inv_done.date_invoice,{'month':1})
                     if last_date_to != inv_done_to:
                         inv_date = last_date
-                    self.write(cr,uid,[invoices_ids[0]],{'date_invoice':inv_date,'back_date':True})
+                    # Updating Month Date
+                    i_final_date = inv_date
+                    x = self.browse(cr, uid, invoices_ids[0])
+                    if x.incoming_shipment_ids:
+                        cr.execute("select date from stock_picking where id in (select in_shipment_id from incoming_shipment_invoice_rel where invoice_id="+str(x.id)+ " order by in_shipment_id desc limit 1)")
+                        i_final_date = [x[0] for x in cr.fetchall()]
+                        if i_final_date:
+                            i_final_date = i_final_date[0]
+                        cr.execute("""SELECT (date_trunc('month', '"""+str(i_final_date)+"""' ::date) + interval '1 month' - interval '1 day')::date AS end_of_month""")
+                        i_final_date = [x[0] for x in cr.fetchall()]
+                        if i_final_date:
+                            i_final_date = i_final_date[0]
+                    if x.supp_delivery_orders_ids:
+                        cr.execute("select date from stock_picking where id in (select del_ord_id from supp_delivery_invoice_rel where invoice_id="+str(x.id)+ " order by del_ord_id desc limit 1)")
+                        i_final_date = [x[0] for x in cr.fetchall()]
+                        if i_final_date:
+                            i_final_date = i_final_date[0]
+                        cr.execute("""SELECT (date_trunc('month', '"""+str(i_final_date)+"""' ::date) + interval '1 month' - interval '1 day')::date AS end_of_month""")
+                        i_final_date = [x[0] for x in cr.fetchall()]
+                        if i_final_date:
+                            i_final_date = i_final_date[0]
+                    self.write(cr,uid,[invoices_ids[0]],{'date_invoice':i_final_date,'back_date':True})
                     wf_service.trg_validate(uid, 'account.invoice', invoices_ids[0], 'invoice_open', cr) 
                     merged_invoice.append(invoices_ids[0])
                 else:
@@ -2212,15 +2233,43 @@ class account_invoice(osv.osv):
                     for merged_inv in merged_ids:
                         _logger.error('Inside the Merge Invoice.....%s',merged_inv)
                         cr.execute("""update account_invoice set back_date=True where id = %s """,(merged_inv,))                        
-                        self.write(cr,uid,[merged_inv],{'date_invoice':inv_date,'back_date':True})
+
+                        # Updating Month Date
+                        dc_final_date = inv_date
+                        y = self.browse(cr, uid, merged_inv)
+                        if y.incoming_shipment_ids:
+                            cr.execute("select date from stock_picking where id in (select in_shipment_id from incoming_shipment_invoice_rel where invoice_id="+str(y.id)+ " order by in_shipment_id desc limit 1)")
+                            dc_final_date = [x[0] for x in cr.fetchall()]
+                            if dc_final_date:
+                                dc_final_date = dc_final_date[0]
+                            cr.execute("""SELECT (date_trunc('month', '"""+str(dc_final_date)+"""' ::date) + interval '1 month' - interval '1 day')::date AS end_of_month""")
+                            dc_final_date = [x[0] for x in cr.fetchall()]
+                            if dc_final_date:
+                                dc_final_date = dc_final_date[0]
+                        if y.supp_delivery_orders_ids:
+                            cr.execute("select date from stock_picking where id in (select del_ord_id from supp_delivery_invoice_rel where invoice_id="+str(y.id)+ " order by del_ord_id desc limit 1)")
+                            dc_final_date = [x[0] for x in cr.fetchall()]
+                            if dc_final_date:
+                                dc_final_date = dc_final_date[0]
+                            cr.execute("""SELECT (date_trunc('month', '"""+str(dc_final_date)+"""' ::date) + interval '1 month' - interval '1 day')::date AS end_of_month""")
+                            dc_final_date = [x[0] for x in cr.fetchall()]
+                            if dc_final_date:
+                                dc_final_date = dc_final_date[0]
+
+                        self.write(cr,uid,[merged_inv],{'date_invoice':dc_final_date,'back_date':True})
                         wf_service.trg_validate(uid, 'account.invoice', merged_inv, 'invoice_open', cr)
                         merged_invoice.append(merged_inv)
 #                         
                  
-#             print "Date-",shedular_date  
+#             print "Date-",shedular_date
+            # Biling Cycle should Run only for Main Facilitator
+            cr.execute("""select distinct(parent_id) from res_partner where id in %s""",(tuple(partner_ids),))
+            partner_ids = [x[0] for x in cr.fetchall()]
+
             for partner_id in partner_ids:
 #                 print 'Facilitator', partner_id.name
     #             context.update({'billing_ids':[{'partner_id':partner_id.id}]})
+
                 billing_list = billing_obj.search(cr,uid,[('partner_id','=',partner_id)],order='end_date desc',limit=1)
                 for i in billing_obj.browse(cr,uid,billing_list,context):
                     end_date = datetime.strptime(i.end_date, '%Y-%m-%d') + relativedelta(days=int(1))
@@ -2530,8 +2579,9 @@ class account_invoice(osv.osv):
 
             date = inv.date_invoice or time.strftime('%Y-%m-%d')
 
-            part = self.pool.get("res.partner")._find_accounting_partner(inv.partner_id)
-
+            # Commented by Praveen, Journal Entry should create for Sub Facilitator
+            # part = self.pool.get("res.partner")._find_accounting_partner(inv.partner_id)
+            part = inv.partner_id
             line = map(lambda x:(0,0,self.line_get_convert(cr, uid, x, part.id, date, context=ctx)),iml)
 
             line = self.group_lines(cr, uid, iml, line, inv)
