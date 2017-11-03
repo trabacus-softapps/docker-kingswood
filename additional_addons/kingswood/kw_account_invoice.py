@@ -1923,12 +1923,14 @@ class account_invoice(osv.osv):
         open_ids = self.search(cr, uid,[('state','=','paid'),('id','in',ids)])
         if open_ids:
             raise osv.except_osv(_('Warning!'), _('You Need to select only Open records'))
+        _logger.info('Inside the Revalidate==========================> %s',ids)
         self.action_cancel(cr, uid, ids,context=context)
         self.action_cancel_draft(cr, uid,ids,{})
         self.write(cr, uid,ids,{'back_date':True})
         wf_service = netsvc.LocalService('workflow')
         for i in self.browse(cr, uid, ids):
-            wf_service.trg_validate(uid, 'account.invoice', i.id, 'invoice_open', cr)  
+            wf_service.trg_validate(uid, 'account.invoice', i.id, 'invoice_open', cr)
+            _logger.info('After the Revalidate==========================> %s',ids)
 
     def create_facilitator_inv(self, cr, uid, ids, context=None):
         _logger.error('create_facilitator_inv Context................%s',context)
