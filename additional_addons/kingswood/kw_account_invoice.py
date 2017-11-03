@@ -191,7 +191,7 @@ class account_invoice(osv.osv):
             for temp in case.invoice_line:
                 qty +=temp.quantity
                 if case.type=='out_invoice' or case.type=='in_invoice':
-                    if temp.product_id.name!='Freight':
+                    if temp.product_id.name not in ('Freight','HC'):
                         res[case.id]['product_id'] = temp.product_id.id
                     else:
                         if case.type=='out_invoice':
@@ -510,7 +510,7 @@ class account_invoice(osv.osv):
             for case in self.browse(cr, uid, ids):
                 
                 for temp in case.invoice_line:
-                    if case.type=='in_invoice' and temp.product_id.name!='Freight':
+                    if case.type=='in_invoice' and temp.product_id.name not in ('Freight','HC'):
                         
                         cr.execute("select del_ord_id from supp_delivery_invoice_rel where invoice_id="+str(case.id))
                         sup_ids=[i[0] for i in cr.fetchall()]
@@ -863,7 +863,7 @@ class account_invoice(osv.osv):
                         if len(case.invoice_line)==1:
                             for d in stock_obj.browse(cr,uid,[x[0]]):
                                 if d.type == "out" or "out" in d.type: #added the condition for unicode i.e type was coming as unicode
-                                    if temp.product_id.name != 'Freight':
+                                    if temp.product_id.name not in ('Freight','HC'):
                                         stock_obj.write(cr,uid, [d.id],{'invoice_line_id':temp.id})
                                     else:
                                         if case.partner_id.id == d.paying_agent_id.id:
@@ -919,7 +919,7 @@ class account_invoice(osv.osv):
                                             key = (price1,temp.product_id.id,temp.price_unit,d.id)
                                         #check for key, if already lines updated
                                         if key not in data:
-                                            if temp.product_id.id == ln.product_id.id and temp.price_unit == price1 and temp.product_id.name !='Freight':
+                                            if temp.product_id.id == ln.product_id.id and temp.price_unit == price1 and temp.product_id.name not in ('Freight','HC'):
                                                 stock_obj.write(cr,uid, [d.id],{'invoice_line_id':temp.id})
                                                 data.append(key)
                                             else :
@@ -959,7 +959,7 @@ class account_invoice(osv.osv):
                                             freight_price = js.transport_price
                                             key = (price1,temp.product_id.id,temp.price_unit,d.id)
                                         if key not in data:
-                                            if temp.product_id.id == ln.product_id.id and temp.price_unit == price1 and temp.product_id.name !='Freight':
+                                            if temp.product_id.id == ln.product_id.id and temp.price_unit == price1 and temp.product_id.name not in ('Freight','HC'):
                                                 stock_obj.write(cr,uid, [d.id],{'invoice_line_id':temp.id})
                                                 data.append(key)
                                             else :
@@ -1001,7 +1001,7 @@ class account_invoice(osv.osv):
         if not refund:
             for case in self.browse(cr, uid, ids):
                 for temp in case.invoice_line:
-                    if case.type=='in_invoice' and temp.product_id.name!='Freight':
+                    if case.type=='in_invoice' and temp.product_id.name not in ('Freight','HC'):
                          
                         cr.execute("select del_ord_id from supp_delivery_invoice_rel where invoice_id="+str(case.id))
                         sup_ids=[i[0] for i in cr.fetchall()]
@@ -1633,7 +1633,7 @@ class account_invoice(osv.osv):
                     cr.execute("select in_shipment_id from incoming_shipment_invoice_rel where invoice_id="+str(case.id))
                     sh_ids=cr.fetchall()
                     for temp in case.invoice_line:
-                        if temp.product_id.name=='Freight':
+                        if temp.product_id.name in ('Freight','HC'):
                             product.append(temp.product_id.name)
                         else:
                             product_copy.append(temp.product_id.name)
