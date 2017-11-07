@@ -925,8 +925,7 @@ class billing_cycle(osv.osv):
                         and aml.partner_id in " + str(part) + "\
                     and aml.date <'"+case.st_date+"'::date \
                     and aml.date>='2014-04-01'::date \
-                    and case when aml.date>= '2017-07-01' and rp.state_id = 54 then aml.ref not like 'KA%' else\
-	                case when aml.date>= '2017-07-01' and rp.state_id = 58 then aml.ref not like 'TN%' else  aml.ref not like 'DC%' end end\
+                    and aml.ref not like 'DC/%' and aml.ref not like 'KA/%' and aml.ref not like 'TN/%'\
                 )a"
         print 'sql',sql
         cr.execute(sql)
