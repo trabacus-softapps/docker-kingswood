@@ -2582,8 +2582,9 @@ class account_invoice(osv.osv):
             date = inv.date_invoice or time.strftime('%Y-%m-%d')
 
             # Commented by Praveen, Journal Entry should create for Sub Facilitator
-            # part = self.pool.get("res.partner")._find_accounting_partner(inv.partner_id)
+            # part_original = self.pool.get("res.partner")._find_accounting_partner(inv.partner_id)
             part = inv.partner_id
+            print "part...............",part
             line = map(lambda x:(0,0,self.line_get_convert(cr, uid, x, part.id, date, context=ctx)),iml)
 
             line = self.group_lines(cr, uid, iml, line, inv)
