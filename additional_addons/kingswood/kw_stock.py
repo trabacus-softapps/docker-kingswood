@@ -1866,9 +1866,9 @@ class stock_picking_out(osv.osv):
                             if s.state == 'open':
                                 raise osv.except_osv(_('Warning'),_('Facilitator Invoice for this Delivery Challan is in Open State, Cannot Pay Freight'))
                 if case.sub_facilitator_id:
-                    partner=case.sub_facilitator_id  or case.partner_id
+                    partner=case.sub_facilitator_id
                 else:
-                    partner=case.paying_agent_id or case.partner_id
+                    partner=case.paying_agent_id
                 company=case.company_id.id
                 if partner:
                     if partner.id not in dummy_id:
