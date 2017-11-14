@@ -1514,16 +1514,16 @@ class stock_picking_out(osv.osv):
                     password = case.partner_id.es_password
 
                 """ Esugam Site security reason commented"""
-                esugam = self.generate_esugam(cr,uid,desc, qty, price, product_id, username, password, url1,url2, url3, case, context)
-
+                # esugam = self.generate_esugam(cr,uid,desc, qty, price, product_id, username, password, url1,url2, url3, case, context)
+                esugam = self.generate_eway_bill(cr, uid, ids, context=context)
             elif (case.partner_id.gen_esugam == True or case.gen_esugam) and case.partner_id.state_id.code == 'KA' and case.state_id.code == 'KA' and user_id.partner_id.state_id.code !='AP':
                 esugam_ids = esugam_obj.search(cr, uid, [('state_id','=',case.partner_id.state_id.id)])
                 username = case.partner_id.es_username
                 password = case.partner_id.es_password
                 url1 = case.partner_id.es_url1
                 url2 = case.partner_id.es_url2
-                esugam = self.generate_esugam(cr, uid, desc, qty, price, product_id, username, password, url1, url2, url2, case, context)
-
+                # esugam = self.generate_esugam(cr, uid, desc, qty, price, product_id, username, password, url1, url2, url2, case, context)
+                esugam = esugam = self.generate_eway_bill(cr, uid, ids, context=context)
             self.write(cr, uid, ids, {
                                       'state'           :'in_transit',
                                       'esugam_no'       : esugam,
@@ -1537,9 +1537,11 @@ class stock_picking_out(osv.osv):
         if not context:
             context = {}
         tax_obj = self.pool.get("account.tax")
-
+        today = time.strftime('%Y-%m-%d')
+        today = datetime.strptime(today,'%Y-%m-%d')
         for case in self.browse(cr, uid, ids):
-            dc_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%d/%m/%Y')
+            dc_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%Y-%m-%d')
+            dc_date = datetime.strptime(dc_date, '%Y-%m-%d')
             cust_street = case.partner_id.street.replace('.','').replace(',','').replace('-','').replace('#','').replace('/','')
             cust_street2 = case.partner_id.street2 and case.partner_id.street2.replace('.','').replace(',','').replace('-','').replace('#','').replace('/','')
             truck_no = case.truck_no.replace('-','').replace('/','').replace('.','').replace(' ','')
@@ -1590,14 +1592,10 @@ class stock_picking_out(osv.osv):
                     for tx in tax_obj.browse(cr, uid, tx_ids):
                         tax_amount += tx.amount
 
-
-            browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
-            time.sleep(1)
             url = 'https://ctax.kar.nic.in/ewaybill'
+            browser = webdriver.Chrome() #webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
+            time.sleep(1)
             browser.get(url)
-            browser.find_element_by_id('txt_username').send_keys('KWSPL.KA.29')
-            browser.find_element_by_id('txt_password').send_keys('Kwspl@ka29')
-            # self.get_eway_captch(cr, uid, ids, browser, context)
             try:
                 #captcha = self.get_captcha(cr, uid, [], browser, context)
                 #captcha = '787sd'
@@ -1606,8 +1604,8 @@ class stock_picking_out(osv.osv):
                 while error in ("Invalid Captcha Characters.","Please enter the captcha."):
                     browser.find_element_by_id('txt_username')
                     browser.find_element_by_id('txt_password')
-                    browser.find_element_by_id('btnCaptchaImage').click()
-                    browser.find_element_by_id('btnCaptchaImage').click()
+                    # browser.find_element_by_id('btnCaptchaImage').click()
+                    # browser.find_element_by_id('btnCaptchaImage').click()
                     time.sleep(1)
                     captcha = self.get_eway_captch(cr, uid, [], browser, context)
                     _logger.info('captcha....... %s',captcha)
@@ -1615,45 +1613,57 @@ class stock_picking_out(osv.osv):
                         continue
 
                     time.sleep(1)
-                    browser.find_element_by_id('txt_username').clear()
-                    browser.find_element_by_id('txt_username').send_keys('KWSPL.KA.29')
-                    browser.find_element_by_id('txt_password').send_keys('Kwspl@ka29')
+                    browser.find_element_by_xpath('.//*[@id="txt_username"]').clear()
+                    browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys('KWSPL.KA.29')
+                    browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys(Keys.TAB)
+                    browser.find_element_by_xpath('.//*[@id="txt_password"]').send_keys('Kwspl@ka29')
                     browser.find_element_by_id('txtCaptcha')
                     browser.find_element_by_id('txtCaptcha').send_keys(captcha)
-                    time.sleep(2)
-
-                    browser.find_element_by_id('btnLogin')
-                    browser.find_element_by_id('btnLogin').click()
+                    browser.save_screenshot('/home/serveradmin/Desktop/screenie1.png')
                     time.sleep(1)
+
+                    browser.find_element_by_id('btnLogin').click()
+                    browser.save_screenshot('/home/serveradmin/Desktop/screenie2.png')
+                    time.sleep(2)
                     try:
                         browser.find_element_by_class_name('alert-error')
                         error = browser.find_element_by_class_name('alert-error').text
                         _logger.info('Captcha Error %s',error)
                     except:
                         error = ''
-
+                less_days = 0
                 if url:
-                    browser.find_element_by_css_selector('#R10').click()
+
+                    browser.find_element_by_xpath('.//*[@id="R10"]').click()
+                    time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="R11"]/a').click()
                     time.sleep(1)
                     browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys('CHL')
+                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys(Keys.TAB)
+                    browser.find_element_by_xpath('.//*[@id="txtDocNo"]').send_keys(case.name)
+                    browser.find_element_by_xpath('.//*[@id="txtDocNo"]').send_keys(Keys.TAB)
+                    if dc_date < today:
+                        less_days = today - dc_date
+                        print "less_days--------",type(less_days)
+                        less_days = str(less_days)[0:2]
+                        for i in range(int(less_days)):
+                            browser.find_element_by_xpath('.//*[@id="HeadTable"]/tbody/tr[3]/td/table/tbody/tr/td[3]/div/div/a[1]').click()
                     time.sleep(1)
-                    # browser.find_element_by_xpath('.//*[@id="txtDocNo"]').send_keys(case.name)
-                    # browser.find_element_by_xpath('.//*[@id="txtDocDate"]').send_keys(dc_date)
+                    browser.find_element_by_xpath('.//*[@id="slFromState"]').send_keys(Keys.TAB)
                     browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToTrdName"]').send_keys(case.partner_id.name)
                     browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToGSTIN"]').send_keys(str(case.partner_id.gstin_code))
-                    browser.save_screenshot('/home/serveradmin/Desktop/screenie2.png')
+                    time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToGSTIN"]').send_keys(Keys.TAB)
                     browser.find_element_by_xpath('.//*[@id="txtToAddr1"]').send_keys(cust_street)
                     browser.find_element_by_xpath('.//*[@id="txtToAddr1"]').send_keys(Keys.TAB)
                     browser.find_element_by_xpath('.//*[@id="txtToAddr2"]').send_keys(cust_street2)
                     browser.find_element_by_xpath('.//*[@id="txtToAddr2"]').send_keys(Keys.TAB)
                     browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPlace"]').send_keys(case.city_id and str(case.city_id.name))
-
+                    time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPincode"]').send_keys(str(case.partner_id.zip))
                     browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPincode"]').send_keys(Keys.TAB)
                     browser.find_element_by_xpath('.//*[@id="slToState"]').send_keys('KARNATAKA')
-                    time.sleep(2)
+                    time.sleep(1)
                     product = case.product_id.name_template.replace('-',' ')
                     default_code = case.product_id.default_code.replace('-',' ') or ''
                     browser.find_element_by_xpath('.//*[@id="slToState"]').send_keys(Keys.TAB)
@@ -1662,13 +1672,11 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_xpath('.//*[@id="txtProductName_1"]').send_keys(Keys.TAB)
                     browser.find_element_by_xpath('.//*[@id="txt_Description_1"]').send_keys(product +' ' +default_code)
                     browser.find_element_by_xpath('.//*[@id="txt_Description_1"]').send_keys(Keys.TAB)
-                    time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="txt_HSN_1"]').send_keys(str(case.product_id.hsn_sac))
                     browser.find_element_by_xpath('.//*[@id="txt_HSN_1"]').send_keys(Keys.TAB)
 
                     browser.find_element_by_xpath('.//*[@id="txt_Quanity_1"]').send_keys(str(qty))
                     browser.find_element_by_xpath('.//*[@id="txt_Quanity_1"]').send_keys(Keys.TAB)
-                    time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="txt_Unit_1"]').send_keys('MTS')
                     browser.find_element_by_xpath('.//*[@id="txt_Unit_1"]').send_keys(Keys.TAB)
                     print "str(goods_rate)---------------",str(goods_rate)
@@ -1687,16 +1695,12 @@ class stock_picking_out(osv.osv):
                     print ".............1"
 
                     browser.find_element_by_id('txtDistance').send_keys("100")
+
                     browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtVehicleNo').send_keys(str(truck_no))
 
+                    time.sleep(1)
+                    browser.find_element_by_xpath('.//*[@id="btnsbmt"]').click()
                     browser.save_screenshot('/home/serveradmin/Desktop/screenie3.png')
-
-
-
-
-
-
-
 
             except Exception as e:
                 _logger.info('Error reason %s',e)
@@ -1712,10 +1716,11 @@ class stock_picking_out(osv.osv):
         """ Captcha Image Reading using PIL
         """
 
-        #case = self.browse(cr, uid, ids)[0]
-
         img = browser.find_element_by_xpath('//div[@class="col-lg-3"]/div[@class="well boxshadow text-center"]/div[3]/table//img')
-        print "Inside...................."
+        if not img:
+           img = browser.find_element_by_xpath('//*[@id="form"]/div[3]/div[2]/div[3]/div[1]/div[3]/table/tbody/tr[2]/td[1]/div/img')
+
+        print "Inside....................",img
         src = img.get_attribute('src')
         urllib.urlretrieve(src, '/tmp/captcha.png')
 
@@ -1724,27 +1729,13 @@ class stock_picking_out(osv.osv):
         pixdata = img.load()
         print "pixdata[x, y]",pixdata
 
-        # Make the letters bolder for easier recognition
-#         for y in xrange(img.size[1]):
-#             for x in xrange(img.size[0]):
-#                 if pixdata[x, y][0] < 90: #90
-#                     pixdata[x, y] = (0, 0, 0, 255)
-#
         for y in xrange(img.size[1]):
          for x in xrange(img.size[0]):
              if pixdata[x, y][1] < 50: #136
                 pixdata[x, y] = (0, 0, 0, 255)
 
-#         for y in xrange(img.size[1]):
-#             for x in xrange(img.size[0]):
-#                 if pixdata[x, y][2] > 0:
-#                     pixdata[x, y] = (255, 255, 255, 255)
-
         img.save("/tmp/new_captcha.png")
 
-        #   Make the image bigger (needed for OCR)
-        #img = img.resize((1000, 500))
-        #img.save("/home/serveradmin/Desktop/esugam/new_"+case.driver_name+".jpg")
         data = pytesseract.image_to_string(Image.open('/tmp/new_captcha.png'))
         print data
         return data.replace(' ', '')
