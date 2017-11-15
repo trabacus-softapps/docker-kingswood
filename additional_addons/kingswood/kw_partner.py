@@ -5,7 +5,9 @@ import time
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import re
-
+import pytz
+import logging
+_logger = logging.getLogger(__name__)
 
 class kw_farmers(osv.osv):
     _name = "kw.farmers"
@@ -893,6 +895,8 @@ class billing_cycle(osv.osv):
 
         tot_amount = 0.00
         part = (str(tuple(sub_fac_ids)).rstrip(',)')+ ')')
+        _logger.info("data['variables']==========%s",data['variables'])
+        _logger.info("part==========%s",part)
         sql = "select \
                         case when (sum(a.bal) + sum(freight))>0 then sum(a.bal) + sum(freight) else 0 end  AS debit,\
                         case when (sum(a.bal) + sum(freight))>0 then 0 else sum(a.bal) + sum(freight) end AS credit \
@@ -931,6 +935,7 @@ class billing_cycle(osv.osv):
         cr.execute(sql)
         vals = cr.fetchall()
         vals = vals and vals[0] or []
+        _logger.info("vals==================%s",vals)
         if vals:
             if vals[0]>0:
                 amount = vals[0]
@@ -938,7 +943,7 @@ class billing_cycle(osv.osv):
                 amount = vals[1]
 
             # tot_amount = tot_amount + amount
-
+        _logger.info("amount==================%s",amount)
         self.write(cr, uid, ids, {'open_bal':amount})
 
         print "data['variables']==========",data['variables']
