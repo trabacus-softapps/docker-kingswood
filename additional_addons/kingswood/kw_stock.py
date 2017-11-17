@@ -54,6 +54,7 @@ import pytesseract
 import urllib
 import re
 import tempfile
+from selenium.webdriver.support import expected_conditions as EC
 
 
 # FIXME: this is a temporary workaround because of a framework bug (ref: lp996816). It should be removed as soon as
@@ -1593,26 +1594,21 @@ class stock_picking_out(osv.osv):
                         tax_amount += tx.amount
 
             url = 'https://ctax.kar.nic.in/ewaybill'
-            browser = webdriver.Chrome() #webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
-            time.sleep(1)
+            browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true']) #webdriver.Chrome()
             browser.get(url)
             try:
-                #captcha = self.get_captcha(cr, uid, [], browser, context)
-                #captcha = '787sd'
-                error = "Invalid Captcha Characters."
+                error = "Invalid Captcha"
 
-                while error in ("Invalid Captcha Characters.","Please enter the captcha."):
+                while error in ("Invalid Captcha","Please enter the captcha."):
                     browser.find_element_by_id('txt_username')
                     browser.find_element_by_id('txt_password')
                     # browser.find_element_by_id('btnCaptchaImage').click()
                     # browser.find_element_by_id('btnCaptchaImage').click()
-                    time.sleep(1)
                     captcha = self.get_eway_captch(cr, uid, [], browser, context)
                     _logger.info('captcha....... %s',captcha)
                     if re.match("^([a-zA-Z0-9']{0,5})$",captcha) == None:
                         continue
 
-                    time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="txt_username"]').clear()
                     browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys('KWSPL.KA.29')
                     browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys(Keys.TAB)
@@ -1620,17 +1616,20 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_id('txtCaptcha')
                     browser.find_element_by_id('txtCaptcha').send_keys(captcha)
                     browser.save_screenshot('/home/serveradmin/Desktop/screenie1.png')
-                    time.sleep(1)
-
                     browser.find_element_by_id('btnLogin').click()
+                    time.sleep(1)
                     browser.save_screenshot('/home/serveradmin/Desktop/screenie2.png')
-                    time.sleep(2)
                     try:
-                        browser.find_element_by_class_name('alert-error')
-                        error = browser.find_element_by_class_name('alert-error').text
-                        _logger.info('Captcha Error %s',error)
-                    except:
-                        error = ''
+                        if browser.find_element_by_xpath('.//*[@id="R10"]'):
+                            break
+                    except  Exception as e:
+                        print ",,,,,,,,,,,,,,",e
+                        continue
+                    # #try:
+                    # alert = browser.switch_to.alert
+                    # print "alert.text.................",alert.text
+                    # # except:
+                    # #     error = ''
                 less_days = 0
                 if url:
 
@@ -1699,8 +1698,15 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtVehicleNo').send_keys(str(truck_no))
 
                     time.sleep(1)
-                    browser.find_element_by_xpath('.//*[@id="btnsbmt"]').click()
                     browser.save_screenshot('/home/serveradmin/Desktop/screenie3.png')
+                    browser.set_window_size(1920, 1080)
+                    time.sleep(1)
+                    browser.find_element_by_xpath('.//*[@id="btnsbmt"]').click()
+                    #browser.find_element_by_id('btnsbmt').click()
+                    alert = browser.switch_to.alert.accept_alert()
+                    #alert.accept()
+                    time.sleep(1)
+                    browser.save_screenshot('/home/serveradmin/Desktop/screenie4.png')
 
             except Exception as e:
                 _logger.info('Error reason %s',e)
