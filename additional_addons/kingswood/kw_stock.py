@@ -1694,19 +1694,34 @@ class stock_picking_out(osv.osv):
                     print ".............1"
 
                     browser.find_element_by_id('txtDistance').send_keys("100")
-
+                    browser.find_element_by_id('txtDistance').send_keys(Keys.TAB)
+                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtTransid').send_keys("Others")
+                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtTransid').send_keys(Keys.TAB)
+                    browser.set_window_size(1920, 1080)
                     browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtVehicleNo').send_keys(str(truck_no))
 
-                    time.sleep(1)
+
                     browser.save_screenshot('/home/serveradmin/Desktop/screenie3.png')
-                    browser.set_window_size(1920, 1080)
+
                     time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="btnsbmt"]').click()
-                    #browser.find_element_by_id('btnsbmt').click()
-                    alert = browser.switch_to.alert.accept_alert()
-                    #alert.accept()
                     time.sleep(1)
-                    browser.save_screenshot('/home/serveradmin/Desktop/screenie4.png')
+                    if len(browser.window_handles):
+                        browser.switch_to.window(browser.window_handles[-1])
+                        browser.save_screenshot('/home/serveradmin/Desktop/screenie4.png')
+                        browser.find_element_by_name("ok").click()
+
+                    # browser.find_element_by_xpath("//*[text()='OK']").click()
+                    # try:
+                    #     alert = browser.switch_to_alert()
+                    #     print "Alert5=================",alert.text
+                    #     alert.accept()
+                    #     browser.save_screenshot('/home/serveradmin/Desktop/screenie4.png')
+                    # except:
+                    #     print "no alert to accept"
+
+                    time.sleep(1)
+                    browser.save_screenshot('/home/serveradmin/Desktop/screenie5.png')
 
             except Exception as e:
                 _logger.info('Error reason %s',e)
