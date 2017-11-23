@@ -1516,7 +1516,7 @@ class stock_picking_out(osv.osv):
 
                 """ Esugam Site security reason commented"""
                 # esugam = self.generate_esugam(cr,uid,desc, qty, price, product_id, username, password, url1,url2, url3, case, context)
-                esugam = self.generate_eway_bill(cr, uid, ids, context=context)
+                esugam = self.generate_eway_bill(cr, uid, ids, username, password, url1,url2, url3, context=context)
             elif (case.partner_id.gen_esugam == True or case.gen_esugam) and case.partner_id.state_id.code == 'KA' and case.state_id.code == 'KA' and user_id.partner_id.state_id.code !='AP':
                 esugam_ids = esugam_obj.search(cr, uid, [('state_id','=',case.partner_id.state_id.id)])
                 username = case.partner_id.es_username
@@ -1524,7 +1524,7 @@ class stock_picking_out(osv.osv):
                 url1 = case.partner_id.es_url1
                 url2 = case.partner_id.es_url2
                 # esugam = self.generate_esugam(cr, uid, desc, qty, price, product_id, username, password, url1, url2, url2, case, context)
-                esugam = esugam = self.generate_eway_bill(cr, uid, ids, context=context)
+                esugam = esugam = self.generate_eway_bill(cr, uid, ids, username, password, url1,url2, url3, context=context)
             self.write(cr, uid, ids, {
                                       'state'           :'in_transit',
                                       'esugam_no'       : esugam,
@@ -1534,7 +1534,7 @@ class stock_picking_out(osv.osv):
 #             move_obj.action_done(cr, uid, move_ids, context=None)
             return True
 
-    def generate_eway_bill(self, cr, uid, ids, context=None):
+    def generate_eway_bill(self, cr, uid, ids, username, password, url1,url2, url3, context=None):
         if not context:
             context = {}
         tax_obj = self.pool.get("account.tax")
@@ -1593,15 +1593,54 @@ class stock_picking_out(osv.osv):
                     for tx in tax_obj.browse(cr, uid, tx_ids):
                         tax_amount += tx.amount
 
-            url = 'https://ctax.kar.nic.in/ewaybill'
-            browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true']) #webdriver.Chrome()
-            browser.get(url)
+            browser = webdriver.Chrome() #webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
+            # browser = webdriver.PhantomJS()
+            #browser = webdriver.Firefox()
+            url_status1 = browser.get(url1)
+            _logger.info('url_status1....... %s',url_status1)
+
+            try:
+                # check URL1
+                try:
+                    url_status1 = browser.find_element_by_xpath('.//*[@id="txt_username"]')
+                    browser.find_element_by_id('btnLogin').click()
+
+                except:
+                    url_status1 = browser.find_element_by_xpath('.//*[@id="txt_username"]')
+            except:
+                if not url_status1:
+                    # check URL2
+                    url_status2 = browser.get(url2)
+                    try:
+                        url_status2 = browser.find_element_by_id('txt_username')
+                    except:
+                        # check URL3
+                        url_status3 = browser.get(url3)
+                        url_status3 = browser.find_element_by_id('txt_username')
+            try:
+                # check URL3
+                if not url_status1 and not url_status2:
+                    browser.find_element_by_id('txt_username')
+                    url_status1 = False
+
+            except:
+                try:
+                    browser.find_element_by_id('btnLogin').click()
+                except:
+                    raise osv.except_osv(_('Eway Bill Site Is Down'),_('Please Try After Some Time'))
+                browser.find_element_by_id('btnLogin').click()
+
+            # url = 'https://ctax.kar.nic.in/ewaybill'
+            # browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true']) #webdriver.Chrome()
+            # browser.get(url)
+
             try:
                 error = "Invalid Captcha"
 
                 while error in ("Invalid Captcha","Please enter the captcha."):
                     browser.find_element_by_id('txt_username')
                     browser.find_element_by_id('txt_password')
+                    browser.set_window_size(1920, 1080)
                     # browser.find_element_by_id('btnCaptchaImage').click()
                     # browser.find_element_by_id('btnCaptchaImage').click()
                     captcha = self.get_eway_captch(cr, uid, [], browser, context)
@@ -1616,11 +1655,17 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_id('txtCaptcha')
                     browser.find_element_by_id('txtCaptcha').send_keys(captcha)
                     browser.save_screenshot('/home/serveradmin/Desktop/screenie1.png')
+
+
+
                     browser.find_element_by_id('btnLogin').click()
-                    time.sleep(1)
+
+                    time.sleep(2)
+
+                    # browser.execute_script("window.confirm = function(msg) { return true; }");
                     browser.save_screenshot('/home/serveradmin/Desktop/screenie2.png')
                     try:
-                        if browser.find_element_by_xpath('.//*[@id="R10"]'):
+                        if browser.find_element_by_id('R10'):
                             break
                     except  Exception as e:
                         print ",,,,,,,,,,,,,,",e
@@ -1631,7 +1676,7 @@ class stock_picking_out(osv.osv):
                     # # except:
                     # #     error = ''
                 less_days = 0
-                if url:
+                if url_status1 or url_status2 or url_status3:
 
                     browser.find_element_by_xpath('.//*[@id="R10"]').click()
                     time.sleep(1)
@@ -1702,26 +1747,12 @@ class stock_picking_out(osv.osv):
 
 
                     browser.save_screenshot('/home/serveradmin/Desktop/screenie3.png')
-
                     time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="btnsbmt"]').click()
-                    time.sleep(1)
-                    if len(browser.window_handles):
-                        browser.switch_to.window(browser.window_handles[-1])
-                        browser.save_screenshot('/home/serveradmin/Desktop/screenie4.png')
-                        browser.find_element_by_name("ok").click()
+                    alert = browser.switch_to_alert()
+                    alert.accept()
 
-                    # browser.find_element_by_xpath("//*[text()='OK']").click()
-                    # try:
-                    #     alert = browser.switch_to_alert()
-                    #     print "Alert5=================",alert.text
-                    #     alert.accept()
-                    #     browser.save_screenshot('/home/serveradmin/Desktop/screenie4.png')
-                    # except:
-                    #     print "no alert to accept"
-
-                    time.sleep(1)
-                    browser.save_screenshot('/home/serveradmin/Desktop/screenie5.png')
+                    browser.save_screenshot('/home/serveradmin/Desktop/screenie4.png')
 
             except Exception as e:
                 _logger.info('Error reason %s',e)
