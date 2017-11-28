@@ -879,6 +879,7 @@ class billing_cycle(osv.osv):
             else:
                 fy_st_date = fydate[0]
             sub_fac_ids = []
+            _logger.info('Case ID===================> %s',case.id)
             cr.execute("select sub_part_id from sub_facilitator where main_facilitator_id="+str(case.partner_id and case.partner_id.id))
             sub_fac_ids = [x[0] for x in cr.fetchall()]
             sub_fac_ids.append(case.partner_id.id)
