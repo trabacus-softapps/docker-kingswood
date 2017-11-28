@@ -2288,6 +2288,7 @@ class account_invoice(osv.osv):
                                             'partner_id':partner_id,
                                              
                                             })
+                            _logger.info('end_date < today: billing Cycle Vals===================> %s',billing)
                             billing_cycle=billing_obj.create(cr,uid,billing,context)
                             billing_obj.generate_report(cr,uid,[billing_cycle],context)
                         except:
@@ -2305,6 +2306,8 @@ class account_invoice(osv.osv):
                                         'partner_id':partner_id,
                                          
                                         })
+
+                        _logger.info('if not billing_list: billing Cycle Vals===================> %s',billing)
                         billing_cycle=billing_obj.create(cr,uid,billing,context)
                         billing_obj.generate_report(cr,uid,[billing_cycle],context)
             if stock_ids_out:
