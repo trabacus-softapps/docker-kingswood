@@ -2265,9 +2265,9 @@ class account_invoice(osv.osv):
                  
 #             print "Date-",shedular_date
             # Biling Cycle should Run only for Main Facilitator
-            cr.execute("""select distinct(parent_id) from res_partner where id in %s""",(tuple(partner_ids),))
+            cr.execute("""select distinct(case when parent_id is null then id else parent_id end) as parent_id from res_partner where id in %s""",(tuple(partner_ids),))
             partner_ids = [x[0] for x in cr.fetchall()]
-
+            _logger.info('partner_ids===================> %s',partner_ids)
             for partner_id in partner_ids:
 #                 print 'Facilitator', partner_id.name
     #             context.update({'billing_ids':[{'partner_id':partner_id.id}]})
