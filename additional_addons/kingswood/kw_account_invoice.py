@@ -3025,7 +3025,9 @@ class account_voucher(osv.osv):
             ctx.update({'company_id':company_id})
             periods = self.pool.get('account.period').find(cr, uid, context=ctx)
             res.update({'period_id':periods[0]})
-            j_ids = journal_obj.search(cr,uid,[('company_id','=',company_id),('name','like','CANARA')])
+            # j_ids = journal_obj.search(cr,uid,[('company_id','=',company_id),('name','like','CANARA')])
+            # As per the latest requirement HDFC should select automaticaly
+            j_ids = journal_obj.search(cr,uid,[('company_id','=',company_id),('name','like','HDFC')])
             if not j_ids:
                 j_ids = journal_obj.search(cr,uid,[('company_id','=',company_id),('name','like','Cash')])
                 
