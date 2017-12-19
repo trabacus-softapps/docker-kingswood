@@ -2215,15 +2215,19 @@ class account_invoice(osv.osv):
                         i_final_date = [x[0] for x in cr.fetchall()]
                         if i_final_date:
                             i_final_date = i_final_date[0]
-                    if x.supp_delivery_orders_ids:
-                        cr.execute("select date from stock_picking where id in (select del_ord_id from supp_delivery_invoice_rel where invoice_id="+str(x.id)+ " order by del_ord_id desc limit 1)")
-                        i_final_date = [x[0] for x in cr.fetchall()]
-                        if i_final_date:
-                            i_final_date = i_final_date[0]
-                        cr.execute("""SELECT (date_trunc('month', '"""+str(i_final_date)+"""' ::date) + interval '1 month' - interval '1 day')::date AS end_of_month""")
-                        i_final_date = [x[0] for x in cr.fetchall()]
-                        if i_final_date:
-                            i_final_date = i_final_date[0]
+                    try:
+                        if x.supp_delivery_orders_ids:
+                            cr.execute("select date from stock_picking where id in (select del_ord_id from supp_delivery_invoice_rel where invoice_id="+str(x.id)+ " order by del_ord_id desc limit 1)")
+                            i_final_date = [x[0] for x in cr.fetchall()]
+                            if i_final_date:
+                                i_final_date = i_final_date[0]
+                            cr.execute("""SELECT (date_trunc('month', '"""+str(i_final_date)+"""' ::date) + interval '1 month' - interval '1 day')::date AS end_of_month""")
+                            i_final_date = [x[0] for x in cr.fetchall()]
+                            if i_final_date:
+                                i_final_date = i_final_date[0]
+                    except:
+                        continue
+
                     self.write(cr,uid,[invoices_ids[0]],{'date_invoice':i_final_date,'back_date':True})
                     wf_service.trg_validate(uid, 'account.invoice', invoices_ids[0], 'invoice_open', cr) 
                     merged_invoice.append(invoices_ids[0])
