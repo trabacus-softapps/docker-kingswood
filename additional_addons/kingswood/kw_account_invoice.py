@@ -2203,7 +2203,9 @@ class account_invoice(osv.osv):
                         inv_date = last_date
                     # Updating Month Date
                     i_final_date = inv_date
+                    _logger.info('invoices_ids Before x Browse===================> %s',invoices_ids[0])
                     x = self.browse(cr, uid, invoices_ids[0])
+                    _logger.info('invoices_ids After x Browse===================> %s',x)
                     if x.incoming_shipment_ids:
                         cr.execute("select date from stock_picking where id in (select in_shipment_id from incoming_shipment_invoice_rel where invoice_id="+str(x.id)+ " order by in_shipment_id desc limit 1)")
                         i_final_date = [x[0] for x in cr.fetchall()]
