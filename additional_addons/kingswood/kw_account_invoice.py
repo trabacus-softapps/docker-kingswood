@@ -1991,7 +1991,7 @@ class account_invoice(osv.osv):
         # 4. Mohd. Umar
         # Remove these partner
         if fac_state == 'Karnataka':
-            remove_ids = [1,1274,1545,2194,1214,1009,988,2113,2662,2660,2659,2658,2663,2661]
+            remove_ids = [1,1545,3138,2469]
         else:
             remove_ids = [0]
         dummy_ids.extend(remove_ids)
@@ -2345,7 +2345,7 @@ class account_invoice(osv.osv):
         state_id1 = context.get(1,False) 
         state_id2 = context.get(2,False)
         
-        context.update({'shedular_date':'2017-11-02'})
+        context.update({'shedular_date':'2017-12-19'})
 
         _logger.error('Schedular Date.....%s',context)
         res = self.create_facilitator_inv(cr,uid,[uid],context)
