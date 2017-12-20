@@ -2084,13 +2084,13 @@ class account_invoice(osv.osv):
                 if in_shipment_ids:
                     in_shipment_ids=zip(*in_shipment_ids)[0]                   
 
-            stock_ids_out = stock_obj.search(cr,uid,[('id','in',order_id),('paying_agent_id','not in',dummy_ids),('type','=','out')])
+            # stock_ids_out = stock_obj.search(cr,uid,[('id','in',order_id),('paying_agent_id','not in',dummy_ids),('type','=','out')])
+            stock_ids_out = []
+            stock_ids_in = stock_in_obj.search(cr,uid,[('id','in',in_shipment_ids),('partner_id','not in',dummy_ids),('type','=','in')])
 
-            # stock_ids_in = stock_in_obj.search(cr,uid,[('id','in',in_shipment_ids),('partner_id','not in',dummy_ids),('type','=','in')])
-            stock_ids_in = []
-            invoice_rate_out = stock_obj.get_supplier_rate(cr,uid,stock_ids_out,False,context=context)
-            invoice_rate_in = []
-            # invoice_rate_in = stock_in_obj.get_supplier_rate(cr,uid,stock_ids_in,False,context=context)
+            # invoice_rate_out = stock_obj.get_supplier_rate(cr,uid,stock_ids_out,False,context=context)
+            invoice_rate_out = []
+            invoice_rate_in = stock_in_obj.get_supplier_rate(cr,uid,stock_ids_in,False,context=context)
 
 
             if stock_ids_out:
@@ -4898,7 +4898,6 @@ class account_move(osv.osv):
         vals.update({
                     'company_id' : journal.company_id.id or False,
                     })
-        _logger.info('Move Create Vals==========================> %s',vals)
         return super(account_move,self).create(cr, uid, vals, context=context)
     
     def write(self, cr, uid, ids, vals, context=None):
