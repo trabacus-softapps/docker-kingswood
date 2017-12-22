@@ -829,6 +829,7 @@ class billing_cycle(osv.osv):
                     'uid'               : fields.many2one('res.users','user'),
 #                     'user_partner'      : fields.many2one('res.partner', 'User-Partner',track_visibility='onchange'),
                     'user_partner'       : fields.function(_get_user,type="many2one",relation="res.users",string="User-Partner",store=True),
+                    'description'       :   fields.text("Description"),
                     
                     }
     _order = 'st_date desc'
@@ -892,6 +893,7 @@ class billing_cycle(osv.osv):
                                  'supplier_name'     : case.partner_id.name or '',
                                  'freight'           : freight,
                                  'fy_st_date'        : fy_st_date,
+                                 'description'       : case.description or '',
                                  }
 
         tot_amount = 0.00
