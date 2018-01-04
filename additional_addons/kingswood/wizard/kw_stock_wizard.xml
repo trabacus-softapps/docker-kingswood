@@ -309,8 +309,8 @@
                         <group col="4" colspan="2">
                             
                             <field name="state_id" widget="selection" attrs="{'invisible':[('partner_id','=',True)]}"/>
-                            <field name="partner_id" attrs="{'invisible':[('partner_id','=',True)]}"
-                                domain="[('name','not ilike','Kingswood'),('supplier','=',True),('handling_charges','!=',True),('state_id','=',state_id)]"/>
+                            <field name="partner_id" required="1" attrs="{'invisible':[('partner_id','=',True)]}"
+                                domain="[('name','not ilike','Kingswood'),('supplier','=',True),('handling_charges','!=',True),('state_id','=',state_id),('parent_id','=',False)]"/>
                             <field name="report_type" required="1"/>
                         </group>
                         

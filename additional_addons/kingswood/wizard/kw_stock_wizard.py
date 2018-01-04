@@ -731,8 +731,10 @@ class facilitator_report(osv.osv_memory):
         today = time.strftime('%Y-%m-%d')
         cr.execute("select date_start from account_fiscalyear where date_start <= '" + str(today) + "' and date_stop >='" + str(today) + "' limit 1" )
         st_date = cr.fetchall()[0]
-        
+
         for case in self.browse(cr, uid, ids):
+            cr.execute("select bc.end_date from billing_cycle bc where bc.partner_id ='"+str(case.partner_id and case.partner_id.id or False)+"' order by id desc limit 1")
+            e_date = cr.fetchall()[0]
             report_name = 'Facilitator Estimate'
             if case.report_type == 'balance':
                 report_name = 'Facilitator Balance'
@@ -750,6 +752,9 @@ class facilitator_report(osv.osv_memory):
                              'p_id'   : case.partner_id and case.partner_id.id or 0,
                              'st_date': st_date and st_date[0] or False
                              }
+        if report_name == 'Facilitator Estimate':
+            data['variables'].update({'e_date' : e_date and e_date[0] or False})
+
         print "variables", data['variables']
         data['ids'] = ids
         data['output_type'] = 'pdf'
