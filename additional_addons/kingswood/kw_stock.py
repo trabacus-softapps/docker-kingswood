@@ -5572,6 +5572,7 @@ class stock_picking(osv.osv):
                 'transit_pass' : False,
                 'is_bank_submit' : False,
                 'frieght_paid'  : False,
+                'hnl_filename'  : 'HNL - Letter to DFO',
                }
 
     # Actions
