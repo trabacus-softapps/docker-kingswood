@@ -465,9 +465,10 @@
 		                            <field name="filename" invisible='1'/>
 		                        	<field name="fd_filename" invisible='1'/>
 		                        	<field name="is_farm_decl" invisible='1'/>
-		                           <field name="attachment" filename="filename" attrs="{'invisible': [('amc_attachment','!=',True)]}"/>
+									<field name="is_hnl_attachment" invisible="1"/>
+		                            <field name="attachment" filename="filename" attrs="{'invisible': [('amc_attachment','!=',True)]}"/>
 		                        	<field name="farmer_declaration" filename="fd_filename" attrs="{'invisible': [('is_farm_decl','!=',True)]}"/>
-		                        	
+		                        	<field name="hnl_attachment" filename="hnl_filename" attrs="{'invisible': [('is_hnl_attachment','!=',True)]}"/>
 		                        	<field name="gen_freight" attrs="{'readonly':[('state', 'in', ('in_transit','done','freight_paid','cancel'))],'invisible':[('show_freight','!=',True)]}"
 		                        		groups="kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service"/>
 		                            
@@ -770,9 +771,11 @@
 		                        	<field name="is_farm_decl" invisible='1'/>
 		                             <field name="filename" invisible='1'/>
 		                        	<field name="fd_filename" invisible='1'/>
+									<field name="is_hnl_attachment" invisible="1"/>
 		                            <field name="attachment" filename="filename" attrs="{'invisible': [('amc_attachment','!=',True)]}"/>
 		                        	<field name="farmer_declaration" filename="fd_filename" attrs="{'invisible': [('is_farm_decl','!=',True)]}"/>
-								 </group>
+									<field name="hnl_attachment" filename="hnl_filename" attrs="{'invisible': [('is_hnl_attachment','!=',True)]}"/>
+								</group>
 		                    	
 							 </group>
 		                    <hr/>

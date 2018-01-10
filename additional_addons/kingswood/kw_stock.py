@@ -785,7 +785,12 @@ class stock_picking_out(osv.osv):
 
                 'sub_facilitator_id'    :   fields.many2one("res.partner", "Sub Facilitator"),
                 'purchase_amount'       :   fields.float("Purchase Amount", digits=(16,2)),
-                'is_sub_facilitator'    :   fields.boolean("Is Sub Facilitator")
+                'is_sub_facilitator'    :   fields.boolean("Is Sub Facilitator"),
+
+                'hnl_attachment'        :   fields.related('company_id','hnl_attachment',type='binary',store=False,string="HNL Attachment"),
+                'is_hnl_attachment'     :   fields.related('partner_id','is_hnl_attachment',type='boolean',store=False,string="HNL Attachment",readonly=True),
+                'hnl_filename'          :   fields.char("File Name", size=20),
+
               }
     
     _order = 'date desc'
@@ -810,6 +815,7 @@ class stock_picking_out(osv.osv):
                     'transit_pass' : False,
                     'is_bank_submit' :  False,
                     'frieght_paid'   : False,
+                    'hnl_filename'  :   "HNL - Letter to DFO.pdf",
 
 #                  'customer_list' : _default_get_customer,
 #                  'hide_fields' : True 
@@ -1045,6 +1051,9 @@ class stock_picking_out(osv.osv):
             res['dc_report'] = i.dc_report or False
             res['show_jjform'] = i.show_jjform or False
             res['es_active'] = i.es_active or False
+            res['is_hnl_attachment'] = i.is_hnl_attachment or False
+            res['hnl_attachment'] = i.company_id and i.company_id.hnl_attachment or False
+
             if freight:
                 res['freight']=freight
             else:
@@ -5533,7 +5542,11 @@ class stock_picking(osv.osv):
 
                 'sub_facilitator_id'    :   fields.many2one("res.partner", "Sub Facilitator"),
                 'purchase_amount'       :   fields.float("Purchase Amount", digits=(16,2)),
-                'is_sub_facilitator'    :   fields.boolean("Is Sub Facilitator")
+                'is_sub_facilitator'    :   fields.boolean("Is Sub Facilitator"),
+
+                'hnl_attachment'            :   fields.related('company_id','hnl_attachment',type='binary',store=False,string="HNL Attachment"),
+                'is_hnl_attachment'        :   fields.related('partner_id','is_hnl_attachment',type='boolean',store=False,string="HNL Attachment",readonly=True),
+                'hnl_filename'          :   fields.char("File Name", size=20),
 
               }
     _order = 'date desc'
