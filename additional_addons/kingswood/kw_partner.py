@@ -203,6 +203,8 @@ class res_partner(osv.osv):
                 # GST Purchase
                 'sub_facilitator_ids'   :   fields.one2many("sub.facilitator", 'main_facilitator_id', "Sub Facilitators"),
                 'sub_facilitator'       :   fields.boolean("Is Sub Facilitator"),
+
+                'is_hnl_attachment'     :   fields.boolean('HNL Attachment'),
               }
     _defaults={
                'customer':True,
@@ -538,6 +540,7 @@ class res_company(osv.osv):
                 'attachment'        :   fields.binary("APMC Attachment"),
                 'farmer_declaration':   fields.binary("Farmer Declaration"),
                 'gstin_code'        :   fields.char("GST IN Code", size=20),
+                'hnl_attachment'    :   fields.binary("HNL Attachment"),
              }
     _defaults={
                
