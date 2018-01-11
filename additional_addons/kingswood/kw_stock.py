@@ -789,7 +789,7 @@ class stock_picking_out(osv.osv):
 
                 'hnl_attachment'        :   fields.related('company_id','hnl_attachment',type='binary',store=False,string="HNL Attachment"),
                 'is_hnl_attachment'     :   fields.related('partner_id','is_hnl_attachment',type='boolean',store=False,string="HNL Attachment",readonly=True),
-                'hnl_filename'          :   fields.char("File Name", size=20),
+                'hnl_filename'          :   fields.char("File Name", size=30),
 
               }
     
@@ -815,7 +815,7 @@ class stock_picking_out(osv.osv):
                     'transit_pass' : False,
                     'is_bank_submit' :  False,
                     'frieght_paid'   : False,
-                    'hnl_filename'  :   "HNL - Letter to DFO.pdf",
+                    'hnl_filename'  :   "HNL-Letter to DFO.pdf",
 
 #                  'customer_list' : _default_get_customer,
 #                  'hide_fields' : True 
@@ -5546,7 +5546,7 @@ class stock_picking(osv.osv):
 
                 'hnl_attachment'            :   fields.related('company_id','hnl_attachment',type='binary',store=False,string="HNL Attachment"),
                 'is_hnl_attachment'        :   fields.related('partner_id','is_hnl_attachment',type='boolean',store=False,string="HNL Attachment",readonly=True),
-                'hnl_filename'          :   fields.char("File Name", size=20),
+                'hnl_filename'          :   fields.char("File Name", size=30),
 
               }
     _order = 'date desc'
@@ -5572,7 +5572,7 @@ class stock_picking(osv.osv):
                 'transit_pass' : False,
                 'is_bank_submit' : False,
                 'frieght_paid'  : False,
-                'hnl_filename'  : 'HNL - Letter to DFO.pdf',
+                'hnl_filename'  :   "HNL-Letter to DFO.pdf",
                }
 
     # Actions
