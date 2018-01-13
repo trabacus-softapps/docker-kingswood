@@ -790,7 +790,8 @@ class stock_picking_out(osv.osv):
                 'hnl_attachment'        :   fields.related('company_id','hnl_attachment',type='binary',store=False,string="HNL Attachment"),
                 'is_hnl_attachment'     :   fields.related('partner_id','is_hnl_attachment',type='boolean',store=False,string="HNL Attachment",readonly=True),
                 'hnl_filename'          :   fields.char("File Name", size=30),
-
+                'po_hnl_attachment'     :   fields.related('company_id','hnl_po_attachment',type='binary',store=False,string="HNL Attachment"),
+                'hnl_po_filename'          :   fields.char("File Name", size=30),
               }
     
     _order = 'date desc'
@@ -816,6 +817,7 @@ class stock_picking_out(osv.osv):
                     'is_bank_submit' :  False,
                     'frieght_paid'   : False,
                     'hnl_filename'  :   "HNL-Letter to DFO.pdf",
+                    'hnl_po_filename' : "HNL PO File.pdf",
 
 #                  'customer_list' : _default_get_customer,
 #                  'hide_fields' : True 
@@ -1053,6 +1055,7 @@ class stock_picking_out(osv.osv):
             res['es_active'] = i.es_active or False
             res['is_hnl_attachment'] = i.is_hnl_attachment or False
             res['hnl_attachment'] = i.company_id and i.company_id.hnl_attachment or False
+            res['po_hnl_attachment'] = i.company_id and i.company_id.hnl_po_attachment or False
 
             if freight:
                 res['freight']=freight
@@ -5547,6 +5550,8 @@ class stock_picking(osv.osv):
                 'hnl_attachment'            :   fields.related('company_id','hnl_attachment',type='binary',store=False,string="HNL Attachment"),
                 'is_hnl_attachment'        :   fields.related('partner_id','is_hnl_attachment',type='boolean',store=False,string="HNL Attachment",readonly=True),
                 'hnl_filename'          :   fields.char("File Name", size=30),
+                'po_hnl_attachment'     :   fields.related('company_id','hnl_po_attachment',type='binary',store=False,string="HNL Attachment"),
+                'hnl_po_filename'          :   fields.char("File Name", size=30),
 
               }
     _order = 'date desc'
@@ -5573,6 +5578,7 @@ class stock_picking(osv.osv):
                 'is_bank_submit' : False,
                 'frieght_paid'  : False,
                 'hnl_filename'  :   "HNL-Letter to DFO.pdf",
+                'hnl_po_filename' : "HNL PO File.pdf"
                }
 
     # Actions
