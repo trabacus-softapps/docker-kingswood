@@ -1408,7 +1408,7 @@ select
                     and aml.date <(select tp.end_date from tmp_cycle tp where partner_id = part_id)::date
                     and aml.date>='2014-04-01'::date
                     and aml.ref not like 'DC/%' and aml.ref not like 'KA/%' and aml.ref not like 'TN/%'
-                    and rp.id in (select partner_id from tmp_cycle)
+                    and rp.id in (select distinct(partner_id) from tmp_cycle)
 
 
 		union all
@@ -1436,7 +1436,7 @@ select
 						  distinct(ai.id)
 
 					from account_invoice ai
-					inner join tmp_cycle tc1 on tc1.partner_id in (select partner_id from tmp_cycle)
+					inner join tmp_cycle tc1 on tc1.partner_id in (select distinct(partner_id) from tmp_cycle)
 					where ai.partner_id in (select distinct(partner_id) from tmp_cycle)
 
 					and ai.date_invoice <st_date::date and state not in ('draft','cancel')

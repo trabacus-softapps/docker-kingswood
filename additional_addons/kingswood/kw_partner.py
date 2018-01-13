@@ -205,6 +205,8 @@ class res_partner(osv.osv):
                 'sub_facilitator'       :   fields.boolean("Is Sub Facilitator"),
 
                 'is_hnl_attachment'     :   fields.boolean('HNL Attachment'),
+                'is_po_hnl_attachment'     :   fields.boolean('HNL PO Attachment'),
+
               }
     _defaults={
                'customer':True,
@@ -541,6 +543,7 @@ class res_company(osv.osv):
                 'farmer_declaration':   fields.binary("Farmer Declaration"),
                 'gstin_code'        :   fields.char("GST IN Code", size=20),
                 'hnl_attachment'    :   fields.binary("HNL Attachment"),
+                'hnl_po_attachment'    :   fields.binary("HNL PO Attachment"),
              }
     _defaults={
                
