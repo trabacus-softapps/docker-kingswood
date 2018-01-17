@@ -1991,7 +1991,7 @@ class account_invoice(osv.osv):
         # 4. Mohd. Umar
         # Remove these partner
         if fac_state == 'Karnataka':
-            remove_ids = [1,1274,1545,2194,1214,1009,988,2113,2662,2660,2659,2658,2663,2661]
+            remove_ids = [1,1545,3138,2469]
         else:
             remove_ids = [0]
         dummy_ids.extend(remove_ids)
@@ -2086,10 +2086,10 @@ class account_invoice(osv.osv):
 
             stock_ids_out = stock_obj.search(cr,uid,[('id','in',order_id),('paying_agent_id','not in',dummy_ids),('type','=','out')])
 
-            stock_ids_in = stock_in_obj.search(cr,uid,[('id','in',in_shipment_ids),('partner_id','not in',dummy_ids),('type','=','in')]) 
+            stock_ids_in = stock_in_obj.search(cr,uid,[('id','in',in_shipment_ids),('partner_id','not in',dummy_ids),('type','=','in')])
 
             invoice_rate_out = stock_obj.get_supplier_rate(cr,uid,stock_ids_out,False,context=context)
-            
+
             invoice_rate_in = stock_in_obj.get_supplier_rate(cr,uid,stock_ids_in,False,context=context)
 
 
@@ -2203,7 +2203,9 @@ class account_invoice(osv.osv):
                         inv_date = last_date
                     # Updating Month Date
                     i_final_date = inv_date
+                    _logger.info('invoices_ids Before x Browse===================> %s',invoices_ids[0])
                     x = self.browse(cr, uid, invoices_ids[0])
+                    _logger.info('invoices_ids After x Browse===================> %s',x)
                     if x.incoming_shipment_ids:
                         cr.execute("select date from stock_picking where id in (select in_shipment_id from incoming_shipment_invoice_rel where invoice_id="+str(x.id)+ " order by in_shipment_id desc limit 1)")
                         i_final_date = [x[0] for x in cr.fetchall()]
@@ -2213,15 +2215,19 @@ class account_invoice(osv.osv):
                         i_final_date = [x[0] for x in cr.fetchall()]
                         if i_final_date:
                             i_final_date = i_final_date[0]
-                    if x.supp_delivery_orders_ids:
-                        cr.execute("select date from stock_picking where id in (select del_ord_id from supp_delivery_invoice_rel where invoice_id="+str(x.id)+ " order by del_ord_id desc limit 1)")
-                        i_final_date = [x[0] for x in cr.fetchall()]
-                        if i_final_date:
-                            i_final_date = i_final_date[0]
-                        cr.execute("""SELECT (date_trunc('month', '"""+str(i_final_date)+"""' ::date) + interval '1 month' - interval '1 day')::date AS end_of_month""")
-                        i_final_date = [x[0] for x in cr.fetchall()]
-                        if i_final_date:
-                            i_final_date = i_final_date[0]
+                    try:
+                        if x.supp_delivery_orders_ids:
+                            cr.execute("select date from stock_picking where id in (select del_ord_id from supp_delivery_invoice_rel where invoice_id="+str(x.id)+ " order by del_ord_id desc limit 1)")
+                            i_final_date = [x[0] for x in cr.fetchall()]
+                            if i_final_date:
+                                i_final_date = i_final_date[0]
+                            cr.execute("""SELECT (date_trunc('month', '"""+str(i_final_date)+"""' ::date) + interval '1 month' - interval '1 day')::date AS end_of_month""")
+                            i_final_date = [x[0] for x in cr.fetchall()]
+                            if i_final_date:
+                                i_final_date = i_final_date[0]
+                    except:
+                        continue
+
                     self.write(cr,uid,[invoices_ids[0]],{'date_invoice':i_final_date,'back_date':True})
                     wf_service.trg_validate(uid, 'account.invoice', invoices_ids[0], 'invoice_open', cr) 
                     merged_invoice.append(invoices_ids[0])
@@ -2265,9 +2271,9 @@ class account_invoice(osv.osv):
                  
 #             print "Date-",shedular_date
             # Biling Cycle should Run only for Main Facilitator
-            cr.execute("""select distinct(parent_id) from res_partner where id in %s""",(tuple(partner_ids),))
+            cr.execute("""select distinct(case when parent_id is null then id else parent_id end) as parent_id from res_partner where id in %s""",(tuple(partner_ids),))
             partner_ids = [x[0] for x in cr.fetchall()]
-
+            _logger.info('partner_ids===================> %s',partner_ids)
             for partner_id in partner_ids:
 #                 print 'Facilitator', partner_id.name
     #             context.update({'billing_ids':[{'partner_id':partner_id.id}]})
@@ -2288,6 +2294,7 @@ class account_invoice(osv.osv):
                                             'partner_id':partner_id,
                                              
                                             })
+                            _logger.info('end_date < today: billing Cycle Vals===================> %s',billing)
                             billing_cycle=billing_obj.create(cr,uid,billing,context)
                             billing_obj.generate_report(cr,uid,[billing_cycle],context)
                         except:
@@ -2305,6 +2312,8 @@ class account_invoice(osv.osv):
                                         'partner_id':partner_id,
                                          
                                         })
+
+                        _logger.info('if not billing_list: billing Cycle Vals===================> %s',billing)
                         billing_cycle=billing_obj.create(cr,uid,billing,context)
                         billing_obj.generate_report(cr,uid,[billing_cycle],context)
             if stock_ids_out:
@@ -2342,7 +2351,7 @@ class account_invoice(osv.osv):
         state_id1 = context.get(1,False) 
         state_id2 = context.get(2,False)
         
-        context.update({'shedular_date':'2017-10-01'})
+        context.update({'shedular_date':'2017-12-20'})
 
         _logger.error('Schedular Date.....%s',context)
         res = self.create_facilitator_inv(cr,uid,[uid],context)
@@ -3022,7 +3031,9 @@ class account_voucher(osv.osv):
             ctx.update({'company_id':company_id})
             periods = self.pool.get('account.period').find(cr, uid, context=ctx)
             res.update({'period_id':periods[0]})
-            j_ids = journal_obj.search(cr,uid,[('company_id','=',company_id),('name','like','CANARA')])
+            # j_ids = journal_obj.search(cr,uid,[('company_id','=',company_id),('name','like','CANARA')])
+            # As per the latest requirement HDFC should select automaticaly
+            j_ids = journal_obj.search(cr,uid,[('company_id','=',company_id),('name','like','HDFC')])
             if not j_ids:
                 j_ids = journal_obj.search(cr,uid,[('company_id','=',company_id),('name','like','Cash')])
                 
@@ -4887,7 +4898,6 @@ class account_move(osv.osv):
         vals.update({
                     'company_id' : journal.company_id.id or False,
                     })
-        _logger.info('Move Create Vals==========================> %s',vals)
         return super(account_move,self).create(cr, uid, vals, context=context)
     
     def write(self, cr, uid, ids, vals, context=None):

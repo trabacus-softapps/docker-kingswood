@@ -737,12 +737,541 @@ CREATE OR REPLACE FUNCTION facilitator_balance(start_dt date, part_state integer
   --                       Faciliator Estimate and Balance 
   --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
+-- drop type if exists est_bal_type cascade;
+--
+-- create type est_bal_type as (
+-- 		  id integer,
+-- 		  end_date date,
+-- 		  partner varchar(128),
+-- 		  partner_id integer,
+-- 		  state_name varchar(128),
+-- 		  debit numeric,
+-- 		  credit numeric,
+-- 		  balance numeric,
+-- 		  payments numeric,
+-- 		  receipts numeric,
+-- 		  estimate numeric
+--
+-- 	  );
+--
+-- drop function if exists facilitator_estimate(date, integer, integer);
+-- CREATE OR REPLACE FUNCTION facilitator_estimate(start_dt date, part_state integer, part_id integer)
+--   RETURNS SETOF est_bal_type AS
+--   $BODY$
+--     DECLARE
+--        r est_bal_type%rowtype;
+--        fy_st_date timestamp;
+--
+--     BEGIN
+-- 	fy_st_date := to_char((start_dt || ' 00:00:00')::timestamp, 'yyyy-mm-dd hh24:mi:ss');
+--
+-- 	DROP SEQUENCE if exists est_seq;
+--     	CREATE TEMP sequence est_seq;
+--
+-- 	DROP TABLE if exists tmp_cycle	;
+--     	CREATE TEMP TABLE tmp_cycle(
+-- 		id integer,
+-- 		st_date date,
+-- 		end_date date,
+-- 		partner_id integer);
+--
+--
+-- 	DROP TABLE if exists partner_estimate;
+-- 	CREATE TEMP TABLE partner_estimate(
+-- 		  id  integer,
+-- 		  end_date date,
+-- 		  partner varchar(128),
+-- 		  partner_id integer,
+-- 		  state_name varchar(128),
+-- 		  debit numeric,
+-- 		  credit numeric,
+-- 		  balance numeric,
+-- 		  payments numeric,
+-- 		  receipts numeric,
+-- 		  estimate numeric
+-- 		  );
+--
+-- 	insert into tmp_cycle(id,st_date,end_date,partner_id)
+-- 	(	select
+-- 			1 as id
+-- 			, bc1.st_date
+-- 			, bc1.end_date
+-- 			, bc1.partner_id
+-- 		from billing_cycle bc1
+-- 		inner join res_partner rp1 on rp1.id = bc1.partner_id
+-- 		left outer join res_country_state rcs on rcs.id = rp1.state_id
+-- 		where bc1.id in
+-- 			(
+-- 				select
+-- 				bc.id
+-- 				from billing_cycle bc
+-- 				inner join res_partner rs on rs.id = bc.partner_id
+-- 				where bc.partner_id in (rp1.id)
+-- 				order by end_date desc limit 1
+-- 			)
+-- 		and case when part_state >0 then rcs.id = part_state else rcs.id >0 end
+-- 		and case when part_id >0 then rp1.id = part_id else rp1.id >0 end
+-- 		and rp1.name not ilike '%Kingswood%'
+-- 		and rp1.supplier is true
+-- 		and not rp1.handling_charges
+--
+-- 	);
+--
+--
+--
+-- INSERT INTO partner_estimate(id, end_date, partner,  partner_id, state_name,debit, credit, balance, payments, receipts, estimate)
+-- (
+--
+-- select
+-- 		  nextval('est_seq') as id
+-- 		, zz.end_date
+-- 		, zz.partner_name
+-- 		, zz.partner
+-- 		, zz.state_name
+-- 		, sum(zz.debit) as debit
+-- 		, sum(zz.credit) as credit
+-- 		, (sum(debit) - sum(credit)) as balance
+-- 		, case when z.payments is not null then z.payments else 0 end as payments
+-- 		, case when z.receipt is not null then z.receipt else 0 end as receipts
+-- 		, case when z.estimate is not null then z.estimate else 0 end as estimate
+-- 		--, z.partner_id
+--
+-- 	from
+-- 	(
+-- 	select
+-- 		b.end_date,
+-- 		b.partner_id as partner,
+-- 		b.partner_name,
+-- 		b.state_name,
+-- 		'2014-04-01'::date as date,
+-- 		'TO OPENING BALANCE' AS name,
+-- 		 case when (sum(b.bal) + sum(freight))>0 then
+-- 		 abs(sum(b.bal) + sum(freight)) else 0 end  AS debit,
+--
+-- 		 case when (sum(b.bal) + sum(freight))>0 then 0
+-- 		 else abs(sum(b.bal) + sum(freight)) end AS credit
+--
+-- 		from
+-- 		(select
+-- 			tc.end_date,
+-- 			aml.partner_id,
+-- 			rp.name as partner_name,
+-- 			rs.name as state_name,
+-- 			case when sum(debit-credit) is null then 0 else  sum(debit-credit) end as bal,
+-- 			0 as freight
+-- 		from account_move_line aml
+-- 		inner join res_partner rp on aml.partner_id = rp.id
+-- 		inner join res_country_state rs on rs.id = rp.state_id
+-- 		inner join tmp_cycle tc on tc.partner_id = rp.id
+-- 		AND aml.account_id in
+-- 			    ((SELECT substr(value_reference,17)::integer
+-- 			     FROM ir_property
+-- 			     WHERE name = 'property_account_payable'
+-- 			     AND res_id = 'res.partner,' || rp.id),rp.account_pay)
+-- 		and aml.date<tc.st_date::date
+-- 		and aml.date>='2014-04-01'::date --fiscal_year
+-- 		and aml.partner_id = tc.partner_id
+-- 		--excluding freight advances
+-- 		and aml.ref not like 'DC%'
+-- 		group by aml.partner_id, rp.name, rs.name,tc.end_date
+-- 		--order by aml.partner_id, rp.name, rs.name
+--
+--
+-- 		union all
+--
+-- 		select
+-- 				tc3.end_date,
+-- 				sp.paying_agent_id as partner_id,
+-- 				rp.name as partner_name,
+-- 				rcs.name as state_name,
+-- 				0 as bal,
+-- 				case when sum(freight_balance)>0 then sum(freight_balance) else 0 end  as freight
+-- 			from stock_picking sp
+-- 			inner join account_voucher a on sp.name = a.reference
+-- 			inner join tmp_cycle tc3 on a.partner_id = tc3.partner_id
+-- 			inner join res_partner rp on rp.id = a.partner_id
+-- 			left outer join res_country_state rcs on rcs.id = rp.state_id
+-- 			where sp.sup_invoice is true and sp.state='freight_paid'
+-- 			and sp.id in
+-- 				(select distinct del_ord_id from supp_delivery_invoice_rel sl
+-- 					inner join account_invoice ai1 on ai1.id = sl.invoice_id
+-- 					inner join tmp_cycle tc2 on tc2.partner_id = ai1.partner_id
+-- 					where invoice_id in
+-- 					(select
+-- 						ai.id
+-- 					from account_invoice ai
+-- 					inner join tmp_cycle tc1 on tc1.partner_id = ai.partner_id
+-- 					where ai.partner_id = tc1.partner_id
+-- 					--and ai.partner_id = 1541
+-- 					and ai.date_invoice <tc1.st_date::date
+-- 					and state not in ('draft','cancel')
+-- 					and type = 'in_invoice'
+-- 					)
+-- 					and ai1.partner_id = tc2.partner_id
+-- 				)
+-- 					and a.partner_id = tc3.partner_id
+--
+-- 			group by sp.paying_agent_id, rp.name, rcs.name ,tc3.end_date
+-- 		)b
+--
+-- 		group by b.partner_id, b.partner_name,b.state_name,b.end_date
+--
+--
+-- 	union all
+--
+--
+-- 	(select
+-- 		x.end_date,
+-- 		partner as partner,
+-- 		x.partner_name,
+-- 		x.state_name,
+-- 		x.date_invoice,
+-- 		x.name AS name,
+-- 		sum(x.debit) as debit,
+-- 		sum(x.credit) as credit
+-- 		from
+-- 	(select
+-- 		tc.end_date,
+-- 		rp1.id as partner,
+-- 		rp1.name as partner_name,
+-- 		rs.name as state_name,
+-- 		v1.date as date_invoice,
+-- 		case when v1.reference is null then number else v1.reference end as name,
+-- 		v1.amount as debit,
+-- 		0 as credit
+-- 	from account_voucher v1
+-- 	inner join res_partner rp1 on rp1.id = v1.partner_id
+-- 	inner join res_country_state rs on rs.id = rp1.state_id
+-- 	inner join tmp_cycle tc on tc.partner_id = rp1.id
+-- 	where v1.type in ('payment','sale')
+-- 	and v1.freight =false
+-- 	and amount >0
+-- 	and v1.date between tc.st_date::date and tc.end_date::date
+--
+-- 	union all
+--
+-- 	select
+-- 		tc.end_date,
+-- 		rp2.id as partner,
+-- 		rp2.name as partner_name,
+-- 		rs.name as state_name,
+-- 		v2.date,
+-- 		case when reference is null then number else reference end as name,
+-- 		0 as debit,
+-- 		amount as credit
+-- 	from account_voucher v2
+-- 	inner join res_partner rp2 on rp2.id = v2.partner_id
+-- 	left outer join res_country_state rs on rs.id = rp2.state_id
+-- 	inner join tmp_cycle tc on tc.partner_id = rp2.id
+-- 	where v2.type in ('purchase','receipt')
+-- 	and v2.freight =false and v2.partner_id = tc.partner_id
+-- 	and amount >0
+-- 	and v2.date between tc.st_date::date and tc.end_date::date
+--
+-- 	union all
+--
+-- 	--to get refund which are not in line
+-- 	select
+-- 		tc.end_date,
+-- 		i.partner_id as partner,
+-- 		rp3.name as partner_name,
+-- 		rs.name as state_name,
+-- 		i.date_invoice,
+-- 		'Refund' || '-' || (case when reference is null then i.origin else i.reference end) as name,
+-- 		i.amount_total as debit,
+-- 		0 as credit
+-- 	from account_invoice i
+-- 	inner join supp_delivery_invoice_rel sl
+-- 	on sl.invoice_id = i.id
+-- 	inner join res_partner rp3 on rp3.id = i.partner_id
+-- 	inner join res_country_state rs on rs.id = rp3.state_id
+-- 	inner join tmp_cycle tc on tc.partner_id = rp3.id
+-- 	where i.type = 'in_refund' and i.state = 'open'
+-- 	and sl.del_ord_id not in (select sp.id from stock_picking sp
+-- 				left outer join account_invoice_line ln on ln.id = sp.invoice_line_id
+-- 				left outer join account_invoice_line fln on fln.id = sp.finvoice_line_id
+-- 				inner join account_invoice i on i.id in (fln.invoice_id,ln.invoice_id)
+-- 				inner join tmp_cycle tc1 on tc1.partner_id = i.partner_id
+-- 				and  i.state in ('open','paid')
+-- 				and i.date_invoice between tc1.st_date::date and tc1.end_date::date
+-- 				and i.type = 'in_invoice'
+-- 			)
+-- 	and i.date_invoice between tc.st_date::date and tc.end_date::date
+--
+-- 	union all
+-- 	--to get refund invoice with out DO
+-- 	select
+-- 		tc.end_date,
+-- 		i.partner_id as partner,
+-- 		rp4.name as partner_name,
+-- 		rs.name as state_name,
+-- 		i.date_invoice,
+-- 		'Refund' || '-' || (case when reference is null then i.number else i.reference end) as name,
+-- 		i.amount_total as debit,
+-- 		0 as credit
+-- 	from account_invoice i
+-- 	left outer join supp_delivery_invoice_rel sl
+-- 	on sl.invoice_id = i.id
+-- 	inner join res_partner rp4 on rp4.id = i.partner_id
+-- 	inner join res_country_state rs on rs.id = rp4.state_id
+-- 	inner join tmp_cycle tc on tc.partner_id = rp4.id
+-- 	where i.type = 'in_refund' and i.state not in ('draft','cancel')
+-- 	and i.date_invoice between tc.st_date::date and tc.end_date::date
+-- 	and sl.del_ord_id is null
+-- 	)x
+-- 	group by x.partner, x.partner_name, x.state_name, x.date_invoice, x.name,x.end_date
+-- 	order by x.date_invoice)
+--
+--
+-- 	union all
+-- 		(
+-- 		select
+-- 		  xi.end_date
+-- 		, xi.partner_id as partner
+-- 		, xi.name as partner_name
+-- 		, xi.state_name
+-- 		, now()::date as date_invoice
+-- 		,'LESS RECEIPTS' AS name
+-- 		,'0' AS debit
+-- 		,sum(xi.unloaded_qty * xi.price_unit)-
+-- 		(case when sum(yi.amount) is null then 0 else sum (yi.amount)end)-
+-- 		(case when sum(xi.ded_amt) is null then 0 else sum(xi.ded_amt) end) as credit
+-- 		from
+-- 	(SELECT distinct sp.name as dc_no
+-- 			,sp.date
+-- 			, tc.end_date
+-- 			, rp.name
+-- 			, rs.name as state_name
+-- 			,p.default_code
+-- 			,i.partner_id
+-- 			,case when sm.deduction_amt>0 then sm.deduction_amt else 0 end as ded_amt
+-- 		,case when sp.type = 'out' then (case when sm.unloaded_qty >0 then sm.unloaded_qty else sm.cft1+sm.cft2 end)
+-- 			else sm.product_qty end as unloaded_qty
+-- 		,case when sm.rejected_qty>0 then sm.rejected_qty else 0 end as rejected_qty
+-- 		,case when fln.price_unit is not null then ln.price_unit + fln.price_unit else  ln.price_unit end as price_unit
+-- 		,case when sm.rejected_qty >0 then sm.rejected_qty else 0 end
+-- 		from stock_picking sp
+-- 		left outer join account_invoice_line ln on ln.id = sp.invoice_line_id
+-- 		left outer join account_invoice_line fln on fln.id = sp.finvoice_line_id
+-- 		inner join account_invoice i on i.id in (fln.invoice_id,ln.invoice_id)
+-- 		inner join stock_move sm on
+-- 		sm.picking_id = sp.id
+-- 		inner join product_product p on
+-- 		p.id = sm.product_id
+-- 		inner join stock_location sl on sl.id = sm.location_dest_id
+-- 		inner join res_partner rp on
+-- 		case when sp.type = 'out' then rp.id = sp.paying_agent_id else rp.id = sp.partner_id end
+-- 		inner join res_country_state rs on rs.id = rp.state_id
+-- 		inner join tmp_cycle tc on tc.partner_id = rp.id
+-- 		where i.date_invoice between tc.st_date::date and  tc.end_date::date
+-- 		and i.partner_id = tc.partner_id
+-- 		and  i.state in ('open','paid')
+-- 		and sp.state in ('done','freight_paid')
+--
+-- 		order by p.default_code,i.partner_id
+-- 		)xi
+-- 		left outer join
+-- 		(select  a.amount  as amount
+-- 			,a.reference from stock_picking sp
+-- 			left join account_voucher a  on
+-- 			a.reference = sp.name
+-- 			left outer join account_invoice_line ln on ln.id = sp.invoice_line_id
+-- 			left outer join account_invoice_line fln on fln.id = sp.finvoice_line_id
+-- 			inner join account_invoice i on i.id in (fln.invoice_id,ln.invoice_id)
+-- 			inner join tmp_cycle tc on tc.partner_id = i.partner_id
+-- 			where a.freight = true
+-- 			and  i.state in ('open','paid')
+-- 			and i.date_invoice between tc.st_date::date and  tc.end_date::date
+-- 			group by a.reference,a.amount
+-- 			order by a.reference
+-- 		)yi on xi.dc_no = yi.reference
+-- 		group by  xi.name,xi.state_name,xi.partner_id,xi.end_date
+-- 		)
+-- 		)zz
+--
+--
+-- 	left outer join
+--
+--
+-- --- Estimate
+--
+-- 	(select
+-- 		ab.partner_id
+-- 		, ab.supp_name
+-- 		, sum(ab.debit) as payments
+--
+-- 		, sum(ab.credit) as receipt
+-- 		, sum(ab.estimated_amt) + sum(ab.credit) as estimate
+-- 	from
+-- 	(
+-- 		(select
+-- 			a.partner_id
+-- 			, a.supp_name
+-- 			, 0 as debit
+-- 			, 0 as credit
+-- 			-- substracting the freight paid amount
+-- 			, case when sum(a.price_unit) is not null then sum((a.price_unit * a.qty)+a.freight_balance) - sum(fre_total)
+-- 			else sum((a.line_price * a.qty)+ a.freight_balance) - sum(fre_total) end as estimated_amt
+--
+-- 			from
+-- 			(
+-- 				(	select sp.name as dc_no
+-- 					, sp.date
+-- 					, sp.state
+-- 					--, sm.unloaded_qty
+-- 					, sp.paying_agent_id as partner_id
+-- 					, case when sp.state = 'in_transit' then sm.product_qty else sm.unloaded_qty end as qty
+-- 					, case when sp.state != 'freight_paid' then
+-- 						case when (sm.product_qty * sp.freight_charge) is not null then  (sm.product_qty * sp.freight_charge)
+-- 						else 0 end else 0 end as fre_total
+-- 					, (	select
+-- 							case when kw.product_price is not null
+-- 							then kw.product_price + (case when kw.transport_price is not null then kw.transport_price else 0 end)  else 0 end
+-- 						from product_supplierinfo ps
+-- 						inner join kw_product_price kw on ps.id = kw.supp_info_id
+-- 						and ps.name = sp.paying_agent_id
+-- 						and ps.customer_id = sp.partner_id
+-- 						and ef_date <= sm.delivery_date
+-- 						and ps.product_id = sm.product_id
+-- 						order by ef_date desc limit 1) as price_unit
+--
+-- 					, sm.price_unit as line_price
+-- 					, case when sp.state = 'freight_paid' then -sp.freight_balance else 0 end as freight_balance
+-- 					, rp.name as supp_name
+-- 				from stock_picking sp
+-- 				inner join stock_move sm on
+-- 				sm.picking_id = sp.id
+-- 				inner join product_product p on
+-- 				p.id = sm.product_id
+-- 				inner join res_partner rp on
+-- 				rp.id = sp.paying_agent_id
+-- 				inner join tmp_cycle tc on tc.partner_id = rp.id
+-- 				where sp.create_date::date <=now()::date
+-- 				and sp.create_date::date >= (select date_start from account_fiscalyear where date_start <= now()::date and date_stop >=now()::date order by id desc limit 1)
+-- 				and sp.state not in ('draft','cancel')
+-- 				and invoice_line_id is null
+-- 				and finvoice_line_id is null
+-- 				AND rp.name not ilike '%Kingswood%'
+-- 				and rp.supplier is true and rp.handling_charges is false
+-- 				order by sp.paying_agent_id
+-- 				)
+-- 			union all
+-- 			(
+-- 			select sp.name as dc_no
+-- 				, sp.date
+-- 				, sp.state
+-- 				, sp.partner_id as partner_id
+-- 				, sm.product_qty as qty
+-- 				,0 as fre_total
+-- 				, (	select
+-- 						case when kw.product_price is not null
+-- 						then kw.product_price + (case when kw.transport_price is not null then kw.transport_price else 0 end)  else 0 end
+-- 					from product_supplierinfo ps
+-- 					inner join kw_product_price kw on ps.id = kw.supp_info_id
+-- 					and ps.name = sp.partner_id
+-- 					and ps.depot = sm.location_dest_id
+-- 					and ef_date <= sm.delivery_date
+-- 					and ps.product_id = sm.product_id
+-- 					order by ef_date desc limit 1) as price_unit
+--
+-- 				, pt.list_price as line_price
+-- 				, 0 as freight_balance
+-- 				, rp.name as supp_name
+-- 			from stock_picking sp
+-- 			inner join stock_move sm on
+-- 			sm.picking_id = sp.id
+-- 			inner join product_product p on
+-- 			p.id = sm.product_id
+-- 			inner join product_template pt on
+-- 			pt.id = p.product_tmpl_id
+-- 			inner join res_partner rp on
+-- 			rp.id = sp.partner_id
+-- 			inner join tmp_cycle tc on tc.partner_id = rp.id
+-- 			where sp.create_date::date <=now()::date
+-- 			and sp.create_date::date >= (select date_start from account_fiscalyear where date_start <= now()::date and date_stop >=now()::date order by id desc limit 1)
+-- 			and sp.state in ('done')
+-- 			and sp.type = 'in'
+-- 			and invoice_line_id is null
+-- 			and finvoice_line_id is null
+-- 			and sp.sup_invoice is false
+-- 			AND rp.name not ilike '%Kingswood%'
+-- 			and rp.supplier is true and rp.handling_charges is false
+-- 			order by sp.partner_id
+-- 			)
+-- 		)a
+-- 		group by a.supp_name,a.partner_id
+-- 		order by a.partner_id
+--
+-- 	)
+--
+--
+-- 	union all
+-- 		(
+-- 			select
+-- 					rp1.id as partner_id,
+-- 					rp1.name as supp_name,
+-- 					v1.amount as debit,
+-- 					0 as credit,
+-- 					0 as estimated_amt
+-- 				from account_voucher v1
+-- 				inner join res_partner rp1 on rp1.id = v1.partner_id
+-- 				inner join res_country_state rs on rs.id = rp1.state_id
+-- 				inner join tmp_cycle tc on tc.partner_id = rp1.id
+-- 				where v1.type in ('payment','sale')
+-- 				and v1.freight =false
+-- 				and amount >0
+-- 				and v1.date > tc.end_date::date and v1.date <=now()::date
+-- 		)
+--
+-- 	union all
+-- 		(
+-- 		select
+-- 					rp1.id as partner_id,
+-- 					rp1.name as supp_name,
+-- 					v1.amount as debit,
+-- 					0 as credit,
+-- 					0 as estimated_amt
+-- 				from account_voucher v1
+-- 				inner join res_partner rp1 on rp1.id = v1.partner_id
+-- 				inner join res_country_state rs on rs.id = rp1.state_id
+-- 				inner join tmp_cycle tc on tc.partner_id = rp1.id
+-- 				where v1.type in ('purchase','receipt')
+-- 				and v1.freight =false
+-- 				and amount >0
+-- 				and v1.date > tc.end_date::date and v1.date <=now()::date
+-- 		)
+-- 	)ab
+-- 	group by ab.supp_name, ab.partner_id
+-- 	order by ab.supp_name, ab.partner_id
+-- 	)z
+-- 	on z.partner_id = zz.partner
+--
+-- group by zz.partner_name, zz.state_name,zz.partner, zz.end_date, z.receipt, z.payments, z.estimate
+-- order by zz.state_name, zz.partner_name
+--
+-- );
+-- 	FOR r IN select * from partner_estimate LOOP
+-- 		return next r;
+--         END LOOP;
+--
+--         RETURN;
+--     END
+--
+--     $BODY$
+--   LANGUAGE plpgsql VOLATILE;
+--
+--   select * from facilitator_estimate('2014-04-01', 54, 1545)
+
+  --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  --                     Latest Faciliator Estimate and Balance (Estimate Report)
+  --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 drop type if exists est_bal_type cascade;
 
 create type est_bal_type as (
 		  id integer,
-		  end_date date, 
-		  partner varchar(128), 
+		  end_date date,
+		  partner varchar(128),
 		  partner_id integer,
 		  state_name varchar(128),
 		  debit numeric,
@@ -751,11 +1280,11 @@ create type est_bal_type as (
 		  payments numeric,
 		  receipts numeric,
 		  estimate numeric
-		  
-	  ); 
 
-drop function if exists facilitator_estimate(date, integer, integer);
-CREATE OR REPLACE FUNCTION facilitator_estimate(start_dt date, part_state integer, part_id integer)
+	  );
+
+drop function if exists facilitator_estimate(date, integer, integer, date);
+CREATE OR REPLACE FUNCTION facilitator_estimate(start_dt date, part_state integer, part_id integer, e_date date)
   RETURNS SETOF est_bal_type AS
   $BODY$
     DECLARE
@@ -774,13 +1303,13 @@ CREATE OR REPLACE FUNCTION facilitator_estimate(start_dt date, part_state intege
 		st_date date,
 		end_date date,
 		partner_id integer);
-		
+
 
 	DROP TABLE if exists partner_estimate;
 	CREATE TEMP TABLE partner_estimate(
 		  id  integer,
 		  end_date date,
-		  partner varchar(128), 
+		  partner varchar(128),
 		  partner_id integer,
 		  state_name varchar(128),
 		  debit numeric,
@@ -792,9 +1321,9 @@ CREATE OR REPLACE FUNCTION facilitator_estimate(start_dt date, part_state intege
 		  );
 
 	insert into tmp_cycle(id,st_date,end_date,partner_id)
-	(	select 
+	(	select
 			1 as id
-			, bc1.st_date 
+			, bc1.st_date
 			, bc1.end_date
 			, bc1.partner_id
 		from billing_cycle bc1
@@ -802,35 +1331,37 @@ CREATE OR REPLACE FUNCTION facilitator_estimate(start_dt date, part_state intege
 		left outer join res_country_state rcs on rcs.id = rp1.state_id
 		where bc1.id in
 			(
-				select 
+				select
 				bc.id
-				from billing_cycle bc 
+				from billing_cycle bc
 				inner join res_partner rs on rs.id = bc.partner_id
 				where bc.partner_id in (rp1.id)
 				order by end_date desc limit 1
 			)
 		and case when part_state >0 then rcs.id = part_state else rcs.id >0 end
-		and case when part_id >0 then rp1.id = part_id else rp1.id >0 end
+		and case when part_id > 0 then rp1.id in (select id from res_partner where id = part_id
+							union all
+							select id from res_partner where parent_id = part_id) else rp1.id >0 end
 		and rp1.name not ilike '%Kingswood%'
 		and rp1.supplier is true
 		and not rp1.handling_charges
-		
+
 	);
 
 
-		  
+
 INSERT INTO partner_estimate(id, end_date, partner,  partner_id, state_name,debit, credit, balance, payments, receipts, estimate)
 (
 
-select 
+select
 		  nextval('est_seq') as id
-		, zz.end_date
-		, zz.partner_name
-		, zz.partner
-		, zz.state_name
+		, max(end_date) as end_date
+		, (select name from res_partner where id = part_id) as partner_name
+		, (select id from res_partner where id = part_id) as partner
+		, max(zz.state_name) as state_name
 		, sum(zz.debit) as debit
 		, sum(zz.credit) as credit
-		, (sum(debit) - sum(credit)) as balance 
+		, (sum(debit) - sum(credit)) as balance
 		, case when z.payments is not null then z.payments else 0 end as payments
 		, case when z.receipt is not null then z.receipt else 0 end as receipts
 		, case when z.estimate is not null then z.estimate else 0 end as estimate
@@ -839,235 +1370,243 @@ select
 	from
 	(
 	select
-		b.end_date,
-		b.partner_id as partner,
-		b.partner_name,
-		b.state_name,
-		'2014-04-01'::date as date,
-		'TO OPENING BALANCE' AS name,
-		 case when (sum(b.bal) + sum(freight))>0 then 
-		 abs(sum(b.bal) + sum(freight)) else 0 end  AS debit,
+		  e_date as end_date
+		, part_id as partner
+		, (select name from res_partner where id = part_id )as partner_name
+		, max(b.state_name) as state_name
+		, '2014-04-01'::date as date
+		, 'TO OPENING BALANCE' AS name
+		, case when (sum(b.bal) + sum(freight))>0 then
+		  abs(sum(b.bal) + sum(freight)) else 0 end  AS debit
 
-		 case when (sum(b.bal) + sum(freight))>0 then 0 
-		 else abs(sum(b.bal) + sum(freight)) end AS credit
-		
+		, case when (sum(b.bal) + sum(freight))>0 then 0
+		  else abs(sum(b.bal) + sum(freight)) end AS credit
+
 		from
 		(select
-			tc.end_date,		
-			aml.partner_id,
-			rp.name as partner_name,
-			rs.name as state_name,
-			case when sum(debit-credit) is null then 0 else  sum(debit-credit) end as bal,
-			0 as freight
+			  e_date as end_date
+			, part_id as partner_id
+			, (select name from res_partner where id = part_id )as partner_name
+			, min(rs.name) as state_name
+			, case when sum(debit-credit) is null then 0 else  sum(debit-credit) end as bal
+			, 0 as freight
+
 		from account_move_line aml
 		inner join res_partner rp on aml.partner_id = rp.id
 		inner join res_country_state rs on rs.id = rp.state_id
-		inner join tmp_cycle tc on tc.partner_id = rp.id
-		AND aml.account_id in
-			    ((SELECT substr(value_reference,17)::integer
-			     FROM ir_property
-			     WHERE name = 'property_account_payable'
-			     AND res_id = 'res.partner,' || rp.id),rp.account_pay)
-		and aml.date<tc.st_date::date
-		and aml.date>='2014-04-01'::date --fiscal_year
-		and aml.partner_id = tc.partner_id
-		--excluding freight advances
-		and aml.ref not like 'DC%'
-		group by aml.partner_id, rp.name, rs.name,tc.end_date
-		--order by aml.partner_id, rp.name, rs.name
-		
+		--inner join tmp_cycle tc on tc.partner_id = rp.id
+
+		where aml.account_id in
+                            ((SELECT substr(value_reference,17)::integer
+                             FROM ir_property
+                             WHERE name = 'property_account_payable'
+                             AND  split_part(res_id,',',2)::int in (select distinct(partner_id) from tmp_cycle)
+                             union all
+                             select rp.account_pay
+                             union all
+                             select id from account_account where name ilike '%GST%'))
+                    and aml.date <(select tp.end_date from tmp_cycle tp where partner_id = part_id)::date
+                    and aml.date>='2014-04-01'::date
+                    and aml.ref not like 'DC/%' and aml.ref not like 'KA/%' and aml.ref not like 'TN/%'
+                    and rp.id in (select distinct(partner_id) from tmp_cycle)
+
 
 		union all
 
-		select 
-				tc3.end_date,
-				sp.paying_agent_id as partner_id,
-				rp.name as partner_name,
-				rcs.name as state_name,
-				0 as bal,
-				case when sum(freight_balance)>0 then sum(freight_balance) else 0 end  as freight 
+		select
+				  e_date as end_date
+				, part_id as partner_id
+				, (select name from res_partner where id = part_id) as partner_name
+				, min(rcs.name) as state_name
+				, 0 as bal
+				, case when sum(freight_balance)>0 then sum(freight_balance) else 0 end  as freight
+
 			from stock_picking sp
 			inner join account_voucher a on sp.name = a.reference
-			inner join tmp_cycle tc3 on a.partner_id = tc3.partner_id
-			inner join res_partner rp on rp.id = a.partner_id
-			left outer join res_country_state rcs on rcs.id = rp.state_id
-			where sp.sup_invoice is true and sp.state='freight_paid' 
-			and sp.id in 
+			--inner join tmp_cycle tc3 on a.partner_id = tc3.partner_id
+			--inner join res_partner rp on rp.id = a.partner_id
+			left outer join res_country_state rcs on rcs.id = (select state_id from res_partner where id = part_id)
+			where sp.sup_invoice is true and sp.state='freight_paid'
+			and sp.id in
 				(select distinct del_ord_id from supp_delivery_invoice_rel sl
 					inner join account_invoice ai1 on ai1.id = sl.invoice_id
 					inner join tmp_cycle tc2 on tc2.partner_id = ai1.partner_id
-					where invoice_id in 
+					where invoice_id in
 					(select
-						ai.id 
-					from account_invoice ai
-					inner join tmp_cycle tc1 on tc1.partner_id = ai.partner_id
-					where ai.partner_id = tc1.partner_id 
-					--and ai.partner_id = 1541
-					and ai.date_invoice <tc1.st_date::date 
-					and state not in ('draft','cancel') 
-					and type = 'in_invoice'
-					)
-					and ai1.partner_id = tc2.partner_id
-				)
-					and a.partner_id = tc3.partner_id 
+						  distinct(ai.id)
 
-			group by sp.paying_agent_id, rp.name, rcs.name ,tc3.end_date	
+					from account_invoice ai
+					inner join tmp_cycle tc1 on tc1.partner_id in (select distinct(partner_id) from tmp_cycle)
+					where ai.partner_id in (select distinct(partner_id) from tmp_cycle)
+
+					and ai.date_invoice <st_date::date and state not in ('draft','cancel')
+					and type = 'in_invoice'
+
+					)
+					and ai1.partner_id in (select distinct(partner_id) from tmp_cycle)
+
+				)
+					and a.partner_id in (select distinct(partner_id) from tmp_cycle)
+
+				group by sp.paying_agent_id
 		)b
 
-		group by b.partner_id, b.partner_name,b.state_name,b.end_date	
-		
+
+
 
 	union all
-		
+
 
 	(select
-		x.end_date,
-		partner as partner,
-		x.partner_name,
-		x.state_name,
-		x.date_invoice, 
-		x.name AS name,
-		sum(x.debit) as debit,
-		sum(x.credit) as credit
+		  end_date
+		, part_id as partner
+		, (select name from res_partner where id = part_id) as partner_name
+		, min(x.state_name) as state_name
+		, max(x.date_invoice) as date_invoice
+		, max(x.name) AS name
+		, sum(x.debit) as debit
+		, sum(x.credit) as credit
 		from
-	(select  
-		tc.end_date,
-		rp1.id as partner,
-		rp1.name as partner_name,
-		rs.name as state_name,
-		v1.date as date_invoice,
-		case when v1.reference is null then number else v1.reference end as name,
-		v1.amount as debit,
-		0 as credit 
+	(select
+		  e_date as end_date
+		, part_id as partner
+		, (select name from res_partner where id = part_id) as partner_name
+		, rs.name as state_name
+		, v1.date as date_invoice
+		, case when v1.reference is null then number else v1.reference end as name
+		, v1.amount as debit
+		, 0 as credit
+
 	from account_voucher v1
-	inner join res_partner rp1 on rp1.id = v1.partner_id
-	inner join res_country_state rs on rs.id = rp1.state_id
-	inner join tmp_cycle tc on tc.partner_id = rp1.id
-	where v1.type in ('payment','sale')
-	and v1.freight =false 
-	and amount >0 
-	and v1.date between tc.st_date::date and tc.end_date::date
+	--inner join res_partner rp1 on rp1.id = v1.partner_id
+	inner join res_country_state rs on rs.id = (select state_id from res_partner where id = part_id)
+	--inner join tmp_cycle tc on tc.partner_id = rp1.id
+	where v1.type in ('payment','sale') and v1.partner_id in (select distinct(partner_id) from tmp_cycle)
+	and v1.freight =false
+	and amount >0
+	and v1.date between (select st_date from tmp_cycle where partner_id = part_id)::date and e_date::date
 
 	union all
 
-	select 
-		tc.end_date,
-		rp2.id as partner,
-		rp2.name as partner_name,
-		rs.name as state_name,
-		v2.date,
-		case when reference is null then number else reference end as name,
-		0 as debit,
-		amount as credit	
+	select
+		  e_date as end_date
+		, part_id as partner
+		, (select name from res_partner where id = part_id) as partner_name
+		, rs.name as state_name
+		, v2.date
+		, case when reference is null then number else reference end as name
+		, 0 as debit
+		, amount as credit
+
 	from account_voucher v2
-	inner join res_partner rp2 on rp2.id = v2.partner_id
-	left outer join res_country_state rs on rs.id = rp2.state_id
-	inner join tmp_cycle tc on tc.partner_id = rp2.id
+	--inner join res_partner rp2 on rp2.id = v2.partner_id
+	left outer join res_country_state rs on rs.id = (select state_id from res_partner where id = part_id)
+	--inner join tmp_cycle tc on tc.partner_id = rp2.id
 	where v2.type in ('purchase','receipt')
-	and v2.freight =false and v2.partner_id = tc.partner_id 
-	and amount >0 
-	and v2.date between tc.st_date::date and tc.end_date::date
+	and v2.freight =false and v2.partner_id in (select distinct(partner_id) from tmp_cycle)
+	and amount >0
+	and v2.date between (select st_date from tmp_cycle where partner_id = part_id)::date and e_date::date
+	and v2.partner_id in (select distinct(partner_id) from tmp_cycle)
 
 	union all
 
 	--to get refund which are not in line
-	select 
-		tc.end_date,
-		i.partner_id as partner,
-		rp3.name as partner_name,
-		rs.name as state_name,
-		i.date_invoice,
-		'Refund' || '-' || (case when reference is null then i.origin else i.reference end) as name,
-		i.amount_total as debit,
-		0 as credit
-	from account_invoice i 
-	inner join supp_delivery_invoice_rel sl
-	on sl.invoice_id = i.id
-	inner join res_partner rp3 on rp3.id = i.partner_id
-	inner join res_country_state rs on rs.id = rp3.state_id
-	inner join tmp_cycle tc on tc.partner_id = rp3.id
+	select
+		  e_date as end_date
+		, part_id as partner
+		, (select name from res_partner where id = part_id) as partner_name
+		, rs.name as state_name
+		, i.date_invoice
+		, 'Refund' || '-' || (case when reference is null then i.origin else i.reference end) as name
+		, i.amount_total as debit
+		, 0 as credit
+	from account_invoice i
+	inner join supp_delivery_invoice_rel sl on sl.invoice_id = i.id
+	--inner join res_partner rp3 on rp3.id = i.partner_id
+	left outer join res_country_state rs on rs.id = (select state_id from res_partner where id = part_id)
+	--inner join tmp_cycle tc on tc.partner_id = rp3.id
 	where i.type = 'in_refund' and i.state = 'open'
-	and sl.del_ord_id not in (select sp.id from stock_picking sp 
+	and sl.del_ord_id not in (select sp.id from stock_picking sp
 				left outer join account_invoice_line ln on ln.id = sp.invoice_line_id
 				left outer join account_invoice_line fln on fln.id = sp.finvoice_line_id
 				inner join account_invoice i on i.id in (fln.invoice_id,ln.invoice_id)
-				inner join tmp_cycle tc1 on tc1.partner_id = i.partner_id
+				--inner join tmp_cycle tc1 on tc1.partner_id = i.partner_id
 				and  i.state in ('open','paid')
-				and i.date_invoice between tc1.st_date::date and tc1.end_date::date
-				and i.type = 'in_invoice'
+				and i.date_invoice between (select st_date from tmp_cycle where partner_id = part_id)::date and e_date::date
+				and i.type = 'in_invoice' and i.partner_id in (select distinct(partner_id) from tmp_cycle )
 			)
-	and i.date_invoice between tc.st_date::date and tc.end_date::date
+	and i.date_invoice between (select st_date from tmp_cycle where partner_id = part_id)::date and e_date::date
+	and i.partner_id in (select distinct(partner_id) from tmp_cycle)
 
 	union all
 	--to get refund invoice with out DO
-	select 
-		tc.end_date,
-		i.partner_id as partner,
-		rp4.name as partner_name,
-		rs.name as state_name,
-		i.date_invoice,
-		'Refund' || '-' || (case when reference is null then i.number else i.reference end) as name,
-		i.amount_total as debit,
-		0 as credit
-	from account_invoice i 
-	left outer join supp_delivery_invoice_rel sl
-	on sl.invoice_id = i.id
-	inner join res_partner rp4 on rp4.id = i.partner_id
-	inner join res_country_state rs on rs.id = rp4.state_id
-	inner join tmp_cycle tc on tc.partner_id = rp4.id
+	select
+		  e_date as end_date
+		, part_id as partner
+		, (select name from res_partner where id = part_id) as partner_name
+		, rs.name as state_name
+		, i.date_invoice
+		, 'Refund' || '-' || (case when reference is null then i.number else i.reference end) as name
+		, i.amount_total as debit
+		, 0 as credit
+	from account_invoice i
+	left outer join supp_delivery_invoice_rel sl on sl.invoice_id = i.id
+	--inner join res_partner rp4 on rp4.id = i.partner_id
+	inner join res_country_state rs on rs.id = (select state_id from res_partner where id = part_id)
+	--inner join tmp_cycle tc on tc.partner_id = rp4.id
 	where i.type = 'in_refund' and i.state not in ('draft','cancel')
-	and i.date_invoice between tc.st_date::date and tc.end_date::date
+	and i.date_invoice between (select st_date from tmp_cycle where partner_id = part_id)::date and e_date::date
 	and sl.del_ord_id is null
+	and i.partner_id in (select distinct(partner_id) from tmp_cycle)
 	)x
 	group by x.partner, x.partner_name, x.state_name, x.date_invoice, x.name,x.end_date
-	order by x.date_invoice)
+	--order by x.date_invoice
+	)
 
 
 	union all
 		(
-		select 
-		  xi.end_date
-		, xi.partner_id as partner
-		, xi.name as partner_name
-		, xi.state_name
+		select
+		  max(end_date) as end_date
+		, part_id as partner
+		, (select name from res_partner where id = part_id) as partner_name
+		, max(xi.state_name) as state_name
 		, now()::date as date_invoice
-		,'LESS RECEIPTS' AS name 
+		,'LESS RECEIPTS' AS name
 		,'0' AS debit
 		,sum(xi.unloaded_qty * xi.price_unit)-
 		(case when sum(yi.amount) is null then 0 else sum (yi.amount)end)-
 		(case when sum(xi.ded_amt) is null then 0 else sum(xi.ded_amt) end) as credit
-		from 
-	(SELECT distinct sp.name as dc_no
-			,sp.date
-			, tc.end_date
-			, rp.name
+		from
+	(SELECT distinct  sp.name as dc_no
+			, sp.date
+			, e_date as end_date
+			, (select name from res_partner where id = part_id) as name
 			, rs.name as state_name
-			,p.default_code
-			,i.partner_id
-			,case when sm.deduction_amt>0 then sm.deduction_amt else 0 end as ded_amt
+			, p.default_code
+			, i.partner_id
+			, case when sm.deduction_amt>0 then sm.deduction_amt else 0 end as ded_amt
 		,case when sp.type = 'out' then (case when sm.unloaded_qty >0 then sm.unloaded_qty else sm.cft1+sm.cft2 end)
 			else sm.product_qty end as unloaded_qty
-		,case when sm.rejected_qty>0 then sm.rejected_qty else 0 end as rejected_qty  
+		,case when sm.rejected_qty>0 then sm.rejected_qty else 0 end as rejected_qty
 		,case when fln.price_unit is not null then ln.price_unit + fln.price_unit else  ln.price_unit end as price_unit
 		,case when sm.rejected_qty >0 then sm.rejected_qty else 0 end
-		from stock_picking sp 
+		from stock_picking sp
 		left outer join account_invoice_line ln on ln.id = sp.invoice_line_id
 		left outer join account_invoice_line fln on fln.id = sp.finvoice_line_id
 		inner join account_invoice i on i.id in (fln.invoice_id,ln.invoice_id)
-		inner join stock_move sm on
-		sm.picking_id = sp.id
-		inner join product_product p on
-		p.id = sm.product_id
+		inner join stock_move sm on sm.picking_id = sp.id
+		inner join product_product p on p.id = sm.product_id
 		inner join stock_location sl on sl.id = sm.location_dest_id
-		inner join res_partner rp on
-		case when sp.type = 'out' then rp.id = sp.paying_agent_id else rp.id = sp.partner_id end
+		inner join res_partner rp on case when sp.type = 'out' then rp.id = sp.paying_agent_id else rp.id = sp.partner_id end
 		inner join res_country_state rs on rs.id = rp.state_id
-		inner join tmp_cycle tc on tc.partner_id = rp.id
-		where i.date_invoice between tc.st_date::date and  tc.end_date::date
-		and i.partner_id = tc.partner_id
+		--inner join tmp_cycle tc on tc.partner_id = rp.id
+		where i.date_invoice between (select st_date from tmp_cycle where partner_id = part_id)::date and e_date::date
+		and i.partner_id in (select distinct(partner_id) from tmp_cycle)
 		and  i.state in ('open','paid')
 		and sp.state in ('done','freight_paid')
-		 
+		and i.partner_id in (select distinct(partner_id) from tmp_cycle)
+
 		order by p.default_code,i.partner_id
 		)xi
 		left outer join
@@ -1078,41 +1617,43 @@ select
 			left outer join account_invoice_line ln on ln.id = sp.invoice_line_id
 			left outer join account_invoice_line fln on fln.id = sp.finvoice_line_id
 			inner join account_invoice i on i.id in (fln.invoice_id,ln.invoice_id)
-			inner join tmp_cycle tc on tc.partner_id = i.partner_id
+			--inner join tmp_cycle tc on tc.partner_id = i.partner_id
 			where a.freight = true
-			and  i.state in ('open','paid') 
-			and i.date_invoice between tc.st_date::date and  tc.end_date::date
+			and  i.state in ('open','paid')
+			and i.date_invoice between (select st_date from tmp_cycle where partner_id = part_id)::date and  e_date::date
+			and i.partner_id in (select distinct(partner_id) from tmp_cycle)
+
 			group by a.reference,a.amount
 			order by a.reference
 		)yi on xi.dc_no = yi.reference
-		group by  xi.name,xi.state_name,xi.partner_id,xi.end_date
+		group by xi.partner_id
 		)
 		)zz
-		
-		
-	left outer join 	
-	
+
+
+	left outer join
+
 
 --- Estimate
 
-	(select 
-		ab.partner_id
-		, ab.supp_name
+	(select
+		  min(ab.partner_id) as partner_id
+		, max(ab.supp_name) as supp_name
 		, sum(ab.debit) as payments
-		
+
 		, sum(ab.credit) as receipt
-		, sum(ab.estimated_amt) + sum(ab.credit) as estimate 
+		, sum(ab.estimated_amt) + sum(ab.credit) as estimate
 	from
 	(
-		(select 
-			a.partner_id
-			, a.supp_name
+		(select
+			 min(a.partner_id) as partner_id
+			, max(a.supp_name) as supp_name
 			, 0 as debit
 			, 0 as credit
 			-- substracting the freight paid amount
 			, case when sum(a.price_unit) is not null then sum((a.price_unit * a.qty)+a.freight_balance) - sum(fre_total)
 			else sum((a.line_price * a.qty)+ a.freight_balance) - sum(fre_total) end as estimated_amt
-			
+
 			from
 			(
 				(	select sp.name as dc_no
@@ -1121,38 +1662,36 @@ select
 					--, sm.unloaded_qty
 					, sp.paying_agent_id as partner_id
 					, case when sp.state = 'in_transit' then sm.product_qty else sm.unloaded_qty end as qty
-					, case when sp.state != 'freight_paid' then 
+					, case when sp.state != 'freight_paid' then
 						case when (sm.product_qty * sp.freight_charge) is not null then  (sm.product_qty * sp.freight_charge)
 						else 0 end else 0 end as fre_total
-					, (	select 
-							case when kw.product_price is not null 
-							then kw.product_price + (case when kw.transport_price is not null then kw.transport_price else 0 end)  else 0 end 
+					, (	select
+							case when kw.product_price is not null
+							then kw.product_price + (case when kw.transport_price is not null then kw.transport_price else 0 end)  else 0 end
 						from product_supplierinfo ps
 						inner join kw_product_price kw on ps.id = kw.supp_info_id
 						and ps.name = sp.paying_agent_id
 						and ps.customer_id = sp.partner_id
 						and ef_date <= sm.delivery_date
 						and ps.product_id = sm.product_id
-						order by ef_date desc limit 1) as price_unit 
-					
+						order by ef_date desc limit 1) as price_unit
+
 					, sm.price_unit as line_price
 					, case when sp.state = 'freight_paid' then -sp.freight_balance else 0 end as freight_balance
 					, rp.name as supp_name
-				from stock_picking sp 
-				inner join stock_move sm on
-				sm.picking_id = sp.id
-				inner join product_product p on
-				p.id = sm.product_id
-				inner join res_partner rp on
-				rp.id = sp.paying_agent_id
-				inner join tmp_cycle tc on tc.partner_id = rp.id
+				from stock_picking sp
+				inner join stock_move sm on sm.picking_id = sp.id
+				inner join product_product p on p.id = sm.product_id
+				inner join res_partner rp on rp.id = sp.paying_agent_id
+				--inner join tmp_cycle tc on tc.partner_id = rp.id
 				where sp.create_date::date <=now()::date
 				and sp.create_date::date >= (select date_start from account_fiscalyear where date_start <= now()::date and date_stop >=now()::date order by id desc limit 1)
-				and sp.state not in ('draft','cancel') 
-				and invoice_line_id is null 
+				and sp.state not in ('draft','cancel')
+				and invoice_line_id is null
 				and finvoice_line_id is null
 				AND rp.name not ilike '%Kingswood%'
 				and rp.supplier is true and rp.handling_charges is false
+				and sp.paying_agent_id = part_id
 				order by sp.paying_agent_id
 				)
 			union all
@@ -1163,101 +1702,106 @@ select
 				, sp.partner_id as partner_id
 				, sm.product_qty as qty
 				,0 as fre_total
-				, (	select 
-						case when kw.product_price is not null 
-						then kw.product_price + (case when kw.transport_price is not null then kw.transport_price else 0 end)  else 0 end 
+				, (	select
+						case when kw.product_price is not null
+						then kw.product_price + (case when kw.transport_price is not null then kw.transport_price else 0 end)  else 0 end
 					from product_supplierinfo ps
 					inner join kw_product_price kw on ps.id = kw.supp_info_id
 					and ps.name = sp.partner_id
 					and ps.depot = sm.location_dest_id
 					and ef_date <= sm.delivery_date
 					and ps.product_id = sm.product_id
-					order by ef_date desc limit 1) as price_unit 
-				
+					order by ef_date desc limit 1) as price_unit
+
 				, pt.list_price as line_price
 				, 0 as freight_balance
 				, rp.name as supp_name
-			from stock_picking sp 
-			inner join stock_move sm on
-			sm.picking_id = sp.id
-			inner join product_product p on
-			p.id = sm.product_id
-			inner join product_template pt on
-			pt.id = p.product_tmpl_id
-			inner join res_partner rp on
-			rp.id = sp.partner_id
-			inner join tmp_cycle tc on tc.partner_id = rp.id
+
+			from stock_picking sp
+			inner join stock_move sm on sm.picking_id = sp.id
+			inner join product_product p on p.id = sm.product_id
+			inner join product_template pt on pt.id = p.product_tmpl_id
+			inner join res_partner rp on rp.id = sp.partner_id
+			--inner join tmp_cycle tc on tc.partner_id = rp.id
 			where sp.create_date::date <=now()::date
 			and sp.create_date::date >= (select date_start from account_fiscalyear where date_start <= now()::date and date_stop >=now()::date order by id desc limit 1)
 			and sp.state in ('done')
-			and sp.type = 'in' 
-			and invoice_line_id is null 
+			and sp.type = 'in'
+			and invoice_line_id is null
 			and finvoice_line_id is null
 			and sp.sup_invoice is false
 			AND rp.name not ilike '%Kingswood%'
 			and rp.supplier is true and rp.handling_charges is false
+			and sp.paying_agent_id = part_id
 			order by sp.partner_id
 			)
 		)a
-		group by a.supp_name,a.partner_id
-		order by a.partner_id
+		--group by a.supp_name,a.partner_id
+		--order by a.partner_id
 
 	)
 
 
 	union all
 		(
-			select  
-					rp1.id as partner_id,
-					rp1.name as supp_name,
-					v1.amount as debit,
-					0 as credit,
-					0 as estimated_amt 
+			select
+					part_id as partner_id
+					, (select name from res_partner where id = part_id) as supp_name
+					, v1.amount as debit
+					, 0 as credit
+					, 0 as estimated_amt
 				from account_voucher v1
-				inner join res_partner rp1 on rp1.id = v1.partner_id
-				inner join res_country_state rs on rs.id = rp1.state_id
-				inner join tmp_cycle tc on tc.partner_id = rp1.id
+				--inner join res_partner rp1 on rp1.id = v1.partner_id
+				inner join res_country_state rs on rs.id = (select state_id from res_partner where id = part_id)
+				--inner join tmp_cycle tc on tc.partner_id = rp1.id
 				where v1.type in ('payment','sale')
-				and v1.freight =false 
-				and amount >0 
-				and v1.date > tc.end_date::date and v1.date <=now()::date
+				and v1.freight =false
+				and amount >0
+				and v1.date > e_date::date and v1.date <=now()::date
+				and v1.partner_id in (select distinct(partner_id) from tmp_cycle)
 		)
 
 	union all
 		(
-		select  
-					rp1.id as partner_id,
-					rp1.name as supp_name,
-					v1.amount as debit,
-					0 as credit,
-					0 as estimated_amt 
+		select
+					  part_id as partner_id
+					, (select name from res_partner where id = part_id) as supp_name
+					, v1.amount as debit
+					, 0 as credit
+					, 0 as estimated_amt
+
 				from account_voucher v1
 				inner join res_partner rp1 on rp1.id = v1.partner_id
 				inner join res_country_state rs on rs.id = rp1.state_id
-				inner join tmp_cycle tc on tc.partner_id = rp1.id
+				inner join tmp_cycle tc on tc.partner_id = rp1.id and tc.partner_id = part_id
 				where v1.type in ('purchase','receipt')
-				and v1.freight =false 
-				and amount >0 
-				and v1.date > tc.end_date::date and v1.date <=now()::date	
+				and v1.freight =false
+				and amount >0
+				and v1.date > tc.st_date::date and v1.date <=now()::date
+				and v1.partner_id in (select distinct(partner_id) from tmp_cycle)
+
 		)
+
 	)ab
-	group by ab.supp_name, ab.partner_id
-	order by ab.supp_name, ab.partner_id
+	--group by ab.supp_name, ab.partner_id
+	--order by ab.supp_name, ab.partner_id
 	)z
 	on z.partner_id = zz.partner
-	
-group by zz.partner_name, zz.state_name,zz.partner, zz.end_date, z.receipt, z.payments, z.estimate
-order by zz.state_name, zz.partner_name
+
+group by z.receipt, z.payments, z.estimate
+--order by zz.state_name, zz.partner_name
 
 );
-	FOR r IN select * from partner_estimate LOOP
-		return next r;          
+
+	FOR r IN select * from partner_estimate  LOOP
+		return next r;
         END LOOP;
-        
-        RETURN;  
-    END 
-    
+
+--	select * from partner_estimate;
+        RETURN;
+    END
+
     $BODY$
   LANGUAGE plpgsql VOLATILE;
 
-  select * from facilitator_estimate('2014-04-01', 54, 1545)
+  --select * from facilitator_estimate('2014-04-01', 54, 1070, '2017-05-31')

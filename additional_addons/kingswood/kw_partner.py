@@ -203,6 +203,10 @@ class res_partner(osv.osv):
                 # GST Purchase
                 'sub_facilitator_ids'   :   fields.one2many("sub.facilitator", 'main_facilitator_id', "Sub Facilitators"),
                 'sub_facilitator'       :   fields.boolean("Is Sub Facilitator"),
+
+                'is_hnl_attachment'     :   fields.boolean('HNL Attachment'),
+                'is_po_hnl_attachment'     :   fields.boolean('HNL PO Attachment'),
+
               }
     _defaults={
                'customer':True,
@@ -538,6 +542,8 @@ class res_company(osv.osv):
                 'attachment'        :   fields.binary("APMC Attachment"),
                 'farmer_declaration':   fields.binary("Farmer Declaration"),
                 'gstin_code'        :   fields.char("GST IN Code", size=20),
+                'hnl_attachment'    :   fields.binary("HNL Attachment"),
+                'hnl_po_attachment'    :   fields.binary("HNL PO Attachment"),
              }
     _defaults={
                
@@ -829,6 +835,7 @@ class billing_cycle(osv.osv):
                     'uid'               : fields.many2one('res.users','user'),
 #                     'user_partner'      : fields.many2one('res.partner', 'User-Partner',track_visibility='onchange'),
                     'user_partner'       : fields.function(_get_user,type="many2one",relation="res.users",string="User-Partner",store=True),
+                    'description'       :   fields.text("Description"),
                     
                     }
     _order = 'st_date desc'
@@ -879,6 +886,7 @@ class billing_cycle(osv.osv):
             else:
                 fy_st_date = fydate[0]
             sub_fac_ids = []
+            _logger.info('Case ID===================> %s',case.id)
             cr.execute("select sub_part_id from sub_facilitator where main_facilitator_id="+str(case.partner_id and case.partner_id.id))
             sub_fac_ids = [x[0] for x in cr.fetchall()]
             sub_fac_ids.append(case.partner_id.id)
@@ -891,6 +899,7 @@ class billing_cycle(osv.osv):
                                  'supplier_name'     : case.partner_id.name or '',
                                  'freight'           : freight,
                                  'fy_st_date'        : fy_st_date,
+                                 'description'       : case.description or '',
                                  }
 
         tot_amount = 0.00

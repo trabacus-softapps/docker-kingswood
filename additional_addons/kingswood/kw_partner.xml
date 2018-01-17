@@ -127,6 +127,7 @@
 								<field name="show_field" invisible="1"/>
 								<field name="st_date"/>
 								<field name="end_date"/>
+								<field name="description" />
 								<field name="open_bal" readonly="1"/>
 								<field name="uid" invisible="1"/>
 								 <field name="user_partner" invisible="1"/>
@@ -238,6 +239,9 @@
 			
 				 					<field name="amc_attachment"/>
 									<field name="is_farm_decl"/>
+									<field name="is_hnl_attachment"/>
+									<field name="is_po_hnl_attachment"/>
+
 									<field name="transit_pass" attrs="{'invisible': [('customer','=', False)]}"/>
 									<field name="tax_link" attrs="{'invisible': [('transit_pass','=', False)],'required':[('transit_pass','=', True)]}"/>
 
@@ -415,6 +419,8 @@
 					<field name='commodity'/>
 					<field name='attachment'/>
 					<field name="farmer_declaration"/>
+				    <field name="hnl_attachment"/>
+				   <field name="hnl_po_attachment"/>
 					<field name='toll_free' />
 					<field name="digi_sign"/>
 				    <field name="gstin_code" required="1"
@@ -689,6 +695,7 @@
 				       <field name="st_date" readonly="1"/>
 					   	<field name="open_bal" readonly="1"/> 
 						<field name="end_date" readonly="1"/>
+						<field name="description" readonly="1"/>
 						<field name="user_partner" invisible="1"/>	
                       <button name="generate_report" icon="gtk-print" type="object" string="Print"/>                  
                 </tree>
@@ -714,6 +721,7 @@
 				                     <field name="st_date" readonly="1"/>
 				                     <field name="open_bal" readonly="1"/> 
 						             <field name="end_date" readonly="1"/>
+									 <field name="description" readonly="1"/>
 				                	 <field name="uid" invisible="1"/>
 				                	 <field name="user_partner" invisible="1"/>	 
 								</group>
@@ -994,6 +1002,7 @@
 														<field name="show_field" invisible="1"/>
 														<field name="st_date" readonly="1"/>
 														<field name="end_date" readonly="1"/>
+														<field name="description" readonly="1"/>
 														<field name="open_bal" readonly="1"/>
 														<field name="uid" invisible="0"/> 
 														 <field name="user_partner" invisible="0"/>	
