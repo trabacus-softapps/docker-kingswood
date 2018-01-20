@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from openerp.osv import fields,osv
 from openerp.tools.translate import _
 from lxml import etree
@@ -55,7 +56,41 @@ import urllib
 import re
 import tempfile
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.alert import Alert
+from selenium.webdriver.support.ui import WebDriverWait
+import json
+from selenium.webdriver.chrome.options import Options
+# from seleniumrequests import Chrome
+import codecs
+import pywinauto
+import img2pdf
 
+
+# For Setting Chrome Web Drive Options selenium
+#             chrome_options = Options()
+#             if HEADLESS:
+#                 chrome_options.add_argument("--headless")
+#                 chrome_options.add_argument('--no-sandbox')
+#                 chrome_options.add_argument('--disable-gpu')
+#                 chrome_options.add_argument('--disable-popup-blocking')
+#                 chrome_options.add_argument('--window-size=1440,900')
+#             else:
+#                 chrome_options.add_argument("--kiosk")
+#             prefs = {
+#                 'download.default_directory': DOWNLOAD_PATH,
+#                 'download.prompt_for_download': False,
+#                 'download.directory_upgrade': True,
+#                 'safebrowsing.enabled': False,
+#                 'safebrowsing.disable_download_protection': True}
+#             chrome_options.add_experimental_option('prefs', prefs)
+#             driver = webdriver.Chrome(
+#                 chrome_options=chrome_options, executable_path=DRIVER_PATH)
+#             if HEADLESS:
+#                 driver.set_window_size(1440, 900)
+#                 enable_download_in_headless_chrome(driver, DOWNLOAD_PATH)
 
 # FIXME: this is a temporary workaround because of a framework bug (ref: lp996816). It should be removed as soon as
 #        the bug is fixed
@@ -1546,12 +1581,18 @@ class stock_picking_out(osv.osv):
 #             move_obj.action_done(cr, uid, move_ids, context=None)
             return True
 
-    def generate_eway_bill(self, cr, uid, ids, username, password, url1,url2, url3, context=None):
+    def generate_eway_bill(self, cr, uid, ids, context=None):
         if not context:
             context = {}
         tax_obj = self.pool.get("account.tax")
         today = time.strftime('%Y-%m-%d')
         today = datetime.strptime(today,'%Y-%m-%d')
+        username = 'KWSPL.KA.29'
+        password = 'Kwspl@ka29'
+        url1 = 'http://ewaybill.nic.in/'
+        url2 = 'https://ctax.kar.nic.in/ewaybill'
+        url3 = 'https://ctax.kar.nic.in/ewaybill'
+
         for case in self.browse(cr, uid, ids):
             dc_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%Y-%m-%d')
             dc_date = datetime.strptime(dc_date, '%Y-%m-%d')
@@ -1605,9 +1646,85 @@ class stock_picking_out(osv.osv):
                     for tx in tax_obj.browse(cr, uid, tx_ids):
                         tax_amount += tx.amount
 
-            browser = webdriver.Chrome() #webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
+            # For PDF Download Setting options
+            def enable_download_in_headless_chrome(browser, download_dir):
+                #add missing support for chrome "send_command"  to selenium webdriver
+                browser.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
+
+                params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
+                browser.execute("send_command", params)
+                return browser
+
+            chrome_options = Options()
+            DOWNLOAD_PATH = '/tmp'
+            chrome_options = webdriver.ChromeOptions()
+            # chrome_options.add_argument("--headless")
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--disable-popup-blocking')
+            chrome_options.add_argument('--window-size=1440,900')
+            chrome_options.add_argument ( "--disable-extensions" )
+            chrome_options.add_argument ( "--disable-print-preview" )
+            # chrome_options.add_argument ( "--print-to-pdf=/tmp/file1.pdf" )
+
+
+            prefs = {
+                'download.default_directory': DOWNLOAD_PATH,
+                'download.prompt_for_download': False,
+                "plugins.always_open_pdf_externally": True,
+                'download.directory_upgrade': True,
+                'safebrowsing.enabled': False,
+                'safebrowsing.disable_download_protection': True,
+                # 'plugins.plugins_list': [{'enabled':False,'name':'Chrome PDF Viewer' }],
+                "plugins.plugins_disabled": ['Chrome PDF Viewer'],
+            }
+
+            chrome_options.add_experimental_option('prefs', prefs)
+
+            #
+            # DOWNLOAD_PATH = '/tmp'
+            # options = webdriver.ChromeOptions()
+            # options.add_argument("--headless")
+            # options.add_argument('--no-sandbox')
+            # options.add_argument('--disable-gpu')
+            # options.add_argument('--disable-popup-blocking')
+            # options.add_argument('--window-size=1440,900')
+
+            try:
+                browser = webdriver.Chrome(chrome_options=chrome_options) #chrome_options=options
+            except:
+                pass
+
+
+            # browser = webdriver.Chrome(
+            # chrome_options=options)
+            # browser.set_window_size(1440, 900)
+            enable_download_in_headless_chrome(browser, DOWNLOAD_PATH)
+
+
+
+            # profile = {"plugins.plugins_list": [{"enabled": False,
+            #                                      "name": "Chrome PDF Viewer"}],
+            #            "download.default_directory": download_folder,
+            #            "download.extensions_to_open": ""}
+            #
+            # options = webdriver.ChromeOptions()
+            # options.add_experimental_option("prefs", profile)
+            # options.add_argument("--test-type");
+            # options.add_argument("--disable-extensions")
+            #
+            #
+            # # Setting Options for Headless
+            # options.add_argument('headless')
+
+
+            # browser = webdriver.Chrome() #webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
+            # browser.maximize_window()
+            # browser.implicitly_wait(10)
+
             # browser = webdriver.PhantomJS()
-            #browser = webdriver.Firefox()
+            # browser = webdriver.Firefox()
+            # browser.maximize_window()
             url_status1 = browser.get(url1)
             _logger.info('url_status1....... %s',url_status1)
 
@@ -1615,7 +1732,6 @@ class stock_picking_out(osv.osv):
                 # check URL1
                 try:
                     url_status1 = browser.find_element_by_xpath('.//*[@id="txt_username"]')
-                    browser.find_element_by_id('btnLogin').click()
 
                 except:
                     url_status1 = browser.find_element_by_xpath('.//*[@id="txt_username"]')
@@ -1650,10 +1766,10 @@ class stock_picking_out(osv.osv):
                 error = "Invalid Captcha"
 
                 while error in ("Invalid Captcha","Please enter the captcha."):
-                    browser.find_element_by_id('txt_username')
-                    browser.find_element_by_id('txt_password')
-                    browser.set_window_size(1920, 1080)
-                    # browser.find_element_by_id('btnCaptchaImage').click()
+                    browser.set_window_size(1280, 1024)
+                    browser.find_element_by_xpath('.//*[@id="txt_username"]')
+                    browser.find_element_by_xpath('.//*[@id="txt_password"]')
+                    browser.find_element_by_id('btnCaptchaImage').click()
                     # browser.find_element_by_id('btnCaptchaImage').click()
                     captcha = self.get_eway_captch(cr, uid, [], browser, context)
                     _logger.info('captcha....... %s',captcha)
@@ -1664,34 +1780,26 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys('KWSPL.KA.29')
                     browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys(Keys.TAB)
                     browser.find_element_by_xpath('.//*[@id="txt_password"]').send_keys('Kwspl@ka29')
+                    time.sleep(1)
                     browser.find_element_by_id('txtCaptcha')
                     browser.find_element_by_id('txtCaptcha').send_keys(captcha)
                     browser.save_screenshot('/home/serveradmin/Desktop/screenie1.png')
 
-
+                    time.sleep(1)
 
                     browser.find_element_by_id('btnLogin').click()
 
-                    time.sleep(2)
-
-                    # browser.execute_script("window.confirm = function(msg) { return true; }");
-                    browser.save_screenshot('/home/serveradmin/Desktop/screenie2.png')
                     try:
-                        if browser.find_element_by_id('R10'):
+                        if browser.find_element_by_xpath('.//*[@id="R10"]/a'):
                             break
                     except  Exception as e:
+                        alert = browser.switch_to.alert
+                        alert.accept()
                         print ",,,,,,,,,,,,,,",e
                         continue
-                    # #try:
-                    # alert = browser.switch_to.alert
-                    # print "alert.text.................",alert.text
-                    # # except:
-                    # #     error = ''
                 less_days = 0
                 if url_status1 or url_status2 or url_status3:
-
-                    browser.find_element_by_xpath('.//*[@id="R10"]').click()
-                    time.sleep(1)
+                    browser.find_element_by_xpath('.//*[@id="R10"]/a').click()
                     browser.find_element_by_xpath('.//*[@id="R11"]/a').click()
                     time.sleep(1)
                     browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys('CHL')
@@ -1718,7 +1826,7 @@ class stock_picking_out(osv.osv):
                     time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPincode"]').send_keys(str(case.partner_id.zip))
                     browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPincode"]').send_keys(Keys.TAB)
-                    browser.find_element_by_xpath('.//*[@id="slToState"]').send_keys('KARNATAKA')
+                    browser.find_element_by_xpath('.//*[@id="slToState"]').send_keys('KARNATAKA') #to do
                     time.sleep(1)
                     product = case.product_id.name_template.replace('-',' ')
                     default_code = case.product_id.default_code.replace('-',' ') or ''
@@ -1752,19 +1860,65 @@ class stock_picking_out(osv.osv):
 
                     browser.find_element_by_id('txtDistance').send_keys("100")
                     browser.find_element_by_id('txtDistance').send_keys(Keys.TAB)
-                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtTransid').send_keys("Others")
+                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtTransid').send_keys("")
                     browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtTransid').send_keys(Keys.TAB)
-                    browser.set_window_size(1920, 1080)
-                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtVehicleNo').send_keys(str(truck_no))
+                    browser.set_window_size(1280, 1024)
+                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtVehicleNo').send_keys(str("KA01L4336"))
+                    # browser.execute_script("document.body.style.zoom='80%'")
+                    browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    # browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtVehicleNo').send_keys(Keys.ARROW_DOWN)
 
 
+
+                    # browser.set_window_size(1920, 1080)
                     browser.save_screenshot('/home/serveradmin/Desktop/screenie3.png')
                     time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="btnsbmt"]').click()
-                    alert = browser.switch_to_alert()
+
+                    alert = browser.switch_to.alert
+                    print "tesrt alert===========", alert.text
                     alert.accept()
 
-                    browser.save_screenshot('/home/serveradmin/Desktop/screenie4.png')
+                    time.sleep(2)
+                    browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_btn_detail"]').click()
+                    # browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_printtr"]/td/a[1]').click()
+                    # time.sleep(5)
+                    time.sleep(2)
+                    saved_img = browser.save_screenshot('/tmp/'+case.name.replace('/', '').replace('-', '')+'.png')
+                    img = Image.open('/tmp/'+case.name.replace('/', '').replace('-', '')+'.png')
+                    img.size
+                    crop_specs = (185, 90, img.width - 190, img.height - 30)
+                    crop_img = img.crop(crop_specs)
+                    crop_img.size
+                    #grayimg = grayscale(crop_img)
+                    cp_img = crop_img.save('/tmp/'+case.name.replace('/', '').replace('-', '')+'.png')
+
+                    a4inpt = (img2pdf.mm_to_pt(210),img2pdf.mm_to_pt(297))
+                    layout_fun = img2pdf.get_layout_fun(a4inpt)
+                    with open('/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf',"wb") as f:
+                        f.write(img2pdf.convert('/tmp/'+case.name+'.png',layout_fun=layout_fun))
+                        f.close()
+
+                    #for creating file
+                    current_file = '/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf'
+                    fp = open(current_file,'rb')
+                    result = base64.b64encode(fp.read())
+                    file_name = 'ewaybill_' + '123'
+                    file_name += ".pdf"
+                    self.pool.get('ir.attachment').create(cr, uid,
+                                                          {
+                                                           'name': file_name,
+                                                           'datas': result,
+                                                           'datas_fname': file_name,
+                                                           'res_model': self._name,
+                                                           'res_id': case.id,
+                                                           'type': 'binary'
+                                                          },
+                                                          context=context)
+                    os.remove(current_file)
+                    return 123
+
 
             except Exception as e:
                 _logger.info('Error reason %s',e)
@@ -1773,6 +1927,7 @@ class stock_picking_out(osv.osv):
 
 
         return True
+
 
 
 
