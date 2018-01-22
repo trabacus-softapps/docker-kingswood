@@ -691,6 +691,7 @@ class stock_picking_out(osv.osv):
                 'work_order'    :   fields.function(get_workorder,store=True,type="char",string='Work Order Number',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
                 'truck_no'      :   fields.char('Vehicle Number',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
                 'esugam_no'     :   fields.char('E-Sugam Number',size=20,states={'in_transit': [('readonly', False)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
+               'distance'      :   fields.integer("Approximate Distance(KM)"),
                 'state'         :   fields.selection([('draft','Draft'),('in_transit','In Transit'),('auto', 'Waiting Another Operation'),
                                                       ('confirmed', 'Waiting Availability'),
                                                       ('assigned', 'Ready to Deliver'),
@@ -1500,8 +1501,11 @@ class stock_picking_out(osv.osv):
                 if not ln.product_qty >0 : 
                     raise osv.except_osv(_('Warning'),_('Please Enter the Valid Loaded Qty'))
 
+            if case.distance == 0:
+                raise osv.except_osv(_('Warning'),_('Please Eneter the Approximate Distance and Confirm'))
+
             if context.get("confirm_esugam") and len(case.esugam_no) > 1:
-                raise osv.except_osv(_('Warning'),_('E-sugam is Already Generated for this Delivery Challan'))
+                raise osv.except_osv(_('Warning'),_('eWayBill is Already Generated for this Delivery Challan'))
 
 
             #for creating vKW_Depotoucher lines
@@ -1571,7 +1575,7 @@ class stock_picking_out(osv.osv):
                 url1 = case.partner_id.es_url1
                 url2 = case.partner_id.es_url2
                 # esugam = self.generate_esugam(cr, uid, desc, qty, price, product_id, username, password, url1, url2, url2, case, context)
-                esugam = esugam = self.generate_eway_bill(cr, uid, ids, username, password, url1,url2, url3, context=context)
+                esugam =  self.generate_eway_bill(cr, uid, ids, username, password, url1,url2, url3, context=context)
             self.write(cr, uid, ids, {
                                       'state'           :'in_transit',
                                       'esugam_no'       : esugam,
@@ -1581,17 +1585,13 @@ class stock_picking_out(osv.osv):
 #             move_obj.action_done(cr, uid, move_ids, context=None)
             return True
 
-    def generate_eway_bill(self, cr, uid, ids, context=None):
+    def generate_eway_bill(self, cr, uid, ids, username, password, url1, url2, url3, context=None):
         if not context:
             context = {}
         tax_obj = self.pool.get("account.tax")
         today = time.strftime('%Y-%m-%d')
         today = datetime.strptime(today,'%Y-%m-%d')
-        username = 'KWSPL.KA.29'
-        password = 'Kwspl@ka29'
-        url1 = 'http://ewaybill.nic.in/'
-        url2 = 'https://ctax.kar.nic.in/ewaybill'
-        url3 = 'https://ctax.kar.nic.in/ewaybill'
+        esugam_no = ''
 
         for case in self.browse(cr, uid, ids):
             dc_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%Y-%m-%d')
@@ -1681,15 +1681,6 @@ class stock_picking_out(osv.osv):
 
             chrome_options.add_experimental_option('prefs', prefs)
 
-            #
-            # DOWNLOAD_PATH = '/tmp'
-            # options = webdriver.ChromeOptions()
-            # options.add_argument("--headless")
-            # options.add_argument('--no-sandbox')
-            # options.add_argument('--disable-gpu')
-            # options.add_argument('--disable-popup-blocking')
-            # options.add_argument('--window-size=1440,900')
-
             try:
                 browser = webdriver.Chrome(chrome_options=chrome_options) #chrome_options=options
             except:
@@ -1725,6 +1716,7 @@ class stock_picking_out(osv.osv):
             # browser = webdriver.PhantomJS()
             # browser = webdriver.Firefox()
             # browser.maximize_window()
+
             url_status1 = browser.get(url1)
             _logger.info('url_status1....... %s',url_status1)
 
@@ -1757,10 +1749,6 @@ class stock_picking_out(osv.osv):
                 except:
                     raise osv.except_osv(_('Eway Bill Site Is Down'),_('Please Try After Some Time'))
                 browser.find_element_by_id('btnLogin').click()
-
-            # url = 'https://ctax.kar.nic.in/ewaybill'
-            # browser = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true']) #webdriver.Chrome()
-            # browser.get(url)
 
             try:
                 error = "Invalid Captcha"
@@ -1818,16 +1806,18 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToGSTIN"]').send_keys(str(case.partner_id.gstin_code))
                     time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToGSTIN"]').send_keys(Keys.TAB)
-                    browser.find_element_by_xpath('.//*[@id="txtToAddr1"]').send_keys(cust_street)
-                    browser.find_element_by_xpath('.//*[@id="txtToAddr1"]').send_keys(Keys.TAB)
-                    browser.find_element_by_xpath('.//*[@id="txtToAddr2"]').send_keys(cust_street2)
-                    browser.find_element_by_xpath('.//*[@id="txtToAddr2"]').send_keys(Keys.TAB)
-                    browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPlace"]').send_keys(case.city_id and str(case.city_id.name))
-                    time.sleep(1)
-                    browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPincode"]').send_keys(str(case.partner_id.zip))
-                    browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPincode"]').send_keys(Keys.TAB)
-                    browser.find_element_by_xpath('.//*[@id="slToState"]').send_keys('KARNATAKA') #to do
-                    time.sleep(1)
+                    # Customer Addrress Details
+                    # browser.find_element_by_xpath('.//*[@id="txtToAddr1"]').send_keys(cust_street)
+                    # browser.find_element_by_xpath('.//*[@id="txtToAddr1"]').send_keys(Keys.TAB)
+                    # browser.find_element_by_xpath('.//*[@id="txtToAddr2"]').send_keys(cust_street2)
+                    # browser.find_element_by_xpath('.//*[@id="txtToAddr2"]').send_keys(Keys.TAB)
+                    # browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPlace"]').send_keys(case.city_id and str(case.city_id.name))
+                    # time.sleep(1)
+                    # browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPincode"]').send_keys(str(case.partner_id.zip))
+                    # browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPincode"]').send_keys(Keys.TAB)
+                    # # browser.find_element_by_xpath('.//*[@id="slToState"]').send_keys('KARNATAKA') #to do
+                    # time.sleep(1)
+
                     product = case.product_id.name_template.replace('-',' ')
                     default_code = case.product_id.default_code.replace('-',' ') or ''
                     browser.find_element_by_xpath('.//*[@id="slToState"]').send_keys(Keys.TAB)
@@ -1847,6 +1837,7 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_xpath('.//*[@id="txt_TRC_1"]').send_keys(str(goods_rate))
                     browser.find_element_by_xpath('.//*[@id="txt_TRC_1"]').send_keys(Keys.TAB)
                     time.sleep(1)
+                    tax_amount = tax_amount * 100
                     if case.state_id.id == case.partner_id.state_id.id:
                         browser.find_element_by_xpath('.//*[@id="txtCgstRt_1"]').send_keys(str(tax_amount))
                         browser.find_element_by_xpath('.//*[@id="txtCgstRt_1"]').send_keys(Keys.TAB)
@@ -1863,7 +1854,7 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtTransid').send_keys("")
                     browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtTransid').send_keys(Keys.TAB)
                     browser.set_window_size(1280, 1024)
-                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtVehicleNo').send_keys(str("KA01L4336"))
+                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtVehicleNo').send_keys(str(truck_no))
                     # browser.execute_script("document.body.style.zoom='80%'")
                     browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     # browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtVehicleNo').send_keys(Keys.ARROW_DOWN)
@@ -1878,46 +1869,53 @@ class stock_picking_out(osv.osv):
                     alert = browser.switch_to.alert
                     print "tesrt alert===========", alert.text
                     alert.accept()
+                    time.sleep(1)
+                    esugam_no = browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_lblBillNoDetails"]')
+                    if esugam_no:
+                        esugam_no = esugam_no.text.replace(" ", "")
+                    return esugam_no
 
-                    time.sleep(2)
-                    browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                    browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_btn_detail"]').click()
+
+                    """ Upload PDF File to respective DC"""
+                    # time.sleep(2)
+                    # browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    # browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_btn_detail"]').click()
                     # browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_printtr"]/td/a[1]').click()
                     # time.sleep(5)
-                    time.sleep(2)
-                    saved_img = browser.save_screenshot('/tmp/'+case.name.replace('/', '').replace('-', '')+'.png')
-                    img = Image.open('/tmp/'+case.name.replace('/', '').replace('-', '')+'.png')
-                    img.size
-                    crop_specs = (185, 90, img.width - 190, img.height - 30)
-                    crop_img = img.crop(crop_specs)
-                    crop_img.size
-                    #grayimg = grayscale(crop_img)
-                    cp_img = crop_img.save('/tmp/'+case.name.replace('/', '').replace('-', '')+'.png')
+                    # time.sleep(2)
+                    # browser.save_screenshot('/tmp/'+case.name.replace('/', '').replace('-', '')+'.png')
+                    # img = Image.open('/tmp/'+case.name.replace('/', '').replace('-', '')+'.png')
+                    # img.size
+                    # crop_specs = (185, 90, img.width - 190, img.height - 30)
+                    # crop_img = img.crop(crop_specs)
+                    # crop_img.size
+                    # #grayimg = grayscale(crop_img)
+                    # crop_img.save('/tmp/'+case.name.replace('/', '').replace('-', '')+'.png')
+                    #
+                    # a4inpt = (img2pdf.mm_to_pt(210),img2pdf.mm_to_pt(297))
+                    # layout_fun = img2pdf.get_layout_fun(a4inpt)
+                    # with open('/tmp/'+case.name+'.pdf',"wb") as f:
+                    #     f.write(img2pdf.convert('/tmp/'+case.name+'.png',layout_fun=layout_fun))
+                    #     f.close()
+                    #
+                    # #for creating file
+                    # current_file = '/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf'
+                    # fp = open(current_file,'rb')
+                    # result = base64.b64encode(fp.read())
+                    # file_name = 'ewaybill_' + '123'
+                    # file_name += ".pdf"
+                    # self.pool.get('ir.attachment').create(cr, uid,
+                    #                                       {
+                    #                                        'name': file_name,
+                    #                                        'datas': result,
+                    #                                        'datas_fname': file_name,
+                    #                                        'res_model': self._name,
+                    #                                        'res_id': case.id,
+                    #                                        'type': 'binary'
+                    #                                       },
+                    #                                       context=context)
+                    # os.remove(current_file)
 
-                    a4inpt = (img2pdf.mm_to_pt(210),img2pdf.mm_to_pt(297))
-                    layout_fun = img2pdf.get_layout_fun(a4inpt)
-                    with open('/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf',"wb") as f:
-                        f.write(img2pdf.convert('/tmp/'+case.name+'.png',layout_fun=layout_fun))
-                        f.close()
-
-                    #for creating file
-                    current_file = '/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf'
-                    fp = open(current_file,'rb')
-                    result = base64.b64encode(fp.read())
-                    file_name = 'ewaybill_' + '123'
-                    file_name += ".pdf"
-                    self.pool.get('ir.attachment').create(cr, uid,
-                                                          {
-                                                           'name': file_name,
-                                                           'datas': result,
-                                                           'datas_fname': file_name,
-                                                           'res_model': self._name,
-                                                           'res_id': case.id,
-                                                           'type': 'binary'
-                                                          },
-                                                          context=context)
-                    os.remove(current_file)
-                    return 123
 
 
             except Exception as e:
@@ -5830,6 +5828,7 @@ class stock_picking(osv.osv):
                'work_order'    :   fields.function(get_workorder,store=True,type="char",string='Work Order Number',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
                'truck_no'      :   fields.char('Vehicle No',size=20, states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
                'esugam_no'     :   fields.char('E-Sugam No.',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
+               'distance'      :   fields.integer("Approximate Distance(KM)"),
                'state'         :   fields.selection([('draft','Draft'),('in_transit','In Transit'),('auto', 'Waiting Another Operation'),
                                                       ('confirmed', 'Waiting Availability'),
                                                       ('assigned', 'Ready to Deliver'),
