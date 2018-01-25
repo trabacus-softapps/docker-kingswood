@@ -334,7 +334,6 @@
             					class="oe_highlight" />
 
             				<button name="print_gst_dc" type="object" string="GST Invoice"
-            					groups="base.group_no_one,kingswood.kw_admin_service"
             					class="oe_highlight" />
 
 
