@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from openerp.osv import fields,osv
 from openerp.tools.translate import _
 from lxml import etree
@@ -54,7 +55,42 @@ import pytesseract
 import urllib
 import re
 import tempfile
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.alert import Alert
+from selenium.webdriver.support.ui import WebDriverWait
+import json
+from selenium.webdriver.chrome.options import Options
+# from seleniumrequests import Chrome
+import codecs
+import pywinauto
+import img2pdf
 
+
+# For Setting Chrome Web Drive Options selenium
+#             chrome_options = Options()
+#             if HEADLESS:
+#                 chrome_options.add_argument("--headless")
+#                 chrome_options.add_argument('--no-sandbox')
+#                 chrome_options.add_argument('--disable-gpu')
+#                 chrome_options.add_argument('--disable-popup-blocking')
+#                 chrome_options.add_argument('--window-size=1440,900')
+#             else:
+#                 chrome_options.add_argument("--kiosk")
+#             prefs = {
+#                 'download.default_directory': DOWNLOAD_PATH,
+#                 'download.prompt_for_download': False,
+#                 'download.directory_upgrade': True,
+#                 'safebrowsing.enabled': False,
+#                 'safebrowsing.disable_download_protection': True}
+#             chrome_options.add_experimental_option('prefs', prefs)
+#             driver = webdriver.Chrome(
+#                 chrome_options=chrome_options, executable_path=DRIVER_PATH)
+#             if HEADLESS:
+#                 driver.set_window_size(1440, 900)
+#                 enable_download_in_headless_chrome(driver, DOWNLOAD_PATH)
 
 # FIXME: this is a temporary workaround because of a framework bug (ref: lp996816). It should be removed as soon as
 #        the bug is fixed
@@ -655,6 +691,7 @@ class stock_picking_out(osv.osv):
                 'work_order'    :   fields.function(get_workorder,store=True,type="char",string='Work Order Number',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
                 'truck_no'      :   fields.char('Vehicle Number',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
                 'esugam_no'     :   fields.char('E-Sugam Number',size=20,states={'in_transit': [('readonly', False)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
+               'distance'      :   fields.integer("Approximate Distance(KM)"),
                 'state'         :   fields.selection([('draft','Draft'),('in_transit','In Transit'),('auto', 'Waiting Another Operation'),
                                                       ('confirmed', 'Waiting Availability'),
                                                       ('assigned', 'Ready to Deliver'),
@@ -1464,8 +1501,11 @@ class stock_picking_out(osv.osv):
                 if not ln.product_qty >0 : 
                     raise osv.except_osv(_('Warning'),_('Please Enter the Valid Loaded Qty'))
 
+            if case.distance == 0:
+                raise osv.except_osv(_('Warning'),_('Please Eneter the Approximate Distance and Confirm'))
+
             if context.get("confirm_esugam") and len(case.esugam_no) > 1:
-                raise osv.except_osv(_('Warning'),_('E-sugam is Already Generated for this Delivery Challan'))
+                raise osv.except_osv(_('Warning'),_('eWayBill is Already Generated for this Delivery Challan'))
 
 
             #for creating vKW_Depotoucher lines
@@ -1526,16 +1566,16 @@ class stock_picking_out(osv.osv):
                     password = case.partner_id.es_password
 
                 """ Esugam Site security reason commented"""
-                esugam = self.generate_esugam(cr,uid,desc, qty, price, product_id, username, password, url1,url2, url3, case, context)
-
+                # esugam = self.generate_esugam(cr,uid,desc, qty, price, product_id, username, password, url1,url2, url3, case, context)
+                esugam = self.generate_eway_bill(cr, uid, ids, username, password, url1,url2, url3, context=context)
             elif (case.partner_id.gen_esugam == True or case.gen_esugam) and case.partner_id.state_id.code == 'KA' and case.state_id.code == 'KA' and user_id.partner_id.state_id.code !='AP':
                 esugam_ids = esugam_obj.search(cr, uid, [('state_id','=',case.partner_id.state_id.id)])
                 username = case.partner_id.es_username
                 password = case.partner_id.es_password
                 url1 = case.partner_id.es_url1
                 url2 = case.partner_id.es_url2
-                esugam = self.generate_esugam(cr, uid, desc, qty, price, product_id, username, password, url1, url2, url2, case, context)
-
+                # esugam = self.generate_esugam(cr, uid, desc, qty, price, product_id, username, password, url1, url2, url2, case, context)
+                esugam =  self.generate_eway_bill(cr, uid, ids, username, password, url1,url2, url3, context=context)
             self.write(cr, uid, ids, {
                                       'state'           :'in_transit',
                                       'esugam_no'       : esugam,
@@ -1544,6 +1584,378 @@ class stock_picking_out(osv.osv):
                                       })
 #             move_obj.action_done(cr, uid, move_ids, context=None)
             return True
+
+    def generate_eway_bill(self, cr, uid, ids, username, password, url1, url2, url3, context=None):
+        if not context:
+            context = {}
+        tax_obj = self.pool.get("account.tax")
+        today = time.strftime('%Y-%m-%d')
+        today = datetime.strptime(today,'%Y-%m-%d')
+        esugam_no = ''
+
+        for case in self.browse(cr, uid, ids):
+            dc_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%Y-%m-%d')
+            dc_date = datetime.strptime(dc_date, '%Y-%m-%d')
+            cust_street = case.partner_id.street.replace('.','').replace(',','').replace('-','').replace('#','').replace('/','')
+            cust_street2 = case.partner_id.street2 and case.partner_id.street2.replace('.','').replace(',','').replace('-','').replace('#','').replace('/','')
+            truck_no = case.truck_no.replace('-','').replace('/','').replace('.','').replace(' ','')
+
+            cr.execute("""
+                            select case when kw.sub_total is null then kw.product_price else kw.sub_total end
+
+                            from product_supplierinfo ps
+                            inner join kw_product_price kw on ps.id = kw.supp_info_id
+                            and ps.product_id = """+str(case.product_id.id)+"""
+
+                            and ef_date <= '"""+str(case.date)+"""' ::date
+                            and ps.name = """+str(case.paying_agent_id.id)+"""
+                            and (case when ps.customer_id is null then ps.depot = (select location_id from stock_move where picking_id = """+str(case.id)+""" limit 1)
+                            else case when ps.customer_id is null and ps.depot is null then ps.city_id = """+str(case.city_id.id)+""" else ps.customer_id = """+str(case.partner_id.id)+""" end end)
+                            order by ef_date desc limit 1
+                        """)
+            goods_rate = [x[0] for x in cr.fetchall()]
+            if goods_rate:
+                goods_rate = goods_rate[0]
+                goods_rate = int(goods_rate)
+            for move in case.move_lines:
+                if not goods_rate:
+                    goods_rate = move.price_unit
+                    goods_rate = int(goods_rate)
+                qty = move.product_qty
+            print "goods_rate----------------->",goods_rate
+            # Tax Calculation
+            tax_amount = 0.00
+            if case.state_id.id == case.partner_id.state_id.id:
+                cr.execute("select id from account_tax where gst_categ='intra' ")
+                intra_tax_id= [x[0] for x in cr.fetchall()]
+                intra_tax_id = tuple(intra_tax_id)
+                if intra_tax_id:
+                    cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id in %s",(case.product_id.id,intra_tax_id))
+                    tx_ids = [x[0] for x in cr.fetchall()]
+                    for tx in tax_obj.browse(cr, uid, [tx_ids[0]]):
+                        tax_amount += tx.amount * 100
+
+
+            else:
+                cr.execute("select id from account_tax where gst_categ='inter' ")
+                inter_tax_id= [x[0] for x in cr.fetchall()]
+                inter_tax_id = tuple(inter_tax_id)
+                if inter_tax_id:
+                    cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id in %s",(case.product_id.id,inter_tax_id))
+                    tx_ids = [x[0] for x in cr.fetchall()]
+                    for tx in tax_obj.browse(cr, uid, tx_ids):
+                        tax_amount += tx.amount
+
+            # For PDF Download Setting options
+            def enable_download_in_headless_chrome(browser, download_dir):
+                #add missing support for chrome "send_command"  to selenium webdriver
+                browser.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
+
+                params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
+                browser.execute("send_command", params)
+                return browser
+
+            chrome_options = Options()
+            DOWNLOAD_PATH = '/tmp'
+            chrome_options = webdriver.ChromeOptions()
+            # chrome_options.add_argument("--headless")
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--disable-popup-blocking')
+            chrome_options.add_argument('--window-size=1440,900')
+            chrome_options.add_argument ( "--disable-extensions" )
+            chrome_options.add_argument ( "--disable-print-preview" )
+            # chrome_options.add_argument ( "--print-to-pdf=/tmp/file1.pdf" )
+
+
+            prefs = {
+                'download.default_directory': DOWNLOAD_PATH,
+                'download.prompt_for_download': False,
+                "plugins.always_open_pdf_externally": True,
+                'download.directory_upgrade': True,
+                'safebrowsing.enabled': False,
+                'safebrowsing.disable_download_protection': True,
+                # 'plugins.plugins_list': [{'enabled':False,'name':'Chrome PDF Viewer' }],
+                "plugins.plugins_disabled": ['Chrome PDF Viewer'],
+            }
+
+            chrome_options.add_experimental_option('prefs', prefs)
+
+            try:
+                browser = webdriver.Chrome(chrome_options=chrome_options) #chrome_options=options
+            except:
+                pass
+
+
+            # browser = webdriver.Chrome(
+            # chrome_options=options)
+            # browser.set_window_size(1440, 900)
+            enable_download_in_headless_chrome(browser, DOWNLOAD_PATH)
+
+
+
+            # profile = {"plugins.plugins_list": [{"enabled": False,
+            #                                      "name": "Chrome PDF Viewer"}],
+            #            "download.default_directory": download_folder,
+            #            "download.extensions_to_open": ""}
+            #
+            # options = webdriver.ChromeOptions()
+            # options.add_experimental_option("prefs", profile)
+            # options.add_argument("--test-type");
+            # options.add_argument("--disable-extensions")
+            #
+            #
+            # # Setting Options for Headless
+            # options.add_argument('headless')
+
+
+            # browser = webdriver.Chrome() #webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
+            # browser.maximize_window()
+            # browser.implicitly_wait(10)
+
+            # browser = webdriver.PhantomJS()
+            # browser = webdriver.Firefox()
+            # browser.maximize_window()
+
+            url_status1 = browser.get(url1)
+            _logger.info('url_status1....... %s',url_status1)
+
+            try:
+                # check URL1
+                try:
+                    url_status1 = browser.find_element_by_xpath('.//*[@id="txt_username"]')
+
+                except:
+                    url_status1 = browser.find_element_by_xpath('.//*[@id="txt_username"]')
+            except:
+                if not url_status1:
+                    # check URL2
+                    url_status2 = browser.get(url2)
+                    try:
+                        url_status2 = browser.find_element_by_id('txt_username')
+                    except:
+                        # check URL3
+                        url_status3 = browser.get(url3)
+                        url_status3 = browser.find_element_by_id('txt_username')
+            try:
+                # check URL3
+                if not url_status1 and not url_status2:
+                    browser.find_element_by_id('txt_username')
+                    url_status1 = False
+
+            except:
+                try:
+                    browser.find_element_by_id('btnLogin').click()
+                except:
+                    raise osv.except_osv(_('Eway Bill Site Is Down'),_('Please Try After Some Time'))
+                browser.find_element_by_id('btnLogin').click()
+
+            try:
+                error = "Invalid Captcha"
+
+                while error in ("Invalid Captcha","Please enter the captcha."):
+                    browser.set_window_size(1280, 1024)
+                    browser.find_element_by_xpath('.//*[@id="txt_username"]')
+                    browser.find_element_by_xpath('.//*[@id="txt_password"]')
+                    browser.find_element_by_id('btnCaptchaImage').click()
+                    # browser.find_element_by_id('btnCaptchaImage').click()
+                    captcha = self.get_eway_captch(cr, uid, [], browser, context)
+                    _logger.info('captcha....... %s',captcha)
+                    if re.match("^([a-zA-Z0-9']{0,5})$",captcha) == None:
+                        continue
+
+                    browser.find_element_by_xpath('.//*[@id="txt_username"]').clear()
+                    browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys('KWSPL.KA.29')
+                    browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys(Keys.TAB)
+                    browser.find_element_by_xpath('.//*[@id="txt_password"]').send_keys('Kwspl@ka29')
+                    time.sleep(1)
+                    browser.find_element_by_id('txtCaptcha')
+                    browser.find_element_by_id('txtCaptcha').send_keys(captcha)
+                    browser.save_screenshot('/home/serveradmin/Desktop/screenie1.png')
+
+                    time.sleep(1)
+
+                    browser.find_element_by_id('btnLogin').click()
+
+                    try:
+                        if browser.find_element_by_xpath('.//*[@id="R10"]/a'):
+                            break
+                    except  Exception as e:
+                        alert = browser.switch_to.alert
+                        alert.accept()
+                        print ",,,,,,,,,,,,,,",e
+                        continue
+                less_days = 0
+                if url_status1 or url_status2 or url_status3:
+                    browser.find_element_by_xpath('.//*[@id="R10"]/a').click()
+                    browser.find_element_by_xpath('.//*[@id="R11"]/a').click()
+                    time.sleep(1)
+                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys('CHL')
+                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys(Keys.TAB)
+                    browser.find_element_by_xpath('.//*[@id="txtDocNo"]').send_keys(case.name)
+                    browser.find_element_by_xpath('.//*[@id="txtDocNo"]').send_keys(Keys.TAB)
+                    if dc_date < today:
+                        less_days = today - dc_date
+                        print "less_days--------",type(less_days)
+                        less_days = str(less_days)[0:2]
+                        for i in range(int(less_days)):
+                            browser.find_element_by_xpath('.//*[@id="HeadTable"]/tbody/tr[3]/td/table/tbody/tr/td[3]/div/div/a[1]').click()
+                    time.sleep(1)
+                    browser.find_element_by_xpath('.//*[@id="slFromState"]').send_keys(Keys.TAB)
+                    browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToTrdName"]').send_keys(case.partner_id.name)
+                    browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToGSTIN"]').send_keys(str(case.partner_id.gstin_code))
+                    time.sleep(1)
+                    browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToGSTIN"]').send_keys(Keys.TAB)
+                    # Customer Addrress Details
+                    # browser.find_element_by_xpath('.//*[@id="txtToAddr1"]').send_keys(cust_street)
+                    # browser.find_element_by_xpath('.//*[@id="txtToAddr1"]').send_keys(Keys.TAB)
+                    # browser.find_element_by_xpath('.//*[@id="txtToAddr2"]').send_keys(cust_street2)
+                    # browser.find_element_by_xpath('.//*[@id="txtToAddr2"]').send_keys(Keys.TAB)
+                    # browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPlace"]').send_keys(case.city_id and str(case.city_id.name))
+                    # time.sleep(1)
+                    # browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPincode"]').send_keys(str(case.partner_id.zip))
+                    # browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToPincode"]').send_keys(Keys.TAB)
+                    # # browser.find_element_by_xpath('.//*[@id="slToState"]').send_keys('KARNATAKA') #to do
+                    # time.sleep(1)
+
+                    product = case.product_id.name_template.replace('-',' ')
+                    default_code = case.product_id.default_code.replace('-',' ') or ''
+                    browser.find_element_by_xpath('.//*[@id="slToState"]').send_keys(Keys.TAB)
+                    time.sleep(1)
+                    browser.find_element_by_xpath('.//*[@id="txtProductName_1"]').send_keys(product)
+                    browser.find_element_by_xpath('.//*[@id="txtProductName_1"]').send_keys(Keys.TAB)
+                    browser.find_element_by_xpath('.//*[@id="txt_Description_1"]').send_keys(product +' ' +default_code)
+                    browser.find_element_by_xpath('.//*[@id="txt_Description_1"]').send_keys(Keys.TAB)
+                    browser.find_element_by_xpath('.//*[@id="txt_HSN_1"]').send_keys(str(case.product_id.hsn_sac))
+                    browser.find_element_by_xpath('.//*[@id="txt_HSN_1"]').send_keys(Keys.TAB)
+
+                    browser.find_element_by_xpath('.//*[@id="txt_Quanity_1"]').send_keys(str(qty))
+                    browser.find_element_by_xpath('.//*[@id="txt_Quanity_1"]').send_keys(Keys.TAB)
+                    browser.find_element_by_xpath('.//*[@id="txt_Unit_1"]').send_keys('MTS')
+                    browser.find_element_by_xpath('.//*[@id="txt_Unit_1"]').send_keys(Keys.TAB)
+                    print "str(goods_rate)---------------",str(goods_rate)
+                    browser.find_element_by_xpath('.//*[@id="txt_TRC_1"]').send_keys(str(goods_rate))
+                    browser.find_element_by_xpath('.//*[@id="txt_TRC_1"]').send_keys(Keys.TAB)
+                    time.sleep(1)
+                    tax_amount = tax_amount * 100
+                    if case.state_id.id == case.partner_id.state_id.id:
+                        browser.find_element_by_xpath('.//*[@id="txtCgstRt_1"]').send_keys(str(tax_amount))
+                        browser.find_element_by_xpath('.//*[@id="txtCgstRt_1"]').send_keys(Keys.TAB)
+                        browser.find_element_by_xpath('.//*[@id="txtSgstRt_1"]').send_keys(str(tax_amount))
+                        browser.find_element_by_xpath('.//*[@id="txtSgstRt_1"]').send_keys(Keys.TAB)
+                    else:
+                        browser.find_element_by_xpath('.//*[@id="txtIgstRt_1"]').send_keys(str(tax_amount))
+
+                    time.sleep(1)
+                    print ".............1"
+
+                    browser.find_element_by_id('txtDistance').send_keys("100")
+                    browser.find_element_by_id('txtDistance').send_keys(Keys.TAB)
+                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtTransid').send_keys("")
+                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtTransid').send_keys(Keys.TAB)
+                    browser.set_window_size(1280, 1024)
+                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtVehicleNo').send_keys(str(truck_no))
+                    # browser.execute_script("document.body.style.zoom='80%'")
+                    browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    # browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtVehicleNo').send_keys(Keys.ARROW_DOWN)
+
+
+
+                    # browser.set_window_size(1920, 1080)
+                    browser.save_screenshot('/home/serveradmin/Desktop/screenie3.png')
+                    time.sleep(1)
+                    browser.find_element_by_xpath('.//*[@id="btnsbmt"]').click()
+
+                    alert = browser.switch_to.alert
+                    print "tesrt alert===========", alert.text
+                    alert.accept()
+                    time.sleep(1)
+                    esugam_no = browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_lblBillNoDetails"]')
+                    if esugam_no:
+                        esugam_no = esugam_no.text.replace(" ", "")
+                    return esugam_no
+
+
+                    """ Upload PDF File to respective DC"""
+                    # time.sleep(2)
+                    # browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    # browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_btn_detail"]').click()
+                    # browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_printtr"]/td/a[1]').click()
+                    # time.sleep(5)
+                    # time.sleep(2)
+                    # browser.save_screenshot('/tmp/'+case.name.replace('/', '').replace('-', '')+'.png')
+                    # img = Image.open('/tmp/'+case.name.replace('/', '').replace('-', '')+'.png')
+                    # img.size
+                    # crop_specs = (185, 90, img.width - 190, img.height - 30)
+                    # crop_img = img.crop(crop_specs)
+                    # crop_img.size
+                    # #grayimg = grayscale(crop_img)
+                    # crop_img.save('/tmp/'+case.name.replace('/', '').replace('-', '')+'.png')
+                    #
+                    # a4inpt = (img2pdf.mm_to_pt(210),img2pdf.mm_to_pt(297))
+                    # layout_fun = img2pdf.get_layout_fun(a4inpt)
+                    # with open('/tmp/'+case.name+'.pdf',"wb") as f:
+                    #     f.write(img2pdf.convert('/tmp/'+case.name+'.png',layout_fun=layout_fun))
+                    #     f.close()
+                    #
+                    # #for creating file
+                    # current_file = '/tmp/'+case.name.replace('/', '').replace('-', '')+'.pdf'
+                    # fp = open(current_file,'rb')
+                    # result = base64.b64encode(fp.read())
+                    # file_name = 'ewaybill_' + '123'
+                    # file_name += ".pdf"
+                    # self.pool.get('ir.attachment').create(cr, uid,
+                    #                                       {
+                    #                                        'name': file_name,
+                    #                                        'datas': result,
+                    #                                        'datas_fname': file_name,
+                    #                                        'res_model': self._name,
+                    #                                        'res_id': case.id,
+                    #                                        'type': 'binary'
+                    #                                       },
+                    #                                       context=context)
+                    # os.remove(current_file)
+
+
+
+            except Exception as e:
+                _logger.info('Error reason %s',e)
+                raise osv.except_osv(_('Eway Bill Site is Down'),_('Please Try After Some Time'))
+
+
+
+        return True
+
+
+
+
+    def get_eway_captch(self, cr, uid, ids, browser, context=None):
+        """ Captcha Image Reading using PIL
+        """
+
+        img = browser.find_element_by_xpath('//div[@class="col-lg-3"]/div[@class="well boxshadow text-center"]/div[3]/table//img')
+        if not img:
+           img = browser.find_element_by_xpath('//*[@id="form"]/div[3]/div[2]/div[3]/div[1]/div[3]/table/tbody/tr[2]/td[1]/div/img')
+
+        print "Inside....................",img
+        src = img.get_attribute('src')
+        urllib.urlretrieve(src, '/tmp/captcha.png')
+
+        img = Image.open('/tmp/captcha.png')
+        img = img.convert("RGBA")
+        pixdata = img.load()
+        print "pixdata[x, y]",pixdata
+
+        for y in xrange(img.size[1]):
+         for x in xrange(img.size[0]):
+             if pixdata[x, y][1] < 50: #136
+                pixdata[x, y] = (0, 0, 0, 255)
+
+        img.save("/tmp/new_captcha.png")
+
+        data = pytesseract.image_to_string(Image.open('/tmp/new_captcha.png'))
+        print data
+        return data.replace(' ', '')
 
 
     def generate_tnvat(self, cr, uid,  desc, qty, price, product_id, username, password, url, url2, url3, case, context=None):
@@ -5416,6 +5828,7 @@ class stock_picking(osv.osv):
                'work_order'    :   fields.function(get_workorder,store=True,type="char",string='Work Order Number',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
                'truck_no'      :   fields.char('Vehicle No',size=20, states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
                'esugam_no'     :   fields.char('E-Sugam No.',size=20,states={'in_transit': [('readonly', True)],'done': [('readonly', True)],'freight_paid': [('readonly', True)]}),
+               'distance'      :   fields.integer("Approximate Distance(KM)"),
                'state'         :   fields.selection([('draft','Draft'),('in_transit','In Transit'),('auto', 'Waiting Another Operation'),
                                                       ('confirmed', 'Waiting Availability'),
                                                       ('assigned', 'Ready to Deliver'),
