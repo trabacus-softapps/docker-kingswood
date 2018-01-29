@@ -1806,7 +1806,7 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToTrdName"]').send_keys(case.partner_id.name)
                     browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToGSTIN"]').send_keys(str(case.partner_id.gstin_code))
                     time.sleep(1)
-                    browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToGSTIN"]').send_keys(Keys.TAB)
+                    # browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_txtToGSTIN"]').send_keys(Keys.TAB)
                     # Customer Addrress Details
                     # browser.find_element_by_xpath('.//*[@id="txtToAddr1"]').send_keys(cust_street)
                     # browser.find_element_by_xpath('.//*[@id="txtToAddr1"]').send_keys(Keys.TAB)
@@ -1821,7 +1821,7 @@ class stock_picking_out(osv.osv):
 
                     product = case.product_id.name_template.replace('-',' ')
                     default_code = case.product_id.default_code.replace('-',' ') or ''
-                    browser.find_element_by_xpath('.//*[@id="slToState"]').send_keys(Keys.TAB)
+                    # browser.find_element_by_xpath('.//*[@id="slToState"]').send_keys(Keys.TAB)
                     time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="txtProductName_1"]').send_keys(product)
                     browser.find_element_by_xpath('.//*[@id="txtProductName_1"]').send_keys(Keys.TAB)
