@@ -1647,18 +1647,18 @@ class stock_picking_out(osv.osv):
                         tax_amount += tx.amount
 
             # For PDF Download Setting options
-            # def enable_download_in_headless_chrome(browser, download_dir):
-            #     #add missing support for chrome "send_command"  to selenium webdriver
-            #     browser.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
-            #
-            #     params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
-            #     browser.execute("send_command", params)
-            #     return browser
+            def enable_download_in_headless_chrome(browser, download_dir):
+                #add missing support for chrome "send_command"  to selenium webdriver
+                browser.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
+
+                params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
+                browser.execute("send_command", params)
+                return browser
 
             chrome_options = Options()
             DOWNLOAD_PATH = '/tmp'
             chrome_options = webdriver.ChromeOptions()
-            # chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--headless")
             chrome_options.add_argument('--no-sandbox')
             chrome_options.add_argument('--disable-gpu')
             chrome_options.add_argument('--disable-popup-blocking')
@@ -1690,7 +1690,8 @@ class stock_picking_out(osv.osv):
             # browser = webdriver.Chrome(
             # chrome_options=options)
             # browser.set_window_size(1440, 900)
-            # enable_download_in_headless_chrome(browser, DOWNLOAD_PATH)
+
+            enable_download_in_headless_chrome(browser, DOWNLOAD_PATH)
 
 
 
