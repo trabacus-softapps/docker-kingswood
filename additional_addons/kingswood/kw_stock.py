@@ -1838,7 +1838,7 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_xpath('.//*[@id="txt_TRC_1"]').send_keys(str(goods_rate))
                     browser.find_element_by_xpath('.//*[@id="txt_TRC_1"]').send_keys(Keys.TAB)
                     time.sleep(1)
-                    tax_amount = tax_amount * 100
+                    # tax_amount = tax_amount * 100
                     if case.state_id.id == case.partner_id.state_id.id:
                         browser.find_element_by_xpath('.//*[@id="txtCgstRt_1"]').send_keys(str(tax_amount))
                         browser.find_element_by_xpath('.//*[@id="txtCgstRt_1"]').send_keys(Keys.TAB)
