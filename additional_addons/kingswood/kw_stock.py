@@ -65,8 +65,8 @@ import json
 from selenium.webdriver.chrome.options import Options
 # from seleniumrequests import Chrome
 import codecs
-import pywinauto
-import img2pdf
+# import pywinauto
+# import img2pdf
 
 
 # For Setting Chrome Web Drive Options selenium
