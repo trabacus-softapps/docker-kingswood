@@ -1592,6 +1592,7 @@ class stock_picking_out(osv.osv):
         today = time.strftime('%Y-%m-%d')
         today = datetime.strptime(today,'%Y-%m-%d')
         esugam_no = ''
+        value = 0.00
 
         for case in self.browse(cr, uid, ids):
             dc_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%Y-%m-%d')
@@ -1600,27 +1601,26 @@ class stock_picking_out(osv.osv):
             cust_street2 = case.partner_id.street2 and case.partner_id.street2.replace('.','').replace(',','').replace('-','').replace('#','').replace('/','')
             truck_no = case.truck_no.replace('-','').replace('/','').replace('.','').replace(' ','')
 
-            cr.execute("""
-                            select case when kw.sub_total is null then kw.product_price else kw.sub_total end
-
-                            from product_supplierinfo ps
-                            inner join kw_product_price kw on ps.id = kw.supp_info_id
-                            and ps.product_id = """+str(case.product_id.id)+"""
-
-                            and ef_date <= '"""+str(case.date)+"""' ::date
-                            and ps.name = """+str(case.paying_agent_id.id)+"""
-                            and (case when ps.customer_id is null then ps.depot = (select location_id from stock_move where picking_id = """+str(case.id)+""" limit 1)
-                            else case when ps.customer_id is null and ps.depot is null then ps.city_id = """+str(case.city_id.id)+""" else ps.customer_id = """+str(case.partner_id.id)+""" end end)
-                            order by ef_date desc limit 1
-                        """)
-            goods_rate = [x[0] for x in cr.fetchall()]
-            if goods_rate:
-                goods_rate = goods_rate[0]
-                goods_rate = int(goods_rate)
+            # cr.execute("""
+            #                 select case when kw.sub_total is null then kw.product_price else kw.sub_total end
+            #
+            #                 from product_supplierinfo ps
+            #                 inner join kw_product_price kw on ps.id = kw.supp_info_id
+            #                 and ps.product_id = """+str(case.product_id.id)+"""
+            #
+            #                 and ef_date <= '"""+str(case.date)+"""' ::date
+            #                 and ps.name = """+str(case.paying_agent_id.id)+"""
+            #                 and (case when ps.customer_id is null then ps.depot = (select location_id from stock_move where picking_id = """+str(case.id)+""" limit 1)
+            #                 else case when ps.customer_id is null and ps.depot is null then ps.city_id = """+str(case.city_id.id)+""" else ps.customer_id = """+str(case.partner_id.id)+""" end end)
+            #                 order by ef_date desc limit 1
+            #             """)
+            # goods_rate = [x[0] for x in cr.fetchall()]
+            # if goods_rate:
+            #     goods_rate = goods_rate[0]
+            #     goods_rate = int(goods_rate)
             for move in case.move_lines:
-                if not goods_rate:
-                    goods_rate = move.price_unit
-                    goods_rate = int(goods_rate)
+                goods_rate = move.price_unit
+                goods_rate = int(goods_rate)
                 qty = move.product_qty
             print "goods_rate----------------->",goods_rate
             # Tax Calculation
@@ -1633,7 +1633,7 @@ class stock_picking_out(osv.osv):
                     cr.execute("select tax_id from product_taxes_rel where prod_id=%s and tax_id in %s",(case.product_id.id,intra_tax_id))
                     tx_ids = [x[0] for x in cr.fetchall()]
                     for tx in tax_obj.browse(cr, uid, [tx_ids[0]]):
-                        tax_amount += tx.amount * 100
+                        tax_amount += tx.amount
 
 
             else:
@@ -1766,9 +1766,9 @@ class stock_picking_out(osv.osv):
                         continue
 
                     browser.find_element_by_xpath('.//*[@id="txt_username"]').clear()
-                    browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys('KWSPL.KA.29')
+                    browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys(str(username))
                     browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys(Keys.TAB)
-                    browser.find_element_by_xpath('.//*[@id="txt_password"]').send_keys('Kwspl@ka29')
+                    browser.find_element_by_xpath('.//*[@id="txt_password"]').send_keys(str(password))
                     time.sleep(1)
                     browser.find_element_by_id('txtCaptcha')
                     browser.find_element_by_id('txtCaptcha').send_keys(captcha)
@@ -1791,8 +1791,8 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_xpath('.//*[@id="R10"]/a').click()
                     browser.find_element_by_xpath('.//*[@id="R11"]/a').click()
                     time.sleep(1)
-                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys('CHL')
-                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys(Keys.TAB)
+                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys("Delivery Challan")
+                    # browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys(Keys.TAB)
                     browser.find_element_by_xpath('.//*[@id="txtDocNo"]').send_keys(case.name)
                     browser.find_element_by_xpath('.//*[@id="txtDocNo"]').send_keys(Keys.TAB)
                     if dc_date < today:
@@ -1835,10 +1835,11 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_xpath('.//*[@id="txt_Unit_1"]').send_keys('MTS')
                     browser.find_element_by_xpath('.//*[@id="txt_Unit_1"]').send_keys(Keys.TAB)
                     print "str(goods_rate)---------------",str(goods_rate)
-                    browser.find_element_by_xpath('.//*[@id="txt_TRC_1"]').send_keys(str(goods_rate))
+                    value = float(goods_rate) * float(qty)
+                    browser.find_element_by_xpath('.//*[@id="txt_TRC_1"]').send_keys(str(value))
                     browser.find_element_by_xpath('.//*[@id="txt_TRC_1"]').send_keys(Keys.TAB)
                     time.sleep(1)
-                    # tax_amount = tax_amount * 100
+                    tax_amount = tax_amount * 100
                     if case.state_id.id == case.partner_id.state_id.id:
                         browser.find_element_by_xpath('.//*[@id="txtCgstRt_1"]').send_keys(str(tax_amount))
                         browser.find_element_by_xpath('.//*[@id="txtCgstRt_1"]').send_keys(Keys.TAB)
@@ -1850,7 +1851,7 @@ class stock_picking_out(osv.osv):
                     time.sleep(1)
                     print ".............1"
 
-                    browser.find_element_by_id('txtDistance').send_keys("100")
+                    browser.find_element_by_id('txtDistance').send_keys(str(case.distance))
                     browser.find_element_by_id('txtDistance').send_keys(Keys.TAB)
                     browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtTransid').send_keys("")
                     browser.find_element_by_id('ctl00_ContentPlaceHolder1_txtTransid').send_keys(Keys.TAB)
