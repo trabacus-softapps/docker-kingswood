@@ -245,8 +245,8 @@
 									<field name="transit_pass" attrs="{'invisible': [('customer','=', False)]}"/>
 									<field name="tax_link" attrs="{'invisible': [('transit_pass','=', False)],'required':[('transit_pass','=', True)]}"/>
 
-									<field name="gen_jjform" attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
-									<field name="show_jjform" attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
+									<field name="gen_jjform" invisible="1" attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
+									<field name="show_jjform" invisible="1" attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
 
 									<field name="sub_facilitator" invisible="1"/>
 				 				</group>                    	
