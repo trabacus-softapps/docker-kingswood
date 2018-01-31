@@ -432,7 +432,7 @@
 									<field name="show_jjform" string="Show JJform" invisible="1"/>
 		                            <field name="gen_jjform" attrs="{'readonly':[('state', 'in', ('in_transit','done','freight_paid','cancel'))],'invisible':[('show_jjform','!=',True)]}"
 		                                groups="kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_supplier_service"/>
-		                            <field name="jjform_no" string="JJform Number" readonly="1"/>
+		                            <field name="jjform_no" invisible="1" string="JJform Number" readonly="1"/>
 
 
 
@@ -762,7 +762,7 @@
 									<field name="distance" required="1"/>
 									<field name="wc_num" invisible='1'/>
 		                     		<field name="wc_number" attrs="{'invisible':['|',('wc_num','!=',True),('state','in',('draft'))],'readonly': [('state','not in',('in_transit'))]}"/>		                             
-		                            <field name="jjform_no" string="JJform Number" readonly="1"/>
+		                            <field name="jjform_no" invisible="1" string="JJform Number" readonly="1"/>
 
 		                        	   	   	   	<!-- <field name="paying_agent_id"
 		                        		groups="kingswood.kw_admin_service,kingswood.kw_depot_service"/> -->

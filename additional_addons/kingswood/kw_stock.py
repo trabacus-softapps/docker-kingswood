@@ -1524,56 +1524,47 @@ class stock_picking_out(osv.osv):
                 voucher_obj.proforma_voucher(cr, uid,[vid],context=ctxt)
 
             # Tamilnadu Vat
-            if not context.get("confirm_esugam", False):
-                if (case.partner_id.gen_jjform == True or case.gen_jjform) and case.state_id.code == 'TN':
-                    esugam_ids = []
-                    cr.execute(""" select e.id
-                       from esugam_master e
-                       inner join res_country_state rcs on rcs.id = e.state_id
-                        where rcs.code = 'TN' order by e.id desc limit 1
-                               """)
-                    esugam_ids = [x[0] for x in cr.fetchall()]
-                    if esugam_ids:
-                        for e in esugam_obj.browse(cr, uid, esugam_ids):
-                            if e.state_id.id == case.state_id.id:
-                                username = e.username
-                                password = e.password
-                                url = e.url1
-                                url2 = e.url2
-                                url3 = e.url3
-                                jjform = self.generate_tnvat(cr, uid, desc, qty, price, product_id, username, password, url, url2, url3, case, context)
+            # if not context.get("confirm_esugam", False):
+            #     if (case.partner_id.gen_jjform == True or case.gen_jjform) and case.state_id.code == 'TN':
+            #         esugam_ids = []
+            #         cr.execute(""" select e.id
+            #            from esugam_master e
+            #            inner join res_country_state rcs on rcs.id = e.state_id
+            #             where rcs.code = 'TN' order by e.id desc limit 1
+            #                    """)
+            #         esugam_ids = [x[0] for x in cr.fetchall()]
+            #         if esugam_ids:
+            #             for e in esugam_obj.browse(cr, uid, esugam_ids):
+            #                 if e.state_id.id == case.state_id.id:
+            #                     username = e.username
+            #                     password = e.password
+            #                     url = e.url1
+            #                     url2 = e.url2
+            #                     url3 = e.url3
+            #                     jjform = self.generate_tnvat(cr, uid, desc, qty, price, product_id, username, password, url, url2, url3, case, context)
 
 
-            if (case.partner_id.gen_esugam == True or case.gen_esugam) and user_id.partner_id.state_id.code =='KA' and case.state_id.code == 'KA' or context.get("confirm_esugam",False):
+            if (case.partner_id.gen_esugam == True or case.gen_esugam) and case.state_id.code == 'KA' :
                 for e in case.company_id.esugam_ids:
-                    if e.state_id.id == user_id.partner_id.state_id.id:
+                    if e.state_id.code == 'KA':
                         username = e.username
                         password = e.password
                         url1 = e.url1
                         url2 = e.url2
                         url3 = e.url3
 
-                if context.get("confirm_esugam"):
-                    cr.execute("""select e.url1, e.url2, e.url3 from esugam_master e
-                               inner join res_country_state rcs on rcs.id = e.state_id
-                               where  rcs.code='KA' and e.company_id = 1""")
-                    urls = cr.dictfetchall()
-                    urls = urls[0]
-                    url1 = urls.get("url1")
-                    url2 = urls.get("url2")
-                    url3 = urls.get("url3")
-                    username = case.partner_id.es_username
-                    password = case.partner_id.es_password
-
                 """ Esugam Site security reason commented"""
                 # esugam = self.generate_esugam(cr,uid,desc, qty, price, product_id, username, password, url1,url2, url3, case, context)
                 esugam = self.generate_eway_bill(cr, uid, ids, username, password, url1,url2, url3, context=context)
-            elif (case.partner_id.gen_esugam == True or case.gen_esugam) and case.partner_id.state_id.code == 'KA' and case.state_id.code == 'KA' and user_id.partner_id.state_id.code !='AP':
-                esugam_ids = esugam_obj.search(cr, uid, [('state_id','=',case.partner_id.state_id.id)])
-                username = case.partner_id.es_username
-                password = case.partner_id.es_password
-                url1 = case.partner_id.es_url1
-                url2 = case.partner_id.es_url2
+
+            elif (case.partner_id.gen_esugam == True or case.gen_esugam) and case.state_id.code == 'TN' :
+                for e in case.company_id.esugam_ids:
+                    if e.state_id.code == 'TN':
+                        username = e.username
+                        password = e.password
+                        url1 = e.url1
+                        url2 = e.url2
+                        url3 = e.url3
                 # esugam = self.generate_esugam(cr, uid, desc, qty, price, product_id, username, password, url1, url2, url2, case, context)
                 esugam =  self.generate_eway_bill(cr, uid, ids, username, password, url1,url2, url3, context=context)
             self.write(cr, uid, ids, {
