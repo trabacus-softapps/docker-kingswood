@@ -733,8 +733,13 @@ class facilitator_report(osv.osv_memory):
         st_date = cr.fetchall()[0]
 
         for case in self.browse(cr, uid, ids):
-            cr.execute("select bc.end_date from billing_cycle bc where bc.partner_id ='"+str(case.partner_id and case.partner_id.id or False)+"' order by id desc limit 1")
-            e_date = cr.fetchall()[0]
+            cr.execute("select bc.end_date from billing_cycle bc where bc.partner_id ="+str(case.partner_id and case.partner_id.id or 0)+" order by id desc limit 1")
+            _logger.info('Estimate End Date================> %s',"select bc.end_date from billing_cycle bc where bc.partner_id ="+str(case.partner_id and case.partner_id.id or 0)+" order by id desc limit 1")
+            e_date = cr.fetchall()
+            if e_date:
+                e_date = e_date[0]
+            if not e_date:
+                raise osv.except_osv(_('Warning'),_('No Billing Cycle for this Facilitator'))
             report_name = 'Facilitator Estimate'
             if case.report_type == 'balance':
                 report_name = 'Facilitator Balance'
