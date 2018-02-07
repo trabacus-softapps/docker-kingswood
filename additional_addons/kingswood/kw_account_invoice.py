@@ -1990,10 +1990,11 @@ class account_invoice(osv.osv):
         # removing the 1.       M.lakshminarayan(Babu)-T    2. M.Ramakrishnappa-T   3. Syed Junath-T
         # 4. Mohd. Umar
         # Remove these partner
-        if fac_state == 'Karnataka':
-            remove_ids = [1,1545,3138,988]
-        else:
-            remove_ids = [1572]
+        # if fac_state == 'Karnataka':
+        #     remove_ids = [1,1545,3138,988]
+        # else:
+        #     remove_ids = [1572]
+        remove_ids = [1,1545,3138,988]
         dummy_ids.extend(remove_ids)
 #         print "Date-",shedular_date
         stock_ids_in = []
