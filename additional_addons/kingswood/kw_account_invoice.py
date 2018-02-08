@@ -4900,6 +4900,7 @@ class account_move(osv.osv):
         vals.update({
                     'company_id' : journal.company_id.id or False,
                     })
+        _logger.info('Account Move Vals==========================> %s',vals)
         return super(account_move,self).create(cr, uid, vals, context=context)
     
     def write(self, cr, uid, ids, vals, context=None):
