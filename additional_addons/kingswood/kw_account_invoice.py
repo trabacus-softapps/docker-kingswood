@@ -2029,7 +2029,7 @@ class account_invoice(osv.osv):
 #         cr.execute("""select id from stock_picking where type='out' and 
 #         date::date >= %s::date and state in ('done','freight_paid') and sup_invoice=False""",(str(shedular_date),)) 
         stock_ids_out=cr.fetchall()
-        _logger.error('Inside the Schedular Stock_out_ids ------------>%s',stock_ids_out)
+
         if stock_ids_out:
             stock_ids_out=zip(*stock_ids_out)[0]
             if isinstance(stock_ids_out, tuple):
@@ -2093,7 +2093,8 @@ class account_invoice(osv.osv):
 
             invoice_rate_in = stock_in_obj.get_supplier_rate(cr,uid,stock_ids_in,False,context=context)
 
-
+            _logger.error('Inside the Schedular stock_ids_out ------------>%s',stock_ids_out)
+            _logger.error('Inside the Schedular stock_ids_in ------------>%s',stock_ids_in)
             if stock_ids_out:
                 if not invoice_rate_out:
                     return False    
