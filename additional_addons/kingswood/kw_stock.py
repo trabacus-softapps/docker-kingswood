@@ -42,7 +42,7 @@ import base64
 import netsvc
 from openerp import netsvc
 import sys
-
+import ssl
 import random
 from openerp.report import report_sxw
 from openerp import pooler
@@ -1649,13 +1649,14 @@ class stock_picking_out(osv.osv):
             chrome_options = Options()
             DOWNLOAD_PATH = '/tmp'
             chrome_options = webdriver.ChromeOptions()
-            chrome_options.add_argument("--headless")
+            # chrome_options.add_argument("--headless")
             chrome_options.add_argument('--no-sandbox')
             chrome_options.add_argument('--disable-gpu')
             chrome_options.add_argument('--disable-popup-blocking')
             chrome_options.add_argument('--window-size=1440,900')
             chrome_options.add_argument ( "--disable-extensions" )
             chrome_options.add_argument ( "--disable-print-preview" )
+            chrome_options.add_argument('--ignore-certificate-errors')
             # chrome_options.add_argument ( "--print-to-pdf=/tmp/file1.pdf" )
 
 
@@ -1671,7 +1672,7 @@ class stock_picking_out(osv.osv):
             }
 
             chrome_options.add_experimental_option('prefs', prefs)
-
+            ssl._create_default_https_context = ssl._create_unverified_context
             try:
                 browser = webdriver.Chrome(chrome_options=chrome_options) #chrome_options=options
             except:
@@ -1715,10 +1716,10 @@ class stock_picking_out(osv.osv):
             try:
                 # check URL1
                 try:
-                    url_status1 = browser.find_element_by_xpath('.//*[@id="txt_username"]')
+                    url_status1 = browser.find_element_by_name('txt_username')
 
                 except:
-                    url_status1 = browser.find_element_by_xpath('.//*[@id="txt_username"]')
+                    url_status1 = browser.find_element_by_name('txt_username')
             except:
                 if not url_status1:
                     # check URL2
