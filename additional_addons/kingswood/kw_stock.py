@@ -63,6 +63,8 @@ from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.support.ui import WebDriverWait
 import json
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
 # from seleniumrequests import Chrome
 import codecs
 # import pywinauto
@@ -1584,6 +1586,7 @@ class stock_picking_out(osv.osv):
         today = datetime.strptime(today,'%Y-%m-%d')
         esugam_no = ''
         value = 0.00
+        print "url1----------------",url1
 
         for case in self.browse(cr, uid, ids):
             dc_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%Y-%m-%d')
@@ -1650,68 +1653,59 @@ class stock_picking_out(osv.osv):
             DOWNLOAD_PATH = '/tmp'
             chrome_options = webdriver.ChromeOptions()
             chrome_options.add_argument("--headless")
-            chrome_options.add_argument('--no-sandbox')
-            chrome_options.add_argument('--disable-gpu')
-            chrome_options.add_argument('--disable-popup-blocking')
+            # chrome_options.add_argument('--no-sandbox')
+            # chrome_options.add_argument('--disable-gpu')
+            # chrome_options.add_argument('--disable-popup-blocking')
             chrome_options.add_argument('--window-size=1440,900')
-            chrome_options.add_argument ( "--disable-extensions" )
-            chrome_options.add_argument ( "--disable-print-preview" )
-            chrome_options.add_argument('--ignore-certificate-errors')
+            # chrome_options.add_argument ( "--disable-extensions" )
+            # chrome_options.add_argument ( "--disable-print-preview" )
+            # chrome_options.add_argument('--ignore-certificate-errors')
+            # chrome_options.add_argument('--remote-debugging-address=0.0.0.0')
+            # chrome_options.add_argument('--remote-debugging-port=9222')
+
+
             # chrome_options.add_argument ( "--print-to-pdf=/tmp/file1.pdf" )
 
 
-            prefs = {
-                'download.default_directory': DOWNLOAD_PATH,
-                'download.prompt_for_download': False,
-                "plugins.always_open_pdf_externally": True,
-                'download.directory_upgrade': True,
-                'safebrowsing.enabled': False,
-                'safebrowsing.disable_download_protection': True,
-                # 'plugins.plugins_list': [{'enabled':False,'name':'Chrome PDF Viewer' }],
-                "plugins.plugins_disabled": ['Chrome PDF Viewer'],
-            }
+            # prefs = {
+            #     'download.default_directory': DOWNLOAD_PATH,
+            #     'download.prompt_for_download': False,
+            #     "plugins.always_open_pdf_externally": True,
+            #     'download.directory_upgrade': True,
+            #     'safebrowsing.enabled': False,
+            #     'safebrowsing.disable_download_protection': True,
+            #     # 'plugins.plugins_list': [{'enabled':False,'name':'Chrome PDF Viewer' }],
+            #     "plugins.plugins_disabled": ['Chrome PDF Viewer'],
+            # }
+            # chrome_options.add_experimental_option('prefs', prefs)
 
-            chrome_options.add_experimental_option('prefs', prefs)
-            ssl._create_default_https_context = ssl._create_unverified_context
+            # capabilities = DesiredCapabilities.CHROME.copy()
+            # capabilities['acceptSslCerts'] = True
+            # capabilities['acceptInsecureCerts'] = True
+
+            print "Final url1----------------",url1
+            browser = webdriver.Chrome(chrome_options=chrome_options)
+            browser.get("https://ewaybill4.nic.in/ewbnat1/")
+
             try:
-                browser = webdriver.Chrome(chrome_options=chrome_options) #chrome_options=options
+                element = WebDriverWait(browser, 10).until(
+                    EC.presence_of_element_located((By.ID, "txt_username"))
+                )
+            finally:
+                browser.quit()
+
+            browser.save_screenshot('/home/serveradmin/Desktop/screenie12.png')
+
+
+            try:
+                browser = webdriver.Chrome(chrome_options=chrome_options) #, desired_capabilities=capabilities
             except:
                 pass
 
-
-            # browser = webdriver.Chrome(
-            # chrome_options=options)
-            # browser.set_window_size(1440, 900)
-
             enable_download_in_headless_chrome(browser, DOWNLOAD_PATH)
-
-
-
-            # profile = {"plugins.plugins_list": [{"enabled": False,
-            #                                      "name": "Chrome PDF Viewer"}],
-            #            "download.default_directory": download_folder,
-            #            "download.extensions_to_open": ""}
-            #
-            # options = webdriver.ChromeOptions()
-            # options.add_experimental_option("prefs", profile)
-            # options.add_argument("--test-type");
-            # options.add_argument("--disable-extensions")
-            #
-            #
-            # # Setting Options for Headless
-            # options.add_argument('headless')
-
-
-            # browser = webdriver.Chrome() #webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
-            # browser.maximize_window()
-            # browser.implicitly_wait(10)
-
-            # browser = webdriver.PhantomJS()
-            # browser = webdriver.Firefox()
-            # browser.maximize_window()
-
             url_status1 = browser.get(url1)
             _logger.info('url_status1....... %s',url_status1)
+
 
             try:
                 # check URL1
