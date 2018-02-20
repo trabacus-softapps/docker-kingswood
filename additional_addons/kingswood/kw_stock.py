@@ -762,7 +762,7 @@ class stock_picking_out(osv.osv):
 
               # Bank details
                 'bank_name'     :   fields.char("Bank Name", size=100),
-                'ifsc_code'     :   fields.char("IFSC Cde", size=11),
+                'ifsc_code'     :   fields.char("IFSC Code", size=11),
                 'ac_holder'     :   fields.char("Beneficiary Name", size=100),
                 'ac_number'     :   fields.char("Account Number", size=30),
                 'bank_addr'     :   fields.text("Bank Address"),
@@ -844,7 +844,62 @@ class stock_picking_out(osv.osv):
             'url': case.partner_id.tax_link#self.read(cr, uid, ids, ['public_url'], context=context)[0]['public_url'] + trail
         }
 
-    
+
+    def onchnage_bank_details(self, cr, uid, ids, bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context=None):
+        if not context:
+            context = {}
+        res = {}
+        warning = {}
+        if bank_name and len(bank_name) < 11:
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Please enter the complete Bank Name')
+                         }
+            res.update({"bank_name": False})
+
+        if ifsc_code and len(ifsc_code) != 11:
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Please enter the proper IFSC Code')
+                         }
+            res.update({"ifsc_code": False})
+
+        if ac_holder and len(ac_holder) < 10:
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Please enter the proper Beneficiery Name')
+                         }
+            res.update({"ac_holder": False})
+
+        if ac_number and len(ac_number) < 11:
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Please enter the proper Account Number')
+                         }
+            res.update({"ac_number": False})
+
+        if bank_addr and len(bank_addr) < 11:
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Please enter the proper Bank Address')
+                         }
+            res.update({"bank_addr": False})
+
+        if ac_holder_mob and not re.match('(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?', ac_holder_mob):
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Enter 10 Digit Mobile Number')
+                         }
+            res.update({"ac_holder_mob": False})
+
+        if ac_holder_pan and len(ac_holder_pan) != 10:
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Please enter the proper Pan Number')
+                         }
+            res.update({"ac_holder_pan": False})
+
+        return {'value' : res, 'warning' : warning }
     
     #to check Freight Rate/MT Should not exceeds four digits before decimal point 
     def onchange_freight_charge(self, cr, uid, ids, freight_charge=False,context=None):
@@ -6351,7 +6406,63 @@ class stock_picking_in(osv.osv):
                  'type'       : 'in',
                  'sup_invoice':False,
               }
- 
+
+    def onchnage_bank_details(self, cr, uid, ids, bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context=None):
+        if not context:
+            context = {}
+        res = {}
+        warning = {}
+        if bank_name and len(bank_name) < 11:
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Please enter the complete Bank Name')
+                         }
+            res.update({"bank_name": False})
+
+        if ifsc_code and len(ifsc_code) != 11:
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Please enter the proper IFSC Code')
+                         }
+            res.update({"ifsc_code": False})
+
+        if ac_holder and len(ac_holder) < 10:
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Please enter the proper Beneficiery Name')
+                         }
+            res.update({"ac_holder": False})
+
+        if ac_number and len(ac_number) < 11:
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Please enter the proper Account Number')
+                         }
+            res.update({"ac_number": False})
+
+        if bank_addr and len(bank_addr) < 11:
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Please enter the proper Bank Address')
+                         }
+            res.update({"bank_addr": False})
+
+        if ac_holder_mob and not re.match('(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?', ac_holder_mob):
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Enter 10 Digit Mobile Number')
+                         }
+            res.update({"ac_holder_mob": False})
+
+        if ac_holder_pan and len(ac_holder_pan) != 10:
+            warning={
+                     'title':_('Warning!'),
+                            'message':_('Please enter the proper Pan Number')
+                         }
+            res.update({"ac_holder_pan": False})
+
+        return {'value' : res, 'warning' : warning }
+
     # Mail,IF no product rate while creating facilitator invoice by schedular
     def send_mail_prod_rate(self,cr,uid,ids,context=None):
         res={}

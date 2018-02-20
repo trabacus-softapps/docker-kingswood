@@ -550,14 +550,14 @@
 								<page string="Bank Details">
 									<group>
 										<group col="4" colspan="8">
-											<field name="bank_name" required="1"/>
-											<field name="ifsc_code" required="1"/>
-											<field name="ac_holder" required="1"/>
-											<field name="ac_number" required="1"/>
-											<field name="bene_code" invisible="1"/>
-											<field name="ac_holder_mob" required="1"/>
-											<field name="ac_holder_pan" required="1"/>
-											<field name="bank_addr" required="1"/>
+											<field name="bank_name" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+											<field name="ifsc_code" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+											<field name="ac_holder" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+											<field name="ac_number" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+											<field name="bene_code" invisible="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+											<field name="ac_holder_mob" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+											<field name="ac_holder_pan" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+											<field name="bank_addr" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
 										</group>
 
 										<group>
@@ -965,14 +965,14 @@
 							<page string="Bank Details">
 								<group>
 									<group col="4" colspan="8">
-										<field name="bank_name" required="1"/>
-										<field name="ifsc_code" required="1"/>
-										<field name="ac_holder" required="1"/>
-										<field name="ac_number" required="1"/>
-										<field name="bene_code" invisible="1"/>
-										<field name="ac_holder_mob" required="1"/>
-										<field name="ac_holder_pan" required="1"/>
-										<field name="bank_addr" required="1"/>
+										<field name="bank_name" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+										<field name="ifsc_code" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+										<field name="ac_holder" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+										<field name="ac_number" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+										<field name="bene_code" invisible="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+										<field name="ac_holder_mob" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+										<field name="ac_holder_pan" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
+										<field name="bank_addr" required="1" on_change="onchnage_bank_details(bank_name, ifsc_code, ac_holder, ac_number, bank_addr, ac_holder_mob, ac_holder_pan, context)"/>
 									</group>
 
 									<group>
