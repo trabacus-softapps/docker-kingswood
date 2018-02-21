@@ -62,8 +62,11 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.support.ui import WebDriverWait
 import json
-from selenium.webdriver.chrome.options import Options
+import os
+import sys
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
 
 # from seleniumrequests import Chrome
 import codecs
@@ -1641,70 +1644,65 @@ class stock_picking_out(osv.osv):
                         tax_amount += tx.amount
 
             # For PDF Download Setting options
-            def enable_download_in_headless_chrome(browser, download_dir):
-                #add missing support for chrome "send_command"  to selenium webdriver
-                browser.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
-
-                params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
-                browser.execute("send_command", params)
-                return browser
-
-            chrome_options = Options()
-            DOWNLOAD_PATH = '/tmp'
-            chrome_options = webdriver.ChromeOptions()
-            chrome_options.add_argument("--headless")
-            # chrome_options.add_argument('--no-sandbox')
-            # chrome_options.add_argument('--disable-gpu')
-            # chrome_options.add_argument('--disable-popup-blocking')
-            chrome_options.add_argument('--window-size=1440,900')
-            # chrome_options.add_argument ( "--disable-extensions" )
-            # chrome_options.add_argument ( "--disable-print-preview" )
-            # chrome_options.add_argument('--ignore-certificate-errors')
-            # chrome_options.add_argument('--remote-debugging-address=0.0.0.0')
-            # chrome_options.add_argument('--remote-debugging-port=9222')
-
-
-            # chrome_options.add_argument ( "--print-to-pdf=/tmp/file1.pdf" )
-
-
-            # prefs = {
-            #     'download.default_directory': DOWNLOAD_PATH,
-            #     'download.prompt_for_download': False,
-            #     "plugins.always_open_pdf_externally": True,
-            #     'download.directory_upgrade': True,
-            #     'safebrowsing.enabled': False,
-            #     'safebrowsing.disable_download_protection': True,
-            #     # 'plugins.plugins_list': [{'enabled':False,'name':'Chrome PDF Viewer' }],
-            #     "plugins.plugins_disabled": ['Chrome PDF Viewer'],
-            # }
-            # chrome_options.add_experimental_option('prefs', prefs)
-
-            # capabilities = DesiredCapabilities.CHROME.copy()
-            # capabilities['acceptSslCerts'] = True
-            # capabilities['acceptInsecureCerts'] = True
-
+            # def enable_download_in_headless_chrome(browser, download_dir):
+            #     #add missing support for chrome "send_command"  to selenium webdriver
+            #     browser.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
+            #
+            #     params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
+            #     browser.execute("send_command", params)
+            #     return browser
+            #
+            # chrome_options = Options()
+            # DOWNLOAD_PATH = '/tmp'
+            # chrome_options = webdriver.ChromeOptions()
+            # chrome_options.add_argument("--headless")
+            # # chrome_options.add_argument('--no-sandbox')
+            # # chrome_options.add_argument('--disable-gpu')
+            # # chrome_options.add_argument('--disable-popup-blocking')
+            # chrome_options.add_argument('--window-size=1440,900')
+            # # chrome_options.add_argument ( "--disable-extensions" )
+            # # chrome_options.add_argument ( "--disable-print-preview" )
+            # # chrome_options.add_argument('--ignore-certificate-errors')
+            # # chrome_options.add_argument('--remote-debugging-address=0.0.0.0')
+            # # chrome_options.add_argument('--remote-debugging-port=9222')
+            #
+            #
+            # # chrome_options.add_argument ( "--print-to-pdf=/tmp/file1.pdf" )
+            #
+            #
+            # # prefs = {
+            # #     'download.default_directory': DOWNLOAD_PATH,
+            # #     'download.prompt_for_download': False,
+            # #     "plugins.always_open_pdf_externally": True,
+            # #     'download.directory_upgrade': True,
+            # #     'safebrowsing.enabled': False,
+            # #     'safebrowsing.disable_download_protection': True,
+            # #     # 'plugins.plugins_list': [{'enabled':False,'name':'Chrome PDF Viewer' }],
+            # #     "plugins.plugins_disabled": ['Chrome PDF Viewer'],
+            # # }
+            # # chrome_options.add_experimental_option('prefs', prefs)
+            #
+            # # capabilities = DesiredCapabilities.CHROME.copy()
+            # # capabilities['acceptSslCerts'] = True
+            # # capabilities['acceptInsecureCerts'] = True
+            #
             print "Final url1----------------",url1
-            browser = webdriver.Chrome(chrome_options=chrome_options)
-            browser.get("https://ewaybill4.nic.in/ewbnat1/")
-
-            try:
-                element = WebDriverWait(browser, 10).until(
-                    EC.presence_of_element_located((By.ID, "txt_username"))
-                )
-            finally:
-                browser.quit()
-
-            browser.save_screenshot('/home/serveradmin/Desktop/screenie12.png')
+            # browser = webdriver.Chrome(chrome_options=chrome_options)
+            # browser.get("https://ewaybill4.nic.in/ewbnat1/")
 
 
-            try:
-                browser = webdriver.Chrome(chrome_options=chrome_options) #, desired_capabilities=capabilities
-            except:
-                pass
+            # os.environ['MOZ_HEADLESS'] = '1'
 
-            enable_download_in_headless_chrome(browser, DOWNLOAD_PATH)
+            firefox_options = Options()
+            firefox_options.add_argument("--headless")
+            capabilities = DesiredCapabilities.FIREFOX
+            capabilities['marionette'] = True
+            capabilities['acceptSslCerts'] = True
+
+            browser = webdriver.Firefox(firefox_options=firefox_options, capabilities=capabilities)
+            browser.set_window_size(1366, 768)
             url_status1 = browser.get(url1)
-            _logger.info('url_status1....... %s',url_status1)
+            browser.save_screenshot('/home/serveradmin/Desktop/screenie6.png')
 
 
             try:
@@ -1744,7 +1742,7 @@ class stock_picking_out(osv.osv):
                     browser.set_window_size(1280, 1024)
                     browser.find_element_by_xpath('.//*[@id="txt_username"]')
                     browser.find_element_by_xpath('.//*[@id="txt_password"]')
-                    browser.find_element_by_id('btnCaptchaImage').click()
+                    # browser.find_element_by_xpath('.//*[@id="form"]/div[3]/div[2]/div[3]/div[1]/div[3]/table/tbody/tr[2]/td[1]/div/img').click()
                     # browser.find_element_by_id('btnCaptchaImage').click()
                     captcha = self.get_eway_captch(cr, uid, [], browser, context)
                     _logger.info('captcha....... %s',captcha)
@@ -1857,7 +1855,7 @@ class stock_picking_out(osv.osv):
                     alert = browser.switch_to.alert
                     print "tesrt alert===========", alert.text
                     alert.accept()
-                    time.sleep(1)
+                    time.sleep(2)
                     esugam_no = browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_lblBillNoDetails"]')
                     if esugam_no:
                         esugam_no = esugam_no.text.replace(" ", "")
@@ -1911,7 +1909,8 @@ class stock_picking_out(osv.osv):
                 raise osv.except_osv(_('Eway Bill Site is Down'),_('Please Try After Some Time'))
 
 
-
+            browser.quit()
+            display.stop()
         return True
 
 
@@ -1927,6 +1926,7 @@ class stock_picking_out(osv.osv):
 
         print "Inside....................",img
         src = img.get_attribute('src')
+        ssl._create_default_https_context = ssl._create_unverified_context
         urllib.urlretrieve(src, '/tmp/captcha.png')
 
         img = Image.open('/tmp/captcha.png')
