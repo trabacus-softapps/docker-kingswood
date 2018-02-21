@@ -6426,7 +6426,7 @@ class stock_picking_in(osv.osv):
                          }
             res.update({"ifsc_code": False})
 
-        if ac_holder and len(ac_holder) < 10:
+        if ac_holder and len(ac_holder) < 6:
             warning={
                      'title':_('Warning!'),
                             'message':_('Please enter the proper Beneficiery Name')
