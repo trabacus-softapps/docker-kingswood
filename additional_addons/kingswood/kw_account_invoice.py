@@ -2266,7 +2266,7 @@ class account_invoice(osv.osv):
                                 dc_final_date = dc_final_date[0]
 
                         # dc_final_date
-                        self.write(cr,uid,[merged_inv],{'date_invoice':'2018-02-22','back_date':True})
+                        self.write(cr,uid,[merged_inv],{'date_invoice':dc_final_date,'back_date':True})
                         wf_service.trg_validate(uid, 'account.invoice', merged_inv, 'invoice_open', cr)
                         merged_invoice.append(merged_inv)
 #                         
@@ -2292,7 +2292,7 @@ class account_invoice(osv.osv):
                                         
                                      
                             billing.update({'st_date':st_date,
-                                            'end_date':'2018-02-22',#today,
+                                            'end_date':today,
                                             'partner_id':partner_id,
                                              
                                             })
@@ -2310,7 +2310,7 @@ class account_invoice(osv.osv):
                         date_start = cr.fetchone()
                         date_start = date_start and date_start[0] or ''                        
                         billing.update({'st_date': date_start,
-                                        'end_date':'2018-02-22',#today,
+                                        'end_date':today,
                                         'partner_id':partner_id,
                                          
                                         })
