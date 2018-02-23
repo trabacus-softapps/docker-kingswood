@@ -6813,7 +6813,7 @@ class stock_picking_in(osv.osv):
             context = {}
         res = {}
         warning = {}
-        if bank_name and len(bank_name) < 11:
+        if bank_name and len(bank_name) < 5:
             warning={
                      'title':_('Warning!'),
                             'message':_('Please enter the complete Bank Name')
@@ -6827,7 +6827,7 @@ class stock_picking_in(osv.osv):
                          }
             res.update({"ifsc_code": False})
 
-        if ac_holder and len(ac_holder) < 6:
+        if ac_holder and len(ac_holder) < 5:
             warning={
                      'title':_('Warning!'),
                             'message':_('Please enter the proper Beneficiery Name')
@@ -6841,7 +6841,7 @@ class stock_picking_in(osv.osv):
                          }
             res.update({"ac_number": False})
 
-        if bank_addr and len(bank_addr) < 11:
+        if bank_addr and len(bank_addr) < 5:
             warning={
                      'title':_('Warning!'),
                             'message':_('Please enter the proper Bank Address')
