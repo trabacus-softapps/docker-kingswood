@@ -736,7 +736,7 @@ CREATE OR REPLACE FUNCTION facilitator_balance(start_dt date, part_state integer
   --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   --                       Faciliator Estimate and Balance 
   --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
+--
 -- drop type if exists est_bal_type cascade;
 --
 -- create type est_bal_type as (
@@ -1321,32 +1321,51 @@ CREATE OR REPLACE FUNCTION facilitator_estimate(start_dt date, part_state intege
 		  );
 
 	insert into tmp_cycle(id,st_date,end_date,partner_id)
-	(	select
-			1 as id
-			, bc1.st_date
-			, bc1.end_date
-			, bc1.partner_id
-		from billing_cycle bc1
-		inner join res_partner rp1 on rp1.id = bc1.partner_id
-		left outer join res_country_state rcs on rcs.id = rp1.state_id
-		where bc1.id in
-			(
-				select
-				bc.id
-				from billing_cycle bc
-				inner join res_partner rs on rs.id = bc.partner_id
-				where bc.partner_id in (rp1.id)
-				order by end_date desc limit 1
-			)
-		and case when part_state >0 then rcs.id = part_state else rcs.id >0 end
-		and case when part_id > 0 then rp1.id in (select id from res_partner where id = part_id
-							union all
-							select id from res_partner where parent_id = part_id) else rp1.id >0 end
-		and rp1.name not ilike '%Kingswood%'
-		and rp1.supplier is true
-		and not rp1.handling_charges
+		(select
+				1 as id
+				, bc1.st_date
+				, bc1.end_date
+				, bc1.partner_id
+			from billing_cycle bc1
+			left outer join res_partner rp1 on rp1.id = bc1.partner_id
+			left outer join res_country_state rcs on rcs.id = rp1.state_id
+			where bc1.id in
+				(
+					select
+					bc.id
+					from billing_cycle bc
+					inner join res_partner rs on rs.id = bc.partner_id
+					where bc.partner_id in (rp1.id)
+					order by end_date desc limit 1
+				)
+			and case when part_state >0 then rcs.id = part_state else rcs.id >0 end
+			and case when part_id > 0 then rp1.id = part_id else rp1.id >0 end
+			and rp1.name not ilike '%Kingswood%'
+			and rp1.supplier is true
+			and not rp1.handling_charges
 
-	);
+		union
+
+		select
+			1 as id
+			, (select bc.st_date from billing_cycle bc
+						inner join res_partner rs on rs.id = bc.partner_id
+						where bc.partner_id in (part_id)
+						order by end_date desc limit 1
+					) as st_date
+			, (select bc.end_date from billing_cycle bc
+						inner join res_partner rs on rs.id = bc.partner_id
+						where bc.partner_id in (part_id)
+						order by end_date desc limit 1
+					) as end_date
+			, rp.id as partner_id
+
+		from res_partner rp
+		where rp.id in (select id from res_partner where id = part_id
+				union all
+				select id from res_partner where parent_id = part_id)
+
+			);
 
 
 
@@ -1405,7 +1424,7 @@ select
                              select rp.account_pay
                              union all
                              select id from account_account where name ilike '%GST%'))
-                    and aml.date <(select tp.end_date from tmp_cycle tp where partner_id = part_id)::date
+                    and aml.date <(select tp.st_date from tmp_cycle tp where partner_id = part_id)::date
                     and aml.date>='2014-04-01'::date
                     and aml.ref not like 'DC/%' and aml.ref not like 'KA/%' and aml.ref not like 'TN/%'
                     and rp.id in (select distinct(partner_id) from tmp_cycle)

@@ -231,10 +231,10 @@
 								</group> -->
 								
 								<group name="Esugam" string="Esugam">
-				 					<field name='gen_esugam'  
+				 					<field name='gen_esugam'  string="Generate eWay Bill No."
 				 						attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
 				 					
-				 					<field name='show_esugam' string="Show Esugam"
+				 					<field name='show_esugam' string="Show eWay Bill"
 				 						attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
 			
 				 					<field name="amc_attachment"/>
@@ -245,8 +245,8 @@
 									<field name="transit_pass" attrs="{'invisible': [('customer','=', False)]}"/>
 									<field name="tax_link" attrs="{'invisible': [('transit_pass','=', False)],'required':[('transit_pass','=', True)]}"/>
 
-									<field name="gen_jjform" attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
-									<field name="show_jjform" attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
+									<field name="gen_jjform" invisible="1" attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
+									<field name="show_jjform" invisible="1" attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
 
 									<field name="sub_facilitator" invisible="1"/>
 				 				</group>                    	
@@ -375,7 +375,8 @@
 				</page>
 				</xpath>
  				<xpath expr="//field[@name='child_ids']/form/sheet/div/label[@for='use_parent_address']" position="after">
- 						<field name="gen_esugam" attrs="{'invisible':[('supplier','=',True)]}" /><label for="gen_esugam" attrs="{'invisible':[('supplier','=',True)]}"/>
+ 						<field name="gen_esugam" string="Generate eWay Bill No." attrs="{'invisible':[('supplier','=',True)]}" />
+					<label for="gen_esugam" attrs="{'invisible':[('supplier','=',True)]}"/>
  						<field name="freight"/><label for="freight"/>
  						<field name="show_freight"/><label for="show_freight"/>
 							<group col="4" colspan="2">
