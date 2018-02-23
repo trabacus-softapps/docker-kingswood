@@ -1589,7 +1589,7 @@ class stock_picking_out(osv.osv):
         today = datetime.strptime(today,'%Y-%m-%d')
         esugam_no = ''
         value = 0.00
-        print "url1----------------",url1
+        # print "url1----------------",url1
 
         for case in self.browse(cr, uid, ids):
             dc_date = parser.parse(''.join((re.compile('\d')).findall(case.date))).strftime('%Y-%m-%d')
@@ -1686,7 +1686,7 @@ class stock_picking_out(osv.osv):
             # # capabilities['acceptSslCerts'] = True
             # # capabilities['acceptInsecureCerts'] = True
             #
-            print "Final url1----------------",url1
+            # print "Final url1----------------",url1
             # browser = webdriver.Chrome(chrome_options=chrome_options)
             # browser.get("https://ewaybill4.nic.in/ewbnat1/")
 
@@ -1702,7 +1702,7 @@ class stock_picking_out(osv.osv):
             browser = webdriver.Firefox(firefox_options=firefox_options, capabilities=capabilities)
             browser.set_window_size(1366, 768)
             url_status1 = browser.get(url1)
-            browser.save_screenshot('/home/serveradmin/Desktop/screenie6.png')
+            # browser.save_screenshot('/home/serveradmin/Desktop/screenie6.png')
 
 
             try:
