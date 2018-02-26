@@ -66,6 +66,7 @@ import os
 import sys
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from pyvirtualdisplay import Display
 
 
 # from seleniumrequests import Chrome
@@ -1746,15 +1747,19 @@ class stock_picking_out(osv.osv):
             # browser.get("https://ewaybill4.nic.in/ewbnat1/")
 
 
-            # os.environ['MOZ_HEADLESS'] = '1'
+            os.environ['MOZ_HEADLESS'] = '1'
 
-            firefox_options = Options()
-            firefox_options.add_argument("--headless")
-            capabilities = DesiredCapabilities.FIREFOX
-            capabilities['marionette'] = True
-            capabilities['acceptSslCerts'] = True
+            # firefox_options = Options()
+            # firefox_options.add_argument("--headless")
+            # capabilities = DesiredCapabilities.FIREFOX
+            # capabilities['marionette'] = True
+            # capabilities['acceptSslCerts'] = True
 
-            browser = webdriver.Firefox(firefox_options=firefox_options, capabilities=capabilities)
+            display = Display(visible=0, size=(1366, 768))
+            display.start()
+
+            browser = webdriver.Firefox() #firefox_options=firefox_options, capabilities=capabilities
+
             browser.set_window_size(1366, 768)
             url_status1 = browser.get(url1)
             # browser.save_screenshot('/home/serveradmin/Desktop/screenie6.png')
@@ -1914,6 +1919,8 @@ class stock_picking_out(osv.osv):
                     esugam_no = browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_lblBillNoDetails"]')
                     if esugam_no:
                         esugam_no = esugam_no.text.replace(" ", "")
+                        browser.quit()
+                        display.stop()
                     return esugam_no
 
 
