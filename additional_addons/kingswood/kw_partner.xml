@@ -230,7 +230,7 @@
 									<separator name="Freight" string="Freight" attrs="{'invisible':[('customer','!=',True)]}"/>
 								</group> -->
 								
-								<group name="Esugam" string="Esugam">
+								<group name="Esugam" string="Eway Bill">
 				 					<field name='gen_esugam'  string="Generate eWay Bill No."
 				 						attrs="{'invisible':['|','&amp;',('customer','!=',True),('supplier','!=',False),'&amp;',('customer','=',False),('supplier','=',False)]}"/>
 				 					
@@ -360,7 +360,7 @@
  				</field>
 				
 				<xpath expr='//page[@string="Accounting"]' position="after">
-				<page string="E-sugam Details" attrs="{'invisible':[('supplier','!=',False)]}" >
+				<page string="Eway Bill Details" attrs="{'invisible':[('supplier','!=',False)]}" >
 					<group col="4" colspan="2">
 						<group >
 							<field name="es_url1" />
@@ -434,7 +434,7 @@
                     <attribute name="domain">[('country_id', '=',country_id)]</attribute>
  				</xpath>
             	<notebook position="inside">
-            		<page string="E-sugam Information" position="inside">
+            		<page string="Eway Bill Information" position="inside">
             			<!--<group>
             				<field name='url' required="1"/>
             				<group col="4" colspan="2">
@@ -451,7 +451,7 @@
             						<field name='url2'/>
             					    <field name='url3'/>
             					</tree>
-            					<form string = "E-sugam Details">
+            					<form string = "Eway Bill Details">
             						<field name='state_id' required="1" domain="[('country_id.name','=','India')]"/>
             						<field name='username' required="1"/>
             						<field name='password' required="1" password="1"/>
