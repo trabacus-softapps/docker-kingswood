@@ -1747,7 +1747,7 @@ class stock_picking_out(osv.osv):
             # browser.get("https://ewaybill4.nic.in/ewbnat1/")
 
 
-            os.environ['MOZ_HEADLESS'] = '1'
+            # os.environ['MOZ_HEADLESS'] = '1'
 
             # firefox_options = Options()
             # firefox_options.add_argument("--headless")
@@ -1755,12 +1755,12 @@ class stock_picking_out(osv.osv):
             # capabilities['marionette'] = True
             # capabilities['acceptSslCerts'] = True
 
-            display = Display(visible=0, size=(1366, 768))
+            display = Display(visible=0, size=(1280, 1024))
             display.start()
 
             browser = webdriver.Firefox() #firefox_options=firefox_options, capabilities=capabilities
 
-            browser.set_window_size(1366, 768)
+            browser.set_window_size(1280, 1024)
             url_status1 = browser.get(url1)
             # browser.save_screenshot('/home/serveradmin/Desktop/screenie6.png')
 
@@ -1800,8 +1800,10 @@ class stock_picking_out(osv.osv):
 
                 while error in ("Invalid Captcha","Please enter the captcha."):
                     browser.set_window_size(1280, 1024)
-                    browser.find_element_by_xpath('.//*[@id="txt_username"]')
-                    browser.find_element_by_xpath('.//*[@id="txt_password"]')
+                    browser.save_screenshot('/home/serveradmin/Desktop/screenie01.png')
+                    time.sleep(1)
+                    browser.find_element_by_name('txt_username')
+                    browser.find_element_by_name('txt_password')
                     # browser.find_element_by_xpath('.//*[@id="form"]/div[3]/div[2]/div[3]/div[1]/div[3]/table/tbody/tr[2]/td[1]/div/img').click()
                     # browser.find_element_by_id('btnCaptchaImage').click()
                     captcha = self.get_eway_captch(cr, uid, [], browser, context)
@@ -1809,10 +1811,10 @@ class stock_picking_out(osv.osv):
                     if re.match("^([a-zA-Z0-9']{0,5})$",captcha) == None:
                         continue
 
-                    browser.find_element_by_xpath('.//*[@id="txt_username"]').clear()
-                    browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys(str(username))
-                    browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys(Keys.TAB)
-                    browser.find_element_by_xpath('.//*[@id="txt_password"]').send_keys(str(password))
+                    browser.find_element_by_name('txt_username').clear()
+                    browser.find_element_by_name('txt_username').send_keys(str(username))
+                    browser.find_element_by_name('txt_username').send_keys(Keys.TAB)
+                    browser.find_element_by_name('txt_password').send_keys(str(password))
                     time.sleep(1)
                     browser.find_element_by_id('txtCaptcha')
                     browser.find_element_by_id('txtCaptcha').send_keys(captcha)
