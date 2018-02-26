@@ -1800,7 +1800,7 @@ class stock_picking_out(osv.osv):
 
                 while error in ("Invalid Captcha","Please enter the captcha."):
                     browser.set_window_size(1280, 1024)
-                    browser.save_screenshot('/home/serveradmin/Desktop/screenie01.png')
+                    # browser.save_screenshot('/home/serveradmin/Desktop/screenie01.png')
                     time.sleep(1)
                     browser.find_element_by_name('txt_username')
                     browser.find_element_by_name('txt_password')
@@ -1818,7 +1818,7 @@ class stock_picking_out(osv.osv):
                     time.sleep(1)
                     browser.find_element_by_id('txtCaptcha')
                     browser.find_element_by_id('txtCaptcha').send_keys(captcha)
-                    browser.save_screenshot('/home/serveradmin/Desktop/screenie1.png')
+                    # browser.save_screenshot('/home/serveradmin/Desktop/screenie1.png')
 
                     time.sleep(1)
 
@@ -1910,7 +1910,7 @@ class stock_picking_out(osv.osv):
 
 
                     # browser.set_window_size(1920, 1080)
-                    browser.save_screenshot('/home/serveradmin/Desktop/screenie3.png')
+                    # browser.save_screenshot('/home/serveradmin/Desktop/screenie3.png')
                     time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="btnsbmt"]').click()
 
