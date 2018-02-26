@@ -890,6 +890,11 @@ class billing_cycle(osv.osv):
             cr.execute("select sub_part_id from sub_facilitator where main_facilitator_id="+str(case.partner_id and case.partner_id.id))
             sub_fac_ids = [x[0] for x in cr.fetchall()]
             sub_fac_ids.append(case.partner_id.id)
+            if len(sub_fac_ids) > 1:
+                tup_sub_fac_ids = tuple(sub_fac_ids)
+                cr.execute("""select distinct(partner_id) from account_invoice where date_invoice >= '"""+str(case.st_date)+"""' and date_invoice <= '"""+str(case.end_date)+"""' and partner_id in """+str(tup_sub_fac_ids))
+                sub_fac_ids = [x[0] for x in cr.fetchall()]
+
             data['variables'] = {
                                  'st_date'           : case.st_date,
                                  'end_date'          : case.end_date,

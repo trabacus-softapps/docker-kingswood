@@ -11,7 +11,7 @@
                     <p class="oe_grey">
                         Once draft Delivery Orders are confirmed, you will not be able
                         to modify them. The Delivery Orders will receive a unique
-                        number and E-sugam entries will be created based on customers
+                        number and Eway Bill entries will be created based on customers
                     </p>
                     <footer>
                         <button name="confirm" type="object" string="Ok" class="oe_highlight"/>
