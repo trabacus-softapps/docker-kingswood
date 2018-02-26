@@ -1809,10 +1809,10 @@ class stock_picking_out(osv.osv):
                     if re.match("^([a-zA-Z0-9']{0,5})$",captcha) == None:
                         continue
 
-                    # browser.find_element_by_xpath('.//*[@id="txt_username"]').clear()
-                    browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys(str(username))
-                    browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys(Keys.TAB)
-                    browser.find_element_by_xpath('.//*[@id="txt_password"]').send_keys(str(password))
+                    browser.browser.find_element_by_name('txt_username').clear()
+                    browser.browser.find_element_by_name('txt_username').send_keys(str(username))
+                    browser.find_element_by_name('txt_username').send_keys(Keys.TAB)
+                    browser.find_element_by_name('txt_password').send_keys(str(password))
                     time.sleep(1)
                     browser.find_element_by_id('txtCaptcha')
                     browser.find_element_by_id('txtCaptcha').send_keys(captcha)
