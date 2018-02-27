@@ -67,7 +67,7 @@ import sys
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from pyvirtualdisplay import Display
-
+from selenium.webdriver.support.ui import Select
 
 # from seleniumrequests import Chrome
 import codecs
@@ -1837,7 +1837,10 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_xpath('.//*[@id="R10"]/a').click()
                     browser.find_element_by_xpath('.//*[@id="R11"]/a').click()
                     time.sleep(1)
-                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys("Delivery Challan")
+                    select = Select(browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType'))
+                    select.select_by_visible_text('Delivery Challan')
+
+                    # browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys("Delivery Challan")
                     # browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys(Keys.TAB)
                     browser.find_element_by_xpath('.//*[@id="txtDocNo"]').send_keys(case.name)
                     browser.find_element_by_xpath('.//*[@id="txtDocNo"]').send_keys(Keys.TAB)
