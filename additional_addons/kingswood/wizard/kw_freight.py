@@ -134,8 +134,39 @@ class kw_freight(osv.osv_memory):
     
 kw_freight()
 
-  
-   
+class truck_owner_details(osv.osv_memory):
+    _name = "truck.owner.details"
+
+    _columns={
+        'from_date'     :   fields.date("From Date"),
+        'to_date'       :   fields.date("To Date"),
+
+    }
+
+    def print_report(self, cr, uid, ids, context = None):
+        if not context:
+            context = {}
+        for case in self.browse(cr, uid, ids):
+            if case.from_date > case.to_date:
+                raise osv.except_osv(_('Warning'),_('Please enter valid Start and End dates'))
+            report_name = "Truck Owner Details"
+            data = {}
+            data['ids'] = ids
+            data['model'] = "truck.owner.details"
+            data['output_type'] = 'pdf'
+
+            data['variables'] = {
+                                 'from_date'         : case.from_date,
+                                 'to_date'           : case.to_date,
+                                 }
+            print "data",data['variables']
+        return {
+            'type': 'ir.actions.report.xml',
+            'report_name': report_name,
+            'datas': data,
+                }
+
+truck_owner_details()
 
 
 class delivery_summary(osv.osv_memory):
