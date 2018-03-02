@@ -1924,6 +1924,7 @@ class stock_picking_out(osv.osv):
                     esugam_no = browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_lblBillNoDetails"]')
                     if esugam_no:
                         esugam_no = esugam_no.text.replace(" ", "")
+                        _logger.info('esugam_no................. %s',esugam_no)
                         browser.quit()
                         display.stop()
                     return esugam_no

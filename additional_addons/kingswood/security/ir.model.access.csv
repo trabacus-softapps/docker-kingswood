@@ -88,6 +88,7 @@ admin_purchase_order,purchase.order,purchase.model_purchase_order,kw_admin_servi
 admin_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_admin_service,1,1,1,1
 admin_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_admin_service,1,1,1,1
 admin_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_admin_service,1,1,1,1
+admin_truck_owner_details,truck.owner.details,model_truck_owner_details,kw_admin_service,1,1,1,1
 ,,,,,,,
 supplier_account_invoice,account.invoice,account.model_account_invoice,kw_supplier_service,1,0,0,0
 supplier_account_account,account.account,account.model_account_account,kw_supplier_service,1,0,0,0
@@ -174,6 +175,7 @@ supplier_purchase_order,purchase.order,purchase.model_purchase_order,kw_supplier
 sup_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_supplier_service,1,1,1,1
 sup_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_supplier_service,1,1,1,1
 sup_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_supplier_service,1,1,1,1
+sup_truck_owner_details,truck.owner.details,model_truck_owner_details,kw_supplier_service,1,1,1,1
 ,,,,,,,
 depot_account_invoice,account.invoice,account.model_account_invoice,kw_depot_service,1,1,1,1
 depot_account_account,account.account,account.model_account_account,kw_depot_service,1,1,1,1
@@ -260,6 +262,7 @@ depot_goods_trucks,goods.trucks,model_goods_trucks,kw_depot_service,1,1,1,1
 dept_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_depot_service,1,1,1,1
 dept_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_depot_service,1,1,1,1
 dept_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_depot_service,1,1,1,1
+dept_truck_owner_details,truck.owner.details,model_truck_owner_details,kw_depot_service,1,1,1,1
 ,,,,,,,
 customer_account_invoice,account.invoice,account.model_account_invoice,kw_customer_service,1,0,0,0
 customer_account_account,account.account,account.model_account_account,kw_customer_service,1,0,0,0
@@ -346,6 +349,7 @@ cust_purchase_order,purchase.order,purchase.model_purchase_order,kw_customer_ser
 cust_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_customer_service,1,1,1,1
 cust_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_customer_service,1,1,1,1
 cust_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_customer_service,1,1,1,0
+cust_truck_owner_details,truck.owner.details,model_truck_owner_details,kw_customer_service,1,1,1,0
 ,,,,,,,
 freight_account_invoice,account.invoice,account.model_account_invoice,kw_freight_service,1,0,0,0
 freight_account_account,account.account,account.model_account_account,kw_freight_service,1,0,0,0
@@ -432,6 +436,7 @@ fr_purchase_order,purchase.order,purchase.model_purchase_order,kw_freight_servic
 frt_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_freight_service,1,1,1,1
 frt_kw_bank_deatils_wiz,bank.details.wiz,model_bank_details_wiz,kw_freight_service,1,1,1,1
 frt_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_freight_service,1,1,1,1
+frt_truck_owner_details,truck.owner.details,model_truck_owner_details,kw_freight_service,1,1,1,1
 ,,,,,,,
 b_supplier_account_invoice,account.invoice,account.model_account_invoice,kw_supplier_billing_service,1,0,0,0
 b_supplier_account_account,account.account,account.model_account_account,kw_supplier_billing_service,1,0,0,0
@@ -518,6 +523,7 @@ b_sup_purchase_orderb,purchase.order,purchase.model_purchase_order,kw_supplier_b
 b_sup_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_supplier_billing_service,1,1,1,1
 b_sup_kw_bank_details_wiz,bank.details.wiz,model_bank_details_wiz,kw_supplier_billing_service,1,1,1,1
 b_sup_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_supplier_billing_service,1,1,1,0
+b_truck_owner_details,truck.owner.details,model_truck_owner_details,kw_supplier_billing_service,1,1,1,0
 ,,,,,,,
 b_sup_account_invoice,account.invoice,account.model_account_invoice,kw_facilitor_billing_service_tab,1,1,1,1
 b_sup_account_account,account.account,account.model_account_account,kw_facilitor_billing_service_tab,1,1,1,1
@@ -603,3 +609,4 @@ sup_goods_trucksb,goods.trucks,model_goods_trucks,kw_facilitor_billing_service_t
 sup_purchase_orderb,purchase.order,purchase.model_purchase_order,kw_facilitor_billing_service_tab,1,1,1,1
 sup_kw_facilitator,kw.facilitator,model_kw_facilitator,kw_facilitor_billing_service_tab,1,1,1,1
 sup_kw_sub_facilitator,sub.facilitator,model_sub_facilitator,kw_facilitor_billing_service_tab,1,1,1,0
+sup_truck_owner_details,truck.owner.details,model_truck_owner_details,kw_facilitor_billing_service_tab,1,1,1,0
