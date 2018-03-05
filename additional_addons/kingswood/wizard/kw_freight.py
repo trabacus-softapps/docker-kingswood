@@ -140,6 +140,7 @@ class truck_owner_details(osv.osv_memory):
     _columns={
         'from_date'     :   fields.date("From Date"),
         'to_date'       :   fields.date("To Date"),
+        'state_id'      :   fields.many2one("res.country.state", "State"),
 
     }
 
@@ -149,15 +150,22 @@ class truck_owner_details(osv.osv_memory):
         for case in self.browse(cr, uid, ids):
             if case.from_date > case.to_date:
                 raise osv.except_osv(_('Warning'),_('Please enter valid Start and End dates'))
+
+            if not case.state_id:
+                cr.execute("select id from res_country_state ")
+                state_ids = [x[0] for x in cr.fetchall()]
+                # state_ids = tuple(state_ids)
             report_name = "Truck Owner Details"
             data = {}
             data['ids'] = ids
             data['model'] = "truck.owner.details"
-            data['output_type'] = 'pdf'
+            data['output_type'] = 'xls'
 
             data['variables'] = {
-                                 'from_date'         : case.from_date,
-                                 'to_date'           : case.to_date,
+                                 'from_date'    : case.from_date,
+                                 'to_date'      : case.to_date,
+                                 'state_id'     : case.state_id and case.state_id.id or state_ids,
+                                 'state_name'   : case.state_id and case.state_id.name or "All",
                                  }
             print "data",data['variables']
         return {

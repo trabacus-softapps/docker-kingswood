@@ -123,6 +123,7 @@
                 <group col='4' colspan='2'>
 						<field name="from_date" required='1'/>
 						<field name="to_date" required="1"/>
+                        <field name="state_id"  options="{'no_open':True,'create': false, 'create_edit': false}"/>
 	                </group>
 
                     <footer>
