@@ -93,7 +93,7 @@
                     <field name="qty" string="Loaded Quantity in MTs" sum="Total"/>
                     <field name="del_quantity" sum="Total"/>
                     <field name="paying_agent_id" readonly='1'/>
-					<field name="sub_facilitator_id"/>
+					<field name="sub_facilitator_id" />
                     <field name="work_order" invisible='1'/>
                     <field name='min_date' invisible='1'/>
                    <field name="location_id" invisible='1'/>
@@ -446,7 +446,7 @@
 		                        		groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_freight_service" 
 		                        		attrs="{'required':['|',('user_log','=','KW_Admin'),('user_log','=','KW_Depot')],'readonly': ['|',('user_log','=','KW_Freight'),('state','not in',('draft','in_transit'))]}"/>
 		                        	<!-- domain="['|','&amp;',('supplier','=',True),('supplier','!=',True),('customer','!=',True)]" -->
-		                        	<field name="sub_facilitator_id" required="0" groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_freight_service"
+		                        	<field name="sub_facilitator_id" required="1" groups="base.group_no_one,kingswood.kw_admin_service,kingswood.kw_depot_service,kingswood.kw_freight_service"
 											domain="[('parent_id','=',paying_agent_id)]" options='{"create": false, "create_edit": false}'/>
 									<field name="is_sub_facilitator" invisible="1"/>
 									<field name="purchase_amount" invisible="1"/>
@@ -1180,7 +1180,7 @@
  				</xpath> -->
 
             	<xpath expr="//field[@name='partner_id']" position="after">
-					<field name="sub_facilitator_id" required="0" domain="[('parent_id','=',partner_id)]" options='{"create": false, "create_edit": false}'/>
+					<field name="sub_facilitator_id" required="1" domain="[('parent_id','=',partner_id)]" options='{"create": false, "create_edit": false}'/>
 					<field name='truck_no' widget="upper_case" required='1'/>
 					<field name="purchase_amount" invisible="1"/>
 					<field name="is_sub_facilitator" invisible="1"/>
