@@ -129,8 +129,10 @@ class stock_picking_out(osv.osv):
             if is_supp and is_supp[0] == True:
                 cust_ids = [] 
                 cr.execute("select customer_id from customer_list_rel where supplier_id = " + str(user.partner_id.id))         
-                cust_ids = [x[0] for x in cr.fetchall()]
-
+                custs = cr.fetchall()
+                for s in custs:
+                    cust_ids.append(s[0]) 
+                
                 for field in res['fields']:
                     if field == 'partner_id':
                         res['fields'][field]['domain'] = [('id','in', cust_ids)]
@@ -143,9 +145,13 @@ class stock_picking_out(osv.osv):
             else:
                 cust_ids = [] 
                 cr.execute("select id from res_partner")
-                cust_ids= [x[0] for x in cr.fetchall()]
-                if res['fields']['partner_id'].get("string") == 'Partner':
-                    res['fields']['partner_id']['domain'] = [('customer','=',True)]
+                custs=cr.fetchall()
+                for s in custs:
+                    cust_ids.append(s[0]) 
+                
+                for field in res['fields']:
+                    if field == 'partner_id':
+                        res['fields'][field]['domain'] = [('customer','=',True)]
         
         return res
     
@@ -196,10 +202,10 @@ class stock_picking_out(osv.osv):
                         paying_agent=cr.fetchall()
                         paying_agent=zip(*paying_agent)[0]
                         if user.role!='representative':
-                            if case.paying_agent_id.id in paying_agent:
-                                res[case.id]='kingswood'
-                                driver=case.transporter_id.name
-                                case.driver_name=driver
+                                if case.paying_agent_id.id in paying_agent:
+                                    res[case.id]='kingswood'
+                                    driver=case.transporter_id.name
+                                    case.driver_name=driver
                        
                                 
         
@@ -213,7 +219,9 @@ class stock_picking_out(osv.osv):
 
         res=0
         cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
-        g_ids = [x[0] for x in cr.fetchall()]
+        gid = cr.dictfetchall()
+        for x in gid:
+            g_ids.append(x['gid'])
         for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
 
             user = user_obj.browse(cr, uid, [uid])[0]
@@ -233,31 +241,18 @@ class stock_picking_out(osv.osv):
         user_obj = self.pool.get('res.users')
 
         res = "not"
-        user = user_obj.browse(cr, uid, [uid])[0]
-        cr.execute("""
-                    select case when g.name is null then '' else g.name end as g_name
-                from res_groups_users_rel r
-                inner join res_groups g on g.id = r.gid
-                where uid = """+str(uid)+""" and g.name='KW_Admin'
-        """)
-        g_name = cr.fetchone()
-        if g_name:
-            g_name = g_name[0]
-        if g_name == 'KW_Admin':
-            res='not'
+        cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
+        gid = cr.dictfetchall()
+        for x in gid:
+            g_ids.append(x['gid'])
+        for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
 
-        cr.execute("""
-                    select case when g.name is null then '' else g.name end as g_name
-                from res_groups_users_rel r
-                inner join res_groups g on g.id = r.gid
-                where uid = """+str(uid)+""" and g.name='KW_Depot'
-        """)
-        g_name = cr.fetchone()
-        if g_name:
-            g_name = g_name[0]
-        if g_name == 'KW_Depot' and user.role!='representative':
-            res = 'kingswood'
-
+            user = user_obj.browse(cr, uid, [uid])[0]
+            if g.name == 'KW_Admin':
+                res='not'
+            if g.name == 'KW_Depot' and user.role!='representative':
+                res = 'kingswood'
+                
         return res
     
     
@@ -265,19 +260,21 @@ class stock_picking_out(osv.osv):
     
     def _get_default_paying_agent_id(self, cr, uid, context=None):
         res ={}
+        g_ids = []
         user_obj = self.pool.get('res.users')
 
         res = False
-        cr.execute("""
-                    select g.name
-                from res_groups_users_rel r
-                inner join res_groups g on g.id = r.gid
-                where uid = """+str(uid)+""" and g.name='KW_Supplier'
-        """)
-        g_name = cr.fetchone()
-        user = user_obj.browse(cr, uid, [uid])[0]
-        if g_name == 'KW_Supplier':
-           res=user.partner_id.id
+        cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
+        gid = cr.dictfetchall()
+        for x in gid:
+            g_ids.append(x['gid'])
+        for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
+
+            user = user_obj.browse(cr, uid, [uid])[0]
+            if g.name == 'KW_Supplier':
+               res=user.partner_id.id
+             
+
         return res
     
     def get_freight_balance(self,cr,uid,ids,context=None):
@@ -443,7 +440,9 @@ class stock_picking_out(osv.osv):
             if case.type=='out':
                 res[case.id] = True
                 cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
-                g_ids = [x[0] for x in cr.fetchall()]
+                gid = cr.dictfetchall()
+                for x in gid:
+                    g_ids.append(x['gid'])
                 for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
     #                 if g.name == 'KW_Freight':
     #                     res[case.id] = False
@@ -484,7 +483,9 @@ class stock_picking_out(osv.osv):
             if case.type=='out':
                 
                 cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
-                g_ids = [x[0] for x in cr.fetchall()]
+                gid = cr.dictfetchall()
+                for x in gid:
+                    g_ids.append(x['gid'])
                 for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
     #                 if g.name == 'KW_Freight':
     #                     res[case.id] = False
@@ -539,7 +540,9 @@ class stock_picking_out(osv.osv):
         g_ids = []
         
         cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
-        g_ids = [x[0] for x in cr.fetchall()]
+        gid = cr.dictfetchall()
+        for x in gid:
+            g_ids.append(x['gid'])
         for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
             if g.name == 'KW_Supplier':
                 res = 'KW_Supplier'
@@ -5269,24 +5272,24 @@ class stock_picking(osv.osv):
                         inner join res_groups g on g.id = gu.gid \
                         where g.name = 'KW_Supplier' and uid ="+str(uid))
             is_supp = cr.fetchone()
-
+            
             if is_supp and is_supp[0] == True:
-                cust_ids = []
-                cr.execute("select customer_id from customer_list_rel where supplier_id = " + str(user.partner_id.id))
+                cust_ids = [] 
+                cr.execute("select customer_id from customer_list_rel where supplier_id = " + str(user.partner_id.id))         
                 custs = cr.fetchall()
                 for s in custs:
-                    cust_ids.append(s[0])
-
+                    cust_ids.append(s[0]) 
+                
                 for field in res['fields']:
                     if field == 'partner_id':
                         res['fields'][field]['domain'] = [('id','in', cust_ids)]
-
-
+                    
+                
                 if view_type == 'form':
                     if context.get('type', 'out') in ('out'):
                         for node in doc.xpath("//field[@name='partner_id']"):
                             node.set('options', '{"no_open":True}')
-
+              
         return res
     
     def _get_paying_agent(self, cr, uid, ids, args, field_name, context = None):
@@ -5368,49 +5371,37 @@ class stock_picking(osv.osv):
         user_obj = self.pool.get('res.users')
 
         res = "not"
-        user = user_obj.browse(cr, uid, [uid])[0]
-        cr.execute("""
-                    select case when g.name is null then '' else g.name end as g_name
-                from res_groups_users_rel r
-                inner join res_groups g on g.id = r.gid
-                where uid = """+str(uid)+""" and g.name='KW_Admin'
-        """)
-        g_name = cr.fetchone()
-        if g_name:
-            g_name = g_name[0]
-        if g_name == 'KW_Admin':
-            res='not'
+        cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
+        gid = cr.dictfetchall()
+        for x in gid:
+            g_ids.append(x['gid'])
+        for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
 
-        cr.execute("""
-                    select case when g.name is null then '' else g.name end as g_name
-                from res_groups_users_rel r
-                inner join res_groups g on g.id = r.gid
-                where uid = """+str(uid)+""" and g.name='KW_Depot'
-        """)
-        g_name = cr.fetchone()
-        if g_name:
-            g_name = g_name[0]
-        if g_name == 'KW_Depot' and user.role!='representative':
-            res = 'kingswood'
+            user = user_obj.browse(cr, uid, [uid])[0]
+            if g.name == 'KW_Admin':
+                res='kingswood'
+            if g.name == 'KW_Depot' and user.role!='representative':
+                res = 'kingswood'
 
         return res
     
     
     def _get_default_paying_agent_id(self, cr, uid, context=None):
         res ={}
+        g_ids = []
         user_obj = self.pool.get('res.users')
 
         res = False
-        cr.execute("""
-                    select g.name
-                from res_groups_users_rel r
-                inner join res_groups g on g.id = r.gid
-                where uid = """+str(uid)+""" and g.name='KW_Supplier'
-        """)
-        g_name = cr.fetchone()
-        user = user_obj.browse(cr, uid, [uid])[0]
-        if g_name == 'KW_Supplier':
-           res=user.partner_id.id
+        cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
+        gid = cr.dictfetchall()
+        for x in gid:
+            g_ids.append(x['gid'])
+        for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
+
+            user = user_obj.browse(cr, uid, [uid])[0]
+            if g.name == 'KW_Supplier':
+                 res=user.partner_id.id
+            
         return res
     
     
@@ -6161,7 +6152,11 @@ class stock_move(osv.osv):
             if is_supp and is_supp[0] == True:
                 prod_ids = [] 
                 cr.execute("select product_id from product_supplierinfo where name = " + str(user.partner_id.id))         
-                prod_ids = [x[0] for x in cr.fetchall()]
+                prods = cr.fetchall()
+                
+                for s in prods:
+                    prod_ids.append(s[0]) 
+                
                 for field in res['fields']:
                     if field == 'product_id':
                         res['fields'][field]['domain'] = [('id','in', prod_ids)]
