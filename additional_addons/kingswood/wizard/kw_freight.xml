@@ -114,8 +114,47 @@
       <menuitem action="del_summary_action_supplier" id="del_summary_supplier_id" parent="supp_del_sum_id" sequence="4"
             groups="base.group_no_one"/>
          -->
-	
-	
+
+        <record id="kw_view_truck_owner_details" model="ir.ui.view">
+            <field name="name">kw_view_truck_owner_details</field>
+            <field name="model">truck.owner.details</field>
+            <field name="arch" type="xml">
+                <form string="Truck Owner Details" version="7.0">
+                <group col='4' colspan='2'>
+						<field name="from_date" required='1'/>
+						<field name="to_date" required="1"/>
+                        <field name="state_id"  options="{'no_open':True,'create': false, 'create_edit': false}"/>
+	                </group>
+
+                    <footer>
+                        <button name="print_report" type="object" string="Print" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="truck_owner_details_action">
+            <field name="name">Truck Owner Details</field>
+            <field name="res_model">truck.owner.details</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,graph</field>
+            <field name="target">new</field>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="truck_owner_details_action_form">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="kw_view_truck_owner_details"/>
+            <field name="act_window_id" ref="truck_owner_details_action"/>
+        </record>
+
+  	<menuitem action="truck_owner_details_action" id="truck_owner_details_action_id" parent="kingswood.kw_dispatch_report"
+		sequence="4" groups="base.group_no_one,kingswood.kw_admin_service"/>
+
+
 
         <record id="kw_view_merge_invoice" model="ir.ui.view">
             <field name="name">kw_merge_invoice</field>

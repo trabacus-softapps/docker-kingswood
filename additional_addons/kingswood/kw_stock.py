@@ -66,7 +66,8 @@ import os
 import sys
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-
+from pyvirtualdisplay import Display
+from selenium.webdriver.support.ui import Select
 
 # from seleniumrequests import Chrome
 import codecs
@@ -892,7 +893,7 @@ class stock_picking_out(osv.osv):
             context = {}
         res = {}
         warning = {}
-        if bank_name and len(bank_name) < 11:
+        if bank_name and len(bank_name) < 5:
             warning={
                      'title':_('Warning!'),
                             'message':_('Please enter the complete Bank Name')
@@ -906,21 +907,21 @@ class stock_picking_out(osv.osv):
                          }
             res.update({"ifsc_code": False})
 
-        if ac_holder and len(ac_holder) < 10:
+        if ac_holder and len(ac_holder) < 5:
             warning={
                      'title':_('Warning!'),
                             'message':_('Please enter the proper Beneficiery Name')
                          }
             res.update({"ac_holder": False})
 
-        if ac_number and len(ac_number) < 11:
+        if ac_number and len(ac_number) < 10:
             warning={
                      'title':_('Warning!'),
                             'message':_('Please enter the proper Account Number')
                          }
             res.update({"ac_number": False})
 
-        if bank_addr and len(bank_addr) < 11:
+        if bank_addr and len(bank_addr) < 5:
             warning={
                      'title':_('Warning!'),
                             'message':_('Please enter the proper Bank Address')
@@ -1748,14 +1749,18 @@ class stock_picking_out(osv.osv):
 
             # os.environ['MOZ_HEADLESS'] = '1'
 
-            firefox_options = Options()
-            firefox_options.add_argument("--headless")
-            capabilities = DesiredCapabilities.FIREFOX
-            capabilities['marionette'] = True
-            capabilities['acceptSslCerts'] = True
+            # firefox_options = Options()
+            # firefox_options.add_argument("--headless")
+            # capabilities = DesiredCapabilities.FIREFOX
+            # capabilities['marionette'] = True
+            # capabilities['acceptSslCerts'] = True
 
-            browser = webdriver.Firefox(firefox_options=firefox_options, capabilities=capabilities)
-            browser.set_window_size(1366, 768)
+            display = Display(visible=0, size=(1280, 1024))
+            display.start()
+
+            browser = webdriver.Firefox() #firefox_options=firefox_options, capabilities=capabilities
+
+            browser.set_window_size(1280, 1024)
             url_status1 = browser.get(url1)
             # browser.save_screenshot('/home/serveradmin/Desktop/screenie6.png')
 
@@ -1795,8 +1800,10 @@ class stock_picking_out(osv.osv):
 
                 while error in ("Invalid Captcha","Please enter the captcha."):
                     browser.set_window_size(1280, 1024)
-                    browser.find_element_by_xpath('.//*[@id="txt_username"]')
-                    browser.find_element_by_xpath('.//*[@id="txt_password"]')
+                    # browser.save_screenshot('/home/serveradmin/Desktop/screenie01.png')
+                    time.sleep(1)
+                    browser.find_element_by_name('txt_username')
+                    browser.find_element_by_name('txt_password')
                     # browser.find_element_by_xpath('.//*[@id="form"]/div[3]/div[2]/div[3]/div[1]/div[3]/table/tbody/tr[2]/td[1]/div/img').click()
                     # browser.find_element_by_id('btnCaptchaImage').click()
                     captcha = self.get_eway_captch(cr, uid, [], browser, context)
@@ -1804,14 +1811,14 @@ class stock_picking_out(osv.osv):
                     if re.match("^([a-zA-Z0-9']{0,5})$",captcha) == None:
                         continue
 
-                    browser.find_element_by_xpath('.//*[@id="txt_username"]').clear()
-                    browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys(str(username))
-                    browser.find_element_by_xpath('.//*[@id="txt_username"]').send_keys(Keys.TAB)
-                    browser.find_element_by_xpath('.//*[@id="txt_password"]').send_keys(str(password))
+                    browser.find_element_by_name('txt_username').clear()
+                    browser.find_element_by_name('txt_username').send_keys(str(username))
+                    browser.find_element_by_name('txt_username').send_keys(Keys.TAB)
+                    browser.find_element_by_name('txt_password').send_keys(str(password))
                     time.sleep(1)
                     browser.find_element_by_id('txtCaptcha')
                     browser.find_element_by_id('txtCaptcha').send_keys(captcha)
-                    browser.save_screenshot('/home/serveradmin/Desktop/screenie1.png')
+                    # browser.save_screenshot('/home/serveradmin/Desktop/screenie1.png')
 
                     time.sleep(1)
 
@@ -1830,7 +1837,10 @@ class stock_picking_out(osv.osv):
                     browser.find_element_by_xpath('.//*[@id="R10"]/a').click()
                     browser.find_element_by_xpath('.//*[@id="R11"]/a').click()
                     time.sleep(1)
-                    browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys("Delivery Challan")
+                    select = Select(browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType'))
+                    select.select_by_visible_text('Delivery Challan')
+
+                    # browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys("Delivery Challan")
                     # browser.find_element_by_id('ctl00_ContentPlaceHolder1_ddlDocType').send_keys(Keys.TAB)
                     browser.find_element_by_xpath('.//*[@id="txtDocNo"]').send_keys(case.name)
                     browser.find_element_by_xpath('.//*[@id="txtDocNo"]').send_keys(Keys.TAB)
@@ -1903,7 +1913,7 @@ class stock_picking_out(osv.osv):
 
 
                     # browser.set_window_size(1920, 1080)
-                    browser.save_screenshot('/home/serveradmin/Desktop/screenie3.png')
+                    # browser.save_screenshot('/home/serveradmin/Desktop/screenie3.png')
                     time.sleep(1)
                     browser.find_element_by_xpath('.//*[@id="btnsbmt"]').click()
 
@@ -1914,6 +1924,9 @@ class stock_picking_out(osv.osv):
                     esugam_no = browser.find_element_by_xpath('.//*[@id="ctl00_ContentPlaceHolder1_lblBillNoDetails"]')
                     if esugam_no:
                         esugam_no = esugam_no.text.replace(" ", "")
+                        _logger.info('esugam_no................. %s',esugam_no)
+                        browser.quit()
+                        display.stop()
                     return esugam_no
 
 

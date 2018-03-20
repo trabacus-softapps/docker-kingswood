@@ -2093,7 +2093,7 @@ class account_invoice(osv.osv):
             invoice_rate_in = [] #stock_in_obj.get_supplier_rate(cr,uid,stock_ids_in,False,context=context)
 
             _logger.error('Inside the Schedular stock_ids_out ------------>%s',stock_ids_out)
-            _logger.error('Inside the Schedular stock_ids_in ------------>%s',stock_ids_in)
+            # _logger.error('Inside the Schedular stock_ids_in ------------>%s',stock_ids_in)
             if stock_ids_out:
                 if not invoice_rate_out:
                     return False    
