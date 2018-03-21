@@ -422,7 +422,7 @@ class res_partner(osv.osv):
                 vals['account_rec']=kwl_cid
                 vals['sup_num']=c_sequence
 
-                    
+        print "Sub Facilitator Vals.............",vals
 
         return super(res_partner,self).create(cr, uid, vals, context)
   

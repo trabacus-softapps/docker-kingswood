@@ -141,7 +141,8 @@
 						<field name="sub_facilitator_ids"  attrs="{'invisible': [('supplier','=', False)]}" groups="kingswood.kw_admin_service,base.group_no_one">
 							<tree version="7.0" editable="top">
 								<field name="sub_part_id" required="1" domain="[('sub_facilitator','=', True)]"
-										 context="{'form_view_ref':'kingswood.kw_sup_view_partner_form','sub_facilitator':True}"/>
+										 context="{'form_view_ref':'kingswood.kw_sup_view_partner_form','sub_facilitator':True,'default_supplier':True}"
+								options='{"create": false, "create_edit": false}' />
 								<field name="from_date" required="1"/>
 								<field name="to_date" required="1"/>
 								<field name="total_purchase" />
