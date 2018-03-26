@@ -4895,6 +4895,8 @@ class account_move(osv.osv):
         if not context:
             context = {}
         j_id = vals.get('journal_id',False)
+        if j_id and j_id == 37:
+            j_id = 4
         journal = journal_obj.browse(cr, uid, [j_id] )
         if journal:
             journal = journal[0]
