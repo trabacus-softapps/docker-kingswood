@@ -1991,7 +1991,7 @@ class account_invoice(osv.osv):
         # 4. Mohd. Umar
         # Remove these partner
         if fac_state == 'Karnataka':
-            remove_ids = [1,3138]
+            remove_ids = [1,3138,988,1545]
         else:
             remove_ids = [1572,2796,3578,2798]
         dummy_ids.extend(remove_ids)
