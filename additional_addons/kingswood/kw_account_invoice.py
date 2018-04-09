@@ -1993,7 +1993,7 @@ class account_invoice(osv.osv):
         if fac_state == 'Karnataka':
             remove_ids = [1,3138,988,1545]
         else:
-            remove_ids = [1572,2796,3578,2798]
+            remove_ids = [1572]
         dummy_ids.extend(remove_ids)
 #         print "Date-",shedular_date
         stock_ids_in = []
