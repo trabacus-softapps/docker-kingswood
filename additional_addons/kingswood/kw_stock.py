@@ -675,12 +675,22 @@ class stock_picking_out(osv.osv):
     def get_workorder(self, cr, uid, ids, field_name, args, context = None):
         work_obj = self.pool.get('work.order')
         res = {}
+        work_order_no= ''
         for case in self.browse(cr, uid, ids):
             res[case.id] = ''
             if case.type=="out" and case.paying_agent_id:
-                w_ids = work_obj.search(cr, uid, [('product_id','=',case.product_id.id),('state_id','=',case.paying_agent_id.state_id.id),('partner_id','=',case.partner_id.id)],limit=1)
-                for w in work_obj.browse(cr, uid, w_ids):
-                    res[case.id]= w.work_order_no or ''
+                # w_ids = work_obj.search(cr, uid, [('product_id','=',case.product_id.id),('state_id','=',case.paying_agent_id.state_id.id),('partner_id','=',case.partner_id.id)],limit=1)
+                # for w in work_obj.browse(cr, uid, w_ids):
+                cr.execute("""
+                    select work_order_no
+
+                        from work_order
+                        where product_id = """+str(case.product_id.id)+""" and state_id ="""+str(case.paying_agent_id.state_id.id)+""" and partner_id = """+str(case.partner_id.id)+"""
+                        and work_order_date<= '"""+str(case.date)+"""'::date order by work_order_date desc limit 1
+
+                """)
+                work_order_no = [x[0] for x in cr.fetchall()]
+                res[case.id]= work_order_no and work_order_no[0] or ''
         return res
      
     
@@ -1079,43 +1089,43 @@ class stock_picking_out(osv.osv):
         retstr.close()
         return str
     
-    
+    # No more required
     #to check paying agent and transporter 
-    def onchange_transporter_id(self, cr, uid, ids, paying_agent_id=False, transporter_id = False,context=None):
-        res ={} 
-        g_ids = []
-        paying_agent=[]
-        warning=''
-        log_user={}
-        picking={}
-        transport=[]
-        warning = ""
-        if transporter_id == paying_agent_id:
-            res['transporter_id'] = False
-            
-            warning={
-                                         'title':_('Warning!'), 
-                                                'message':_('You Are Not Allowed To Select Same Company as Facilitator and Transporter')
-                                             }
-            
-            
-        res['paying_agent'] = paying_agent_id
-        user_obj = self.pool.get('res.users')
-        cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
-        gid = cr.dictfetchall()
-        for x in gid:
-            g_ids.append(x['gid'])
-        for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
-
-                cr.execute("select id from res_partner where lower(name) like 'others'")
-                transport=cr.fetchall()
-                transport=zip(*transport)[0]
-                
-                if transporter_id in transport:
-                    res['paying_agent']='representative'
-                else:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
-                    res['paying_agent']='kingswood'
-        return{'value':res ,'warning':warning}
+    # def onchange_transporter_id(self, cr, uid, ids, paying_agent_id=False, transporter_id = False,context=None):
+    #     res ={}
+    #     g_ids = []
+    #     paying_agent=[]
+    #     warning=''
+    #     log_user={}
+    #     picking={}
+    #     transport=[]
+    #     warning = ""
+    #     if transporter_id == paying_agent_id:
+    #         res['transporter_id'] = False
+    #
+    #         warning={
+    #                                      'title':_('Warning!'),
+    #                                             'message':_('You Are Not Allowed To Select Same Company as Facilitator and Transporter')
+    #                                          }
+    #
+    #
+    #     res['paying_agent'] = paying_agent_id
+    #     user_obj = self.pool.get('res.users')
+    #     cr.execute("select gid from res_groups_users_rel where uid ="+str(uid))
+    #     gid = cr.dictfetchall()
+    #     for x in gid:
+    #         g_ids.append(x['gid'])
+    #     for g in self.pool.get('res.groups').browse(cr, uid, g_ids):
+    #
+    #             cr.execute("select id from res_partner where lower(name) like 'others'")
+    #             transport=cr.fetchall()
+    #             transport=zip(*transport)[0]
+    #
+    #             if transporter_id in transport:
+    #                 res['paying_agent']='representative'
+    #             else:
+    #                 res['paying_agent']='kingswood'
+    #     return{'value':res ,'warning':warning}
         
         
     
@@ -5867,12 +5877,22 @@ class stock_picking(osv.osv):
     def get_workorder(self, cr, uid, ids, field_name, args, context = None):
         work_obj = self.pool.get('work.order')
         res = {}
+        work_order_no= ''
         for case in self.browse(cr, uid, ids):
             res[case.id] = ''
             if case.type=="out" and case.paying_agent_id:
-                w_ids = work_obj.search(cr, uid, [('product_id','=',case.product_id.id),('state_id','=',case.paying_agent_id.state_id.id),('partner_id','=',case.partner_id.id)])
-                for w in work_obj.browse(cr, uid, w_ids):
-                    res[case.id]= w.work_order_no or ''
+                # w_ids = work_obj.search(cr, uid, [('product_id','=',case.product_id.id),('state_id','=',case.paying_agent_id.state_id.id),('partner_id','=',case.partner_id.id)],limit=1)
+                # for w in work_obj.browse(cr, uid, w_ids):
+                cr.execute("""
+                    select work_order_no
+
+                        from work_order
+                        where product_id = """+str(case.product_id.id)+""" and state_id ="""+str(case.paying_agent_id.state_id.id)+""" and partner_id = """+str(case.partner_id.id)+"""
+                        and work_order_date<= '"""+str(case.date)+"""'::date order by work_order_date desc limit 1
+
+                """)
+                work_order_no = [x[0] for x in cr.fetchall()]
+                res[case.id]= work_order_no and work_order_no[0] or ''
         return res
 
      
