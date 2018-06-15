@@ -4664,6 +4664,8 @@ class stock_picking_out(osv.osv):
                         sub_part = sub_part_obj.browse(cr, uid, sub_part_ids)
                         if sub_part.total_purchase >= float(1850000):
                             raise osv.except_osv(_('Warning'),_('Total Purcase is exceeded for the selected Sub Facilitator.'))
+                    else:
+                        raise osv.except_osv(_('Warning'),_('Please create the Sub Facilitator for the Current Year'))
 
             if 'move_lines' in vals:
 #               if vals['move_lines'][0][2]:
@@ -7529,6 +7531,9 @@ class stock_picking_in(osv.osv):
                         sub_part = sub_part_obj.browse(cr, uid, sub_part_ids)
                         if sub_part.total_purchase >= float(1850000):
                             raise osv.except_osv(_('Warning'),_('Total Purcase is exceeded for the selected Sub Facilitator.'))
+                    else:
+                        raise osv.except_osv(_('Warning'),_('Please create the Sub Facilitator for the Current Year'))
+
         return res
 
 #     def write(self, cr, uid, ids, vals, context = None): 
@@ -7663,6 +7668,9 @@ class stock_picking_in(osv.osv):
                     sub_part = sub_part_obj.browse(cr, uid, sub_part_ids)
                     if sub_part.total_purchase >= float(1850000):
                         raise osv.except_osv(_('Warning'),_('Total Purcase is exceeded for the selected Sub Facilitator.'))
+                else:
+                    raise osv.except_osv(_('Warning'),_('Please create the Sub Facilitator for the Current Year'))
+
         return res
 
 
