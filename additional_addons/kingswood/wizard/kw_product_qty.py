@@ -168,6 +168,7 @@ class change_product_qty(osv.osv_memory):
         acc_obj=self.pool.get('account.account')
         move_line_obj=self.pool.get('account.move.line')
         user_obj=self.pool.get('res.users')
+        invoice_obj = self.pool.get('account.invoice')
         stock_id=context['active_ids']
         stock_ids=pick_obj.browse(cr,uid,ids)
         state=False
