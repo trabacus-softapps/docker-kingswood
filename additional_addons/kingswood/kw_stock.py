@@ -6044,6 +6044,10 @@ class stock_picking(osv.osv):
                 'po_hnl_attachment'     :   fields.related('company_id','hnl_po_attachment',type='binary',store=False,string="HNL Attachment"),
                 'hnl_po_filename'          :   fields.char("File Name", size=30),
 
+                'party_name'        :   fields.char("Party Name", size=40),
+                'party_mob'         :   fields.char("Party Mobile Number"),
+                'party_charges'     :   fields.float("Party Charges Collected", digits=(16,2)),
+
               }
     _order = 'date desc'
     _defaults={
@@ -6828,7 +6832,11 @@ class stock_picking_in(osv.osv):
 
                 'sub_facilitator_id'    :   fields.many2one("res.partner", "Sub Facilitator"),
                 'purchase_amount'       :   fields.float("Purchase Amount", digits=(16,2)),
-                'is_sub_facilitator'    :   fields.boolean("Is Sub Facilitator")
+                'is_sub_facilitator'    :   fields.boolean("Is Sub Facilitator"),
+
+                'party_name'        :   fields.char("Party Name", size=40),
+                'party_mob'         :   fields.char("Party Mobile Number"),
+                'party_charges'     :   fields.float("Party Charges Collected", digits=(16,2)),
 
 
               }
