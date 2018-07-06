@@ -2765,7 +2765,7 @@ class stock_picking_out(osv.osv):
             if partner:
                 partner=[d[0] for d in partner]
                 if (case.partner_id.id in partner) or case.report:
-                    res = rep_obj.pentaho_report_action(cr, uid, 'DC-LR For I.T.C', ids,None,None)
+                    res = rep_obj.pentaho_report_action(cr, uid, 'ITC DC LR Report', ids,None,None)
                 else:   
 #                     raise osv.except_osv(_('Warning'),_('Report Is Specifically For The Customer I.T.C Limited')% (case.partner_id.name,))
                     raise osv.except_osv(_('Warning'),_('Report Is Specifically For The Customer I.T.C Limited'))
