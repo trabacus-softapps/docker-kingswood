@@ -1180,9 +1180,9 @@
 
 				<xpath expr="//notebook/page[@string='Products']/field[@name='note']" position="before">
 					<group col="2" colspan="4">
-						<field name="party_name"/>
-						<field name="party_mob"/>
-						<field name="party_charges"/>
+						<field name="party_name" required="1"/>
+						<field name="party_mob" required="1"/>
+						<field name="party_charges" string="Payment Charges Collected" required="1"/>
 					</group>
 				</xpath>
 
