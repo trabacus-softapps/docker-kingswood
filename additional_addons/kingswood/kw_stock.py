@@ -3450,7 +3450,7 @@ class stock_picking_out(osv.osv):
                                  else:
                                      print "schedular Failed"
                              #check for the key for supplier Invoices
-                             _logger.info('Before the Key Supplier Invoice Current DC==========================> %s',case.id)
+                             _logger.info('Before the Key Supplier Invoice Current DC==========================> %s',case.id, vals, tx_ids)
                              if tx_ids:
                                 cr.execute("select gst_categ, amount from account_tax where id in  %s ",(tuple(tx_ids),))
                                 tx = cr.dictfetchall()[0]
