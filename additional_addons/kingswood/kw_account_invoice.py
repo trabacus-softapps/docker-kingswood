@@ -1876,8 +1876,8 @@ class account_invoice(osv.osv):
                         where lt.invoice_line_id in """+str(inv_line_id)+""" and t.gst_categ = 'intra'
                         """)
                     diff_tax = [x[0] for x in cr.fetchall()]
-                    if diff_tax:
-                        raise osv.except_osv(_('Warning!'), _("Please Select only IGST Tax"))
+                    # if diff_tax:
+                        # raise osv.except_osv(_('Warning!'), _("Please Select only IGST Tax"))
 
         return res
     
