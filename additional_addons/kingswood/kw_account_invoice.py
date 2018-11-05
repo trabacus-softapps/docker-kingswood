@@ -1979,7 +1979,10 @@ class account_invoice(osv.osv):
         if not context.get('facilitator'):
             shedular_date =  shedular_date - relativedelta(days=int(2))
         shedular_date = shedular_date.strftime('%Y-%m-%d')
-        
+        if shedular_date == '2018-10-31':
+            shedular_date = shedular_date
+        else:
+            shedular_date = '2018-10-31'
         day_to = self.get_month(cr,uid,[],date_day,{'day':1}) 
         last_date = datetime.strptime(date_day, '%Y-%m-%d') - relativedelta(days=int(day_to))
         last_date = last_date.strftime('%Y-%m-%d')   
@@ -2230,7 +2233,7 @@ class account_invoice(osv.osv):
                     except:
                         continue
                     if i_final_date == '2018-10-31':
-                        i_final_date = '2018-10-28'
+                        i_final_date = '2018-10-31'
                     self.write(cr,uid,[invoices_ids[0]],{'date_invoice':i_final_date,'back_date':True})
                     wf_service.trg_validate(uid, 'account.invoice', invoices_ids[0], 'invoice_open', cr) 
                     merged_invoice.append(invoices_ids[0])
@@ -2268,7 +2271,7 @@ class account_invoice(osv.osv):
                                 dc_final_date = dc_final_date[0]
 
                         if dc_final_date =='2018-10-31':
-                            dc_final_date = '2018-10-28'
+                            dc_final_date = '2018-10-31'
                         self.write(cr,uid,[merged_inv],{'date_invoice':dc_final_date,'back_date':True})
                         wf_service.trg_validate(uid, 'account.invoice', merged_inv, 'invoice_open', cr)
                         merged_invoice.append(merged_inv)
@@ -2295,7 +2298,7 @@ class account_invoice(osv.osv):
                                         
                                      
                             billing.update({'st_date':st_date,
-                                            'end_date':'2018-10-28', #today,
+                                            'end_date':'2018-10-31', #today,
                                             'partner_id':partner_id,
                                              
                                             })
@@ -2313,7 +2316,7 @@ class account_invoice(osv.osv):
                         date_start = cr.fetchone()
                         date_start = date_start and date_start[0] or ''                        
                         billing.update({'st_date': date_start,
-                                        'end_date':'2018-10-28', #today,
+                                        'end_date':'2018-10-31', #today,
                                         'partner_id':partner_id,
                                          
                                         })
@@ -2356,7 +2359,7 @@ class account_invoice(osv.osv):
         state_id1 = context.get(1,False) 
         state_id2 = context.get(2,False)
         
-        context.update({'shedular_date':'2018-10-30'})
+        context.update({'shedular_date':'2018-11-02'})
 
         _logger.error('Schedular Date.....%s',context)
         res = self.create_facilitator_inv(cr,uid,[uid],context)
