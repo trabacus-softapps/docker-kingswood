@@ -2229,7 +2229,7 @@ class account_invoice(osv.osv):
                     except:
                         continue
                     if i_final_date == '2018-11-30':
-                        i_final_date = '2018-11-12'
+                        i_final_date = '2018-11-11'
                     self.write(cr,uid,[invoices_ids[0]],{'date_invoice':i_final_date,'back_date':True})
                     wf_service.trg_validate(uid, 'account.invoice', invoices_ids[0], 'invoice_open', cr) 
                     merged_invoice.append(invoices_ids[0])
@@ -2267,7 +2267,7 @@ class account_invoice(osv.osv):
                                 dc_final_date = dc_final_date[0]
 
                         if dc_final_date =='2018-11-30':
-                            dc_final_date = '2018-11-12'
+                            dc_final_date = '2018-11-11'
                         self.write(cr,uid,[merged_inv],{'date_invoice':dc_final_date,'back_date':True})
                         wf_service.trg_validate(uid, 'account.invoice', merged_inv, 'invoice_open', cr)
                         merged_invoice.append(merged_inv)
@@ -2294,7 +2294,7 @@ class account_invoice(osv.osv):
                                         
                                      
                             billing.update({'st_date':st_date,
-                                            'end_date':'2018-10-31' if fac_state !='Karnataka' else '2018-11-12', #today,
+                                            'end_date':'2018-11-11', #today,
                                             'partner_id':partner_id,
                                              
                                             })
@@ -2312,7 +2312,7 @@ class account_invoice(osv.osv):
                         date_start = cr.fetchone()
                         date_start = date_start and date_start[0] or ''                        
                         billing.update({'st_date': date_start,
-                                        'end_date':'2018-10-31' if fac_state !='Karnataka' else '2018-11-12', #today,
+                                        'end_date':'2018-11-11', #today,
                                         'partner_id':partner_id,
                                          
                                         })
